@@ -150,6 +150,7 @@ export default function App() {
       {currentStep === 'admin' && (
         <AdminDashboardScreen
           t={t}
+          lang={lang}
           currentBarber={currentBarberProfile}
         />
       )}
@@ -158,6 +159,7 @@ export default function App() {
       {currentStep === 'catalog' && (
         <CatalogScreen
           t={t}
+          lang={lang}
           onSelectBarber={handleSelectBarber}
         />
       )}
@@ -166,6 +168,7 @@ export default function App() {
         <BarberProfileScreen
           barber={selectedBarber}
           t={t}
+          lang={lang}
           onBack={() => setCurrentStep('catalog')}
           onContinue={handleContinueFromProfile}
         />
@@ -176,6 +179,7 @@ export default function App() {
           barber={selectedBarber}
           service={selectedService}
           t={t}
+          lang={lang}
           onBack={() => setCurrentStep('profile')}
           onContinue={handleContinueFromDateTime}
         />
@@ -187,6 +191,7 @@ export default function App() {
           service={selectedService}
           dateTime={selectedDateTime}
           t={t}
+          lang={lang}
           onBack={() => setCurrentStep('datetime')}
           onBookingSuccess={handleBookingSuccess}
         />

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Star, Clock, Check, MessageSquare } from 'lucide-react';
+import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
 
-export default function BarberProfileScreen({ barber, t, onBack, onContinue }) {
+export default function BarberProfileScreen({ barber, t, lang, onBack, onContinue }) {
   const [activeTab, setActiveTab] = useState('services'); // 'services' | 'reviews'
   const [selectedService, setSelectedService] = useState(null);
 
@@ -93,10 +94,10 @@ export default function BarberProfileScreen({ barber, t, onBack, onContinue }) {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 pr-3">
                     <h4 className="font-bold text-gray-900 text-sm">
-                      {service.name}
+                      {getTranslatedServiceName(service.name, lang)}
                     </h4>
                     <span className="text-xs text-gray-400 mt-0.5 block">
-                      {service.duration}
+                      {formatServiceDuration(service.duration, lang)}
                     </span>
 
                     {/* Discount or badge */}

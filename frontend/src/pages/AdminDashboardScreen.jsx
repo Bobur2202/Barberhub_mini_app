@@ -13,8 +13,9 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { getAdminAppointments, updateAppointmentStatus } from '../services/api';
+import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
 
-export default function AdminDashboardScreen({ t, currentBarber }) {
+export default function AdminDashboardScreen({ t, currentBarber, lang = 'uz' }) {
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'pending' | 'accepted' | 'completed'
 
   const [appointments, setAppointments] = useState([
@@ -244,7 +245,7 @@ export default function AdminDashboardScreen({ t, currentBarber }) {
 
               {/* Service info */}
               <p className="text-xs text-gray-500 mt-2">
-                ✂️ {serviceName}
+                ✂️ {getTranslatedServiceName(serviceName, lang)}
               </p>
               <p className="text-[11px] text-gray-400 mt-0.5">
                 📞 {phone}
@@ -372,8 +373,12 @@ export default function AdminDashboardScreen({ t, currentBarber }) {
                 className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 text-xs"
               >
                 <div>
-                  <span className="font-bold text-gray-800 block">{srv.name}</span>
-                  <span className="text-[10px] text-gray-400">{srv.duration}</span>
+                  <span className="font-bold text-gray-800 block">
+                    {getTranslatedServiceName(srv.name, lang)}
+                  </span>
+                  <span className="text-[10px] text-gray-400">
+                    {formatServiceDuration(srv.duration, lang)}
+                  </span>
                 </div>
                 <span className="font-extrabold text-brand-blue">
                   {srv.price.toLocaleString()} UZS

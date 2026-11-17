@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Calendar, Clock, Check } from 'lucide-react';
+import { getTranslatedServiceName } from '../data/serviceTranslations';
 
-export default function DateTimeScreen({ barber, service, t, onBack, onContinue }) {
+export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack, onContinue }) {
   // Generate next 7 days
   const daysList = [
     { key: 'd1', dayName: 'Dush', dateNum: '16', full: '16-Noyabr, Dushanba' },
@@ -54,7 +55,9 @@ export default function DateTimeScreen({ barber, service, t, onBack, onContinue 
         <div className="bg-white rounded-2xl p-3 shadow-sm border border-blue-50 flex items-center justify-between">
           <div>
             <span className="text-[11px] text-gray-400 block">{t.service_label}:</span>
-            <span className="text-xs font-bold text-brand-blue">{service.name}</span>
+            <span className="text-xs font-bold text-brand-blue">
+              {getTranslatedServiceName(service.name, lang)}
+            </span>
           </div>
           <div className="text-right">
             <span className="text-[11px] text-gray-400 block">{barber.name}</span>

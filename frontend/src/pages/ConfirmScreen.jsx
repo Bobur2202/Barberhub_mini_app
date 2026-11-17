@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { ArrowLeft, User, Phone, CheckCircle, BellRing, Send, Loader2 } from 'lucide-react';
 import { createAppointment } from '../services/api';
+import { getTranslatedServiceName } from '../data/serviceTranslations';
 
 export default function ConfirmScreen({
   barber,
   service,
   dateTime,
   t,
+  lang = 'uz',
   onBack,
   onBookingSuccess,
 }) {
@@ -68,7 +70,9 @@ export default function ConfirmScreen({
           <div className="space-y-3 divide-y divide-gray-100 text-sm">
             <div className="flex justify-between items-center pt-2 first:pt-0">
               <span className="text-gray-500 text-xs">{t.service_label}:</span>
-              <span className="font-bold text-gray-800 text-right">{service.name}</span>
+              <span className="font-bold text-gray-800 text-right">
+                {getTranslatedServiceName(service.name, lang)}
+              </span>
             </div>
 
             <div className="flex justify-between items-center pt-2">
