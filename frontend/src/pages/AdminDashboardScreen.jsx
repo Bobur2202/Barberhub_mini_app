@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { getAdminAppointments, updateAppointmentStatus } from '../services/api';
 
-export default function AdminDashboardScreen({ t }) {
+export default function AdminDashboardScreen({ t, currentBarber }) {
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'pending' | 'accepted' | 'completed'
 
   const [appointments, setAppointments] = useState([
@@ -29,8 +29,8 @@ export default function AdminDashboardScreen({ t }) {
       price: 80000,
       time: '14:30',
       time_slot: '14:30',
-      date: 'Bugun, 16-Noyabr',
-      date_str: 'Bugun, 16-Noyabr',
+      date: '17-Noyabr',
+      date_str: '17-Noyabr',
       status: 'pending',
     },
     {
@@ -44,8 +44,8 @@ export default function AdminDashboardScreen({ t }) {
       price: 60000,
       time: '15:30',
       time_slot: '15:30',
-      date: 'Bugun, 16-Noyabr',
-      date_str: 'Bugun, 16-Noyabr',
+      date: '17-Noyabr',
+      date_str: '17-Noyabr',
       status: 'accepted',
     },
     {
@@ -59,8 +59,8 @@ export default function AdminDashboardScreen({ t }) {
       price: 50000,
       time: '12:00',
       time_slot: '12:00',
-      date: 'Bugun, 16-Noyabr',
-      date_str: 'Bugun, 16-Noyabr',
+      date: '17-Noyabr',
+      date_str: '17-Noyabr',
       status: 'completed',
     },
   ]);
@@ -75,6 +75,9 @@ export default function AdminDashboardScreen({ t }) {
   const [newServiceName, setNewServiceName] = useState('');
   const [newServicePrice, setNewServicePrice] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Barber ismi
+  const barberDisplayName = currentBarber?.name || "Sardor Karimov";
 
   // Backenddan buyurtmalarni yuklash
   const loadAppointments = async () => {
@@ -92,12 +95,9 @@ export default function AdminDashboardScreen({ t }) {
 
   // Status changers (Frontend + Backend)
   const handleUpdateStatus = async (id, newStatus) => {
-    // 1. Optimistic UI yangilash
     setAppointments((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
     );
-
-    // 2. Backend API chaqirish
     await updateAppointmentStatus(id, newStatus);
   };
 
@@ -136,7 +136,7 @@ export default function AdminDashboardScreen({ t }) {
               {t.admin_title}
             </h1>
             <p className="text-xs text-gray-500 font-medium">
-              16-Noyabr, Dushanba — Sardor Karimov
+              {t.today_badge} — {barberDisplayName}
             </p>
           </div>
           <div className="flex items-center space-x-2">
@@ -145,13 +145,13 @@ export default function AdminDashboardScreen({ t }) {
               className={`p-1.5 rounded-full bg-white shadow-sm text-brand-blue hover:bg-gray-100 ${
                 isRefreshing ? 'animate-spin' : ''
               }`}
-              title="Yangilash"
+              title={t.refresh_tooltip}
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
             <div className="px-3 py-1 bg-green-100 text-green-700 font-bold rounded-full text-xs flex items-center space-x-1">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span>Online</span>
+              <span>{t.online_status}</span>
             </div>
           </div>
         </div>
@@ -214,7 +214,7 @@ export default function AdminDashboardScreen({ t }) {
               key={apt.id}
               className="bg-white rounded-2xl p-4 shadow-sm border border-blue-50 relative overflow-hidden"
             >
-              {/* 4px Left Border Line */}
+              {/* Left Border Line */}
               <div
                 className={`absolute left-0 top-0 bottom-0 w-1.5 ${
                   apt.status === 'completed'
@@ -293,7 +293,7 @@ export default function AdminDashboardScreen({ t }) {
                   <div className="w-full flex items-center justify-between text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl font-bold">
                     <div className="flex items-center space-x-1.5">
                       <CheckCircle className="w-4 h-4 text-emerald-600" />
-                      <span>Mijoz qabul qilindi</span>
+                      <span>{t.client_arrived_success}</span>
                     </div>
                     <span>+ {apt.price.toLocaleString()} UZS</span>
                   </div>
@@ -301,7 +301,7 @@ export default function AdminDashboardScreen({ t }) {
 
                 {apt.status === 'cancelled' && (
                   <div className="w-full text-center text-xs text-red-500 bg-red-50 py-1.5 rounded-xl font-bold">
-                    Bekor qilingan
+                    {t.client_cancelled_badge}
                   </div>
                 )}
               </div>
@@ -329,7 +329,7 @@ export default function AdminDashboardScreen({ t }) {
                 {t.pro_plan}
               </h3>
               <p className="text-[11px] text-blue-100/80 mt-1">
-                Barcha imkoniyatlar (Cheksiz buyurtmalar, SMS-siz Telegram eslatmalar)
+                {t.pro_features}
               </p>
             </div>
             <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-sm">
@@ -339,10 +339,10 @@ export default function AdminDashboardScreen({ t }) {
 
           <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
             <span className="text-xs font-bold text-brand-orange">
-              50,000 UZS / oy
+              50,000 UZS / {t.per_month}
             </span>
             <button
-              onClick={() => alert("Payme / Click to'lov tizimiga yo'naltirilmoqda...")}
+              onClick={() => alert(t.payment_redirect_notice)}
               className="px-3.5 py-1.5 bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-bold text-xs rounded-xl shadow transition-all active:scale-95"
             >
               {t.renew_subscription}
@@ -361,7 +361,7 @@ export default function AdminDashboardScreen({ t }) {
               className="text-xs font-bold text-brand-blue flex items-center space-x-1 hover:underline"
             >
               <Plus className="w-3.5 h-3.5 text-brand-orange" />
-              <span>Yangi xizmat</span>
+              <span>{t.btn_new_service}</span>
             </button>
           </div>
 
@@ -397,26 +397,26 @@ export default function AdminDashboardScreen({ t }) {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl">
             <h3 className="text-base font-bold text-brand-blue mb-3">
-              Yangi xizmat qo'shish
+              {t.modal_add_service_title}
             </h3>
             <form onSubmit={handleAddService} className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Xizmat nomi
+                  {t.modal_service_name}
                 </label>
                 <input
                   type="text"
                   required
                   value={newServiceName}
                   onChange={(e) => setNewServiceName(e.target.value)}
-                  placeholder="Masalan: Soqol shakllantirish"
+                  placeholder={t.modal_service_name_placeholder}
                   className="w-full bg-gray-50 rounded-xl p-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Narxi (UZS)
+                  {t.modal_service_price}
                 </label>
                 <input
                   type="number"
@@ -434,13 +434,13 @@ export default function AdminDashboardScreen({ t }) {
                   onClick={() => setShowAddServiceModal(false)}
                   className="flex-1 py-2.5 rounded-xl text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"
                 >
-                  Bekor qilish
+                  {t.btn_cancel}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-2.5 rounded-xl text-xs font-bold text-brand-blue bg-brand-orange hover:bg-brand-orange-hover"
                 >
-                  Saqlash
+                  {t.btn_save}
                 </button>
               </div>
             </form>

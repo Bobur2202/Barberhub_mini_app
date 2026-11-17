@@ -1,7 +1,7 @@
 import React from 'react';
-import { Scissors, User, UserCheck } from 'lucide-react';
+import { Scissors } from 'lucide-react';
 
-export default function HeaderBar({ lang, setLang, t, userRole, onSwitchRole }) {
+export default function HeaderBar({ lang, setLang, t, userRole }) {
   return (
     <div className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100 px-4 py-2.5 flex items-center justify-between shadow-sm">
       {/* Brand logo / name */}
@@ -10,27 +10,17 @@ export default function HeaderBar({ lang, setLang, t, userRole, onSwitchRole }) 
           <Scissors className="w-4 h-4 text-brand-orange" />
         </div>
         <div>
-          <span className="font-bold text-brand-blue text-base tracking-tight">Barber<span className="text-brand-orange">Hub</span></span>
-          <span className="text-[10px] text-gray-400 block -mt-1 font-medium">
-            {userRole === 'barber' ? '💈 Usta Kabineti' : '💈 Erkaklar Saloni'}
+          <span className="font-bold text-brand-blue text-base tracking-tight">
+            Barber<span className="text-brand-orange">Hub</span>
+          </span>
+          <span className="text-[10px] text-gray-500 block -mt-1 font-semibold">
+            {userRole === 'barber' ? t.header_barber_cabinet : t.header_client_salon}
           </span>
         </div>
       </div>
 
-      {/* Controls: Role Badge & Language Selector */}
-      <div className="flex items-center space-x-2">
-        {/* Role switcher link */}
-        {onSwitchRole && (
-          <button
-            onClick={onSwitchRole}
-            className="text-[10px] font-bold px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-all"
-            title="Rolni o'zgartirish"
-          >
-            {userRole === 'barber' ? 'Mijozga o\'tish' : 'Ustamisiz?'}
-          </button>
-        )}
-
-        {/* Language selector */}
+      {/* Language Selector (Faqat til tanlash turadi, hech qanday ortiqcha rejim switcheri yo'q) */}
+      <div className="flex items-center space-x-1.5">
         <div className="relative flex items-center bg-gray-100 rounded-full p-0.5 border border-gray-200">
           <button
             onClick={() => setLang('uz')}

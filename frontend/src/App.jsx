@@ -121,7 +121,6 @@ export default function App() {
           setLang={setLang}
           t={t}
           userRole={userRole}
-          onSwitchRole={handleSwitchRole}
         />
       )}
 
