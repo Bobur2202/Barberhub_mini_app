@@ -1,7 +1,7 @@
 import React from 'react';
-import { Globe, UserCheck, Scissors } from 'lucide-react';
+import { Scissors, User, UserCheck } from 'lucide-react';
 
-export default function HeaderBar({ lang, setLang, t, viewMode, setViewMode }) {
+export default function HeaderBar({ lang, setLang, t, userRole, onSwitchRole }) {
   return (
     <div className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100 px-4 py-2.5 flex items-center justify-between shadow-sm">
       {/* Brand logo / name */}
@@ -11,34 +11,24 @@ export default function HeaderBar({ lang, setLang, t, viewMode, setViewMode }) {
         </div>
         <div>
           <span className="font-bold text-brand-blue text-base tracking-tight">Barber<span className="text-brand-orange">Hub</span></span>
-          <span className="text-[10px] text-gray-400 block -mt-1 font-medium">SaaS Platform</span>
+          <span className="text-[10px] text-gray-400 block -mt-1 font-medium">
+            {userRole === 'barber' ? '💈 Usta Kabineti' : '💈 Erkaklar Saloni'}
+          </span>
         </div>
       </div>
 
-      {/* Controls: Mode Switcher & Language Selector */}
+      {/* Controls: Role Badge & Language Selector */}
       <div className="flex items-center space-x-2">
-        {/* Toggle Client / Barber Mode */}
-        <button
-          onClick={() => setViewMode(viewMode === 'client' ? 'barber' : 'client')}
-          className={`text-xs px-2.5 py-1.5 rounded-full font-semibold transition-all flex items-center space-x-1.5 shadow-sm ${
-            viewMode === 'barber'
-              ? 'bg-brand-orange text-brand-blue'
-              : 'bg-brand-blue text-white'
-          }`}
-          title={viewMode === 'client' ? t.switch_to_barber : t.switch_to_client}
-        >
-          {viewMode === 'barber' ? (
-            <>
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>{t.switch_to_client}</span>
-            </>
-          ) : (
-            <>
-              <Scissors className="w-3.5 h-3.5" />
-              <span>{t.switch_to_barber}</span>
-            </>
-          )}
-        </button>
+        {/* Role switcher link */}
+        {onSwitchRole && (
+          <button
+            onClick={onSwitchRole}
+            className="text-[10px] font-bold px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-all"
+            title="Rolni o'zgartirish"
+          >
+            {userRole === 'barber' ? 'Mijozga o\'tish' : 'Ustamisiz?'}
+          </button>
+        )}
 
         {/* Language selector */}
         <div className="relative flex items-center bg-gray-100 rounded-full p-0.5 border border-gray-200">

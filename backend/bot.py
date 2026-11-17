@@ -1,6 +1,9 @@
 import os
 import logging
+from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types, F
+
+load_dotenv()
 from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.enums import ParseMode
@@ -25,12 +28,17 @@ else:
     logger.info("BOT_TOKEN belgilanmagan. Telegram xabarnomalari konsolga (simulyatsiya) chiqariladi.")
 
 
+ACTIVE_BARBER_CHAT_IDS = set()
+
 @dp.message(CommandStart())
 async def start_handler(message: types.Message):
     """
     /start bosilganda foydalanuvchiga xush kelibsiz xabari va
     Mini-App ochish tugmasini beradi.
     """
+    user_id = message.from_user.id
+    ACTIVE_BARBER_CHAT_IDS.add(user_id)
+
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -42,11 +50,14 @@ async def start_handler(message: types.Message):
         ]
     )
     
+    user_id = message.from_user.id
     welcome_text = (
         f"👋 Salom, <b>{message.from_user.first_name}</b>!\n\n"
         "💈 <b>BarberHub</b> platformasiga xush kelibsiz.\n"
         "O'zingizga eng yaqin sartaroshlarni toping, xizmat va narxlar bilan "
         "tanishib, bir zumda navbatga yoziling!\n\n"
+        f"🆔 Sizning Telegram ID: <code>{user_id}</code>\n"
+        "(Usta sifatida barcha yangi mijozlar xabarnomasi shu ID ga keladi)\n\n"
         "Mini-appni ishga tushirish uchun quyidagi tugmani bosing 👇"
     )
     
@@ -93,15 +104,23 @@ async def send_appointment_notification_to_barber(
         logger.info(f"\n[TELEGRAM PUSH SIMULATSIYA] Ustaga xabar yuborildi (Chat ID: {barber_chat_id}):\n{text}")
         return
 
-    try:
-        await bot.send_message(
-            chat_id=barber_chat_id,
-            text=text,
-            reply_markup=keyboard,
-            parse_mode=ParseMode.HTML
-        )
-    except Exception as e:
-        logger.error(f"Ustaga xabar yuborishda xatolik: {e}")
+    # Ustalar yoki tizim egasiga xabarni yetkazish
+    target_chat_ids = set(ACTIVE_BARBER_CHAT_IDS)
+    if barber_chat_id:
+        target_chat_ids.add(barber_chat_id)
+
+    for chat_id in target_chat_ids:
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=text,
+                reply_markup=keyboard,
+                parse_mode=ParseMode.HTML
+            )
+            logger.info(f"Bildirishnoma yuborildi: {chat_id}")
+        except Exception as e:
+            logger.error(f"Xabar yuborishda xatolik ({chat_id}): {e}")
+
 
 
 @dp.callback_query(F.data.startswith("accept_"))

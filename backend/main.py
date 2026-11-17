@@ -1,15 +1,32 @@
 import uuid
+import asyncio
+from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from database import Barber, Service, Review, Appointment, AppointmentCreate, APPOINTMENTS_DB
-from bot import bot, send_appointment_notification_to_barber
+from bot import bot, dp, send_appointment_notification_to_barber
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """FastAPI bilan birgalikda Telegram botni ham ishga tushirish"""
+    bot_task = None
+    if bot:
+        print("[INFO] Telegram Bot polling ishga tushmoqda...")
+        bot_task = asyncio.create_task(dp.start_polling(bot))
+    yield
+    if bot:
+        print("[INFO] Telegram Bot to'xtatilmoqda...")
+        await bot.session.close()
+        if bot_task:
+            bot_task.cancel()
 
 app = FastAPI(
     title="BarberHub SaaS API",
     description="Erkaklar sartaroshxonalari Telegram Mini-App backend platformasi",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Enable CORS for Mini-App Frontend
