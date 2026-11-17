@@ -10,11 +10,8 @@ import {
   Check
 } from 'lucide-react';
 import { getBarbers } from '../services/api';
-import {
-  TASHKENT_DISTRICTS,
-  calculateDistanceKm,
-  formatDistance
-} from '../data/mockBarbers';
+import { calculateDistanceKm, formatDistance } from '../data/mockBarbers';
+import { UZBEKISTAN_REGIONS } from '../data/regionsData';
 
 export default function CatalogScreen({ t, onSelectBarber }) {
   const [selectedFilter, setSelectedFilter] = useState('nearest'); // 'nearest' | 'top_rated' | 'available_today'
@@ -22,13 +19,15 @@ export default function CatalogScreen({ t, onSelectBarber }) {
   const [barbersList, setBarbersList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Geolokatsiya holatlari
-  // Boshlang'ich Toshkent markazi (Yunusobod hududi atrofida)
-  const [userCoords, setUserCoords] = useState({ lat: 41.3400, lng: 69.2800 });
-  const [locationName, setLocationName] = useState(t.default_location);
+  // Geolokatsiya holatlari (Standart: Yunusobod markazi)
+  const [userCoords, setUserCoords] = useState({ lat: 41.3644, lng: 69.2882 });
+  const [locationName, setLocationName] = useState("Toshkent, Yunusobod");
   const [isLocating, setIsLocating] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [selectedDistrict, setSelectedDistrict] = useState('yunusobod');
+  const [selectedRegionId, setSelectedRegionId] = useState('tashkent_city');
+  const [selectedDistrictId, setSelectedDistrictId] = useState('yunusobod');
+
+  const currentRegion = UZBEKISTAN_REGIONS.find(r => r.id === selectedRegionId) || UZBEKISTAN_REGIONS[0];
 
   // Ustalar ro'yxatini yuklash
   useEffect(() => {
@@ -61,14 +60,14 @@ export default function CatalogScreen({ t, onSelectBarber }) {
         const { latitude, longitude } = position.coords;
         setUserCoords({ lat: latitude, lng: longitude });
         setLocationName("📍 Sizning joylashuvingiz (GPS)");
-        setSelectedDistrict('gps');
+        setSelectedDistrictId('gps');
         setIsLocating(false);
         setIsLocationModalOpen(false);
       },
       (error) => {
         console.warn("GPS ruxsat berilmadi yoki xato:", error.message);
         setIsLocating(false);
-        alert(t.location_denied);
+        alert(t.location_denied || "GPS ruxsat berilmadi, tumanni tanlang");
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
@@ -76,15 +75,9 @@ export default function CatalogScreen({ t, onSelectBarber }) {
 
   // Tumanni qo'lda tanlash
   const handleSelectDistrict = (district) => {
-    if (district.id === 'all') {
-      setSelectedDistrict('all');
-      setLocationName("Toshkent shahri");
-      setUserCoords(null);
-    } else {
-      setSelectedDistrict(district.id);
-      setLocationName(district.name);
-      setUserCoords(district.center);
-    }
+    setSelectedDistrictId(district.id);
+    setLocationName(`${currentRegion.name}, ${district.name}`);
+    setUserCoords({ lat: district.lat, lng: district.lng });
     setIsLocationModalOpen(false);
   };
 
@@ -258,8 +251,8 @@ export default function CatalogScreen({ t, onSelectBarber }) {
                       <span>{barber.displayDistance}</span>
                     </div>
                   </div>
-                  <span className="text-[11px] text-gray-400 block mt-0.5">
-                    {t.barber_role}
+                  <span className="text-[11px] text-gray-400 block mt-0.5 truncate">
+                    {barber.address || t.barber_role}
                   </span>
                 </div>
               </div>
@@ -298,7 +291,7 @@ export default function CatalogScreen({ t, onSelectBarber }) {
         )}
       </div>
 
-      {/* Location / District Selection Modal */}
+      {/* Location Modal: Viloyat va Tuman tanlash */}
       {isLocationModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[85vh] flex flex-col">
@@ -306,7 +299,7 @@ export default function CatalogScreen({ t, onSelectBarber }) {
               <div className="flex items-center space-x-2">
                 <MapPin className="w-5 h-5 text-brand-blue" />
                 <h3 className="font-extrabold text-base text-brand-blue">
-                  {t.select_district}
+                  Hududni tanlang
                 </h3>
               </div>
               <button
@@ -320,7 +313,7 @@ export default function CatalogScreen({ t, onSelectBarber }) {
             {/* GPS Auto Detect Action Button */}
             <button
               onClick={handleDetectGPS}
-              className="mt-4 p-3 bg-blue-50 rounded-2xl border border-blue-200 flex items-center justify-between text-brand-blue hover:bg-blue-100 transition-all text-xs font-bold"
+              className="mt-3.5 p-3 bg-blue-50 rounded-2xl border border-blue-200 flex items-center justify-between text-brand-blue hover:bg-blue-100 transition-all text-xs font-bold"
             >
               <div className="flex items-center space-x-2">
                 <Crosshair className="w-4 h-4 text-brand-orange animate-spin-slow" />
@@ -331,15 +324,42 @@ export default function CatalogScreen({ t, onSelectBarber }) {
               </span>
             </button>
 
-            {/* Districts List */}
-            <div className="mt-3 overflow-y-auto space-y-1.5 flex-1 pr-1">
-              {TASHKENT_DISTRICTS.map((district) => {
-                const isSelected = selectedDistrict === district.id;
+            {/* 1. Viloyat Tanlash */}
+            <div className="mt-3">
+              <label className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                Viloyat / Shahar:
+              </label>
+              <select
+                value={selectedRegionId}
+                onChange={(e) => {
+                  setSelectedRegionId(e.target.value);
+                  const reg = UZBEKISTAN_REGIONS.find(r => r.id === e.target.value);
+                  if (reg && reg.districts.length > 0) {
+                    setSelectedDistrictId(reg.districts[0].id);
+                  }
+                }}
+                className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-brand-blue border border-gray-200 focus:outline-none"
+              >
+                {UZBEKISTAN_REGIONS.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 2. Tumanlar Ro'yxati */}
+            <div className="mt-3 overflow-y-auto space-y-1.5 flex-1 pr-1 max-h-56">
+              <span className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                {currentRegion.name} tumanlari:
+              </span>
+              {currentRegion.districts.map((district) => {
+                const isSelected = selectedDistrictId === district.id;
                 return (
                   <button
                     key={district.id}
                     onClick={() => handleSelectDistrict(district)}
-                    className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between ${
+                    className={`w-full p-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between ${
                       isSelected
                         ? 'bg-brand-blue text-white shadow-sm'
                         : 'bg-gray-50/70 text-gray-800 hover:bg-gray-100'
