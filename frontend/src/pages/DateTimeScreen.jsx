@@ -3,35 +3,88 @@ import { ArrowLeft, Calendar, Clock, Check } from 'lucide-react';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
 
 export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack, onContinue }) {
-  // Generate next 7 days
-  const daysList = [
-    { key: 'd1', dayName: 'Dush', dateNum: '16', full: '16-Noyabr, Dushanba' },
-    { key: 'd2', dayName: 'Sesh', dateNum: '17', full: '17-Noyabr, Seshanba' },
-    { key: 'd3', dayName: 'Chor', dateNum: '18', full: '18-Noyabr, Chorshanba' },
-    { key: 'd4', dayName: 'Pay', dateNum: '19', full: '19-Noyabr, Payshanba' },
-    { key: 'd5', dayName: 'Juma', dateNum: '20', full: '20-Noyabr, Juma' },
-    { key: 'd6', dayName: 'Shan', dateNum: '21', full: '21-Noyabr, Shanba' },
-    { key: 'd7', dayName: 'Yak', dateNum: '22', full: '22-Noyabr, Yakshanba' },
-  ];
+  // Generate next 7 days dynamically
+  const generateDays = () => {
+    const dayNames = {
+      uz: ['Yak', 'Dush', 'Sesh', 'Chor', 'Pay', 'Juma', 'Shan'],
+      ru: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+      en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    };
+    const monthNames = {
+      uz: ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'],
+      ru: ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня', 'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'],
+      en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    };
 
+    const days = [];
+    const today = new Date();
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const dayIdx = d.getDay();
+      const dayName = (dayNames[lang] || dayNames.uz)[dayIdx];
+      const monthName = (monthNames[lang] || monthNames.uz)[d.getMonth()];
+      const dateNum = d.getDate();
+
+      days.push({
+        key: `day-${i}`,
+        dayName: i === 0 ? (lang === 'ru' ? 'Сегодня' : lang === 'en' ? 'Today' : 'Bugun') : dayName,
+        dateNum: dateNum,
+        full: `${dateNum}-${monthName}, ${dayName}`
+      });
+    }
+    return days;
+  };
+
+  const daysList = generateDays();
   const [selectedDay, setSelectedDay] = useState(daysList[0]);
 
-  // Mock time slots
-  const timeSlots = [
-    { time: '10:00', status: 'available' },
-    { time: '10:45', status: 'booked' },
-    { time: '11:30', status: 'available' },
-    { time: '12:15', status: 'available' },
-    { time: '14:00', status: 'booked' },
-    { time: '14:45', status: 'available' },
-    { time: '15:30', status: 'available' },
-    { time: '16:15', status: 'available' },
-    { time: '17:00', status: 'booked' },
-    { time: '17:45', status: 'available' },
-    { time: '18:30', status: 'available' },
-    { time: '19:15', status: 'available' },
-  ];
+  // Generate time slots based on barber's set working hours (e.g. 09:00 - 22:00)
+  const generateTimeSlots = () => {
+    const startStr = barber?.workHours?.start || "09:00";
+    const endStr = barber?.workHours?.end || "22:00";
 
+    const [startH, startM] = startStr.split(':').map(Number);
+    const [endH, endM] = endStr.split(':').map(Number);
+
+    const startMinutes = (startH || 9) * 60 + (startM || 0);
+    const endMinutes = (endH || 22) * 60 + (endM || 0);
+
+    const slots = [];
+    let current = startMinutes;
+    let idx = 0;
+
+    while (current + 35 <= endMinutes) {
+      const h = Math.floor(current / 60);
+      const m = current % 60;
+      const timeFormatted = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+
+      // Simulate occasional booked slots
+      const isBooked = idx === 1 || idx === 5 || idx === 9;
+
+      slots.push({
+        time: timeFormatted,
+        status: isBooked ? 'booked' : 'available'
+      });
+
+      current += 45; // 45-minute slots
+      idx++;
+    }
+
+    return slots.length > 0 ? slots : [
+      { time: '09:00', status: 'available' },
+      { time: '10:00', status: 'booked' },
+      { time: '11:00', status: 'available' },
+      { time: '14:00', status: 'available' },
+      { time: '15:00', status: 'available' },
+      { time: '16:00', status: 'available' },
+      { time: '18:00', status: 'available' },
+      { time: '20:00', status: 'available' }
+    ];
+  };
+
+  const timeSlots = generateTimeSlots();
   const [selectedTime, setSelectedTime] = useState(null);
 
   return (
@@ -65,6 +118,20 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
               {service.price.toLocaleString()} UZS
             </span>
           </div>
+        </div>
+
+        {/* Barber Working Hours Badge */}
+        <div className="mt-2 flex items-center justify-between text-[11px] text-gray-600 bg-white/80 rounded-xl px-3 py-2 border border-blue-100/70 shadow-2xs">
+          <div className="flex items-center space-x-1.5">
+            <Clock className="w-3.5 h-3.5 text-brand-blue" />
+            <span>
+              {t.work_hours_badge || "Ish vaqti"}: <strong className="text-brand-blue">{barber?.workHours?.start || "09:00"} — {barber?.workHours?.end || "22:00"}</strong>
+            </span>
+          </div>
+          <span className="text-emerald-700 font-bold bg-emerald-100/80 px-2 py-0.5 rounded-full text-[10px] flex items-center space-x-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>{t.open_status || "Ochiq"}</span>
+          </span>
         </div>
       </div>
 

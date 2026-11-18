@@ -136,6 +136,37 @@ export const translations = {
     btn_delete: "O'chirish",
     btn_cancel: "Bekor qilish",
     btn_save: "Saqlash",
+
+    // Ish vaqti (Working hours)
+    work_hours_title: "Ish vaqti",
+    work_hours_badge: "Ish vaqti",
+    work_start_label: "Boshlanish vaqti",
+    work_end_label: "Tugash vaqti",
+    save_work_hours: "Ish vaqtini saqlash",
+    work_hours_saved: "Ish vaqti muvaffaqiyatli saqlandi!",
+    open_status: "Ochiq",
+    closed_status: "Yopiq",
+    
+    // Profil rasmi (Avatar)
+    profile_photo_title: "Profil rasmi",
+    change_avatar_btn: "Rasmni almashtirish",
+    upload_from_device: "Telefondan rasm tanlash",
+    or_choose_avatar: "Yoki tayyor rasmlardan birini tanlang",
+    avatar_updated: "Profil rasmi yangilandi!",
+    
+    // Sartaroshxona rasmlari (Salon Gallery)
+    salon_photos_title: "Sartaroshxona rasmlari",
+    salon_photos_desc: "Mijozlar profilingizga kirganida ushbu rasmlarni ko'rishadi",
+    add_salon_photo: "+ Rasm qo'shish",
+    upload_photo_modal_title: "Sartaroshxona rasmini qo'shish",
+    paste_image_url: "Yoki rasm URL havolasini kiriting",
+    choose_file: "Telefondan rasm yuklash (Galereya / Kamera)",
+    no_salon_photos_admin: "Hozircha birorta ham rasm qo'shilmagan. Mijozlarni jalb qilish uchun sartaroshxona rasmlarini yuklang!",
+    tabs_salon_photos: "Salon rasmlari",
+    no_salon_photos_yet: "Rasmlar hali yuklanmagan",
+    photos_count: "ta rasm",
+    view_all: "Barchasini ko'rish",
+    delete_photo_confirm: "Ushbu rasmni o'chirmoqchimisiz?",
   },
   
   ru: {
@@ -275,6 +306,37 @@ export const translations = {
     btn_delete: "Удалить",
     btn_cancel: "Отмена",
     btn_save: "Сохранить",
+
+    // Часы работы (Working hours)
+    work_hours_title: "Часы работы",
+    work_hours_badge: "Часы работы",
+    work_start_label: "Время начала",
+    work_end_label: "Время окончания",
+    save_work_hours: "Сохранить время работы",
+    work_hours_saved: "Часы работы успешно сохранены!",
+    open_status: "Открыто",
+    closed_status: "Закрыто",
+    
+    // Фото профиля (Avatar)
+    profile_photo_title: "Фото профиля",
+    change_avatar_btn: "Сменить фото",
+    upload_from_device: "Выбрать фото с телефона",
+    or_choose_avatar: "Или выберите готовый аватар",
+    avatar_updated: "Фото профиля обновлено!",
+    
+    // Фотографии барбершопа (Salon Gallery)
+    salon_photos_title: "Фотографии барбершопа",
+    salon_photos_desc: "Клиенты увидят эти фотографии при посещении вашего профиля",
+    add_salon_photo: "+ Добавить фото",
+    upload_photo_modal_title: "Добавить фото салона",
+    paste_image_url: "Или введите ссылку (URL)",
+    choose_file: "Загрузить фото с телефона (Галерея / Камера)",
+    no_salon_photos_admin: "Пока не добавлено ни одного фото. Загрузите фото салона для привлечения клиентов!",
+    tabs_salon_photos: "Фото салона",
+    no_salon_photos_yet: "Фотографии пока не загружены",
+    photos_count: "фото",
+    view_all: "Смотреть все",
+    delete_photo_confirm: "Вы действительно хотите удалить это фото?",
   },
   
   en: {
@@ -414,5 +476,36 @@ export const translations = {
     btn_delete: "Delete",
     btn_cancel: "Cancel",
     btn_save: "Save",
+
+    // Working hours
+    work_hours_title: "Working Hours",
+    work_hours_badge: "Working hours",
+    work_start_label: "Opening Time",
+    work_end_label: "Closing Time",
+    save_work_hours: "Save Working Hours",
+    work_hours_saved: "Working hours saved successfully!",
+    open_status: "Open",
+    closed_status: "Closed",
+    
+    // Profile Photo (Avatar)
+    profile_photo_title: "Profile Photo",
+    change_avatar_btn: "Change Photo",
+    upload_from_device: "Upload from Phone",
+    or_choose_avatar: "Or choose a preset avatar",
+    avatar_updated: "Profile photo updated!",
+    
+    // Barbershop Photos (Salon Gallery)
+    salon_photos_title: "Barbershop Photos",
+    salon_photos_desc: "Clients will see these photos when visiting your profile",
+    add_salon_photo: "+ Add Photo",
+    upload_photo_modal_title: "Add Salon Photo",
+    paste_image_url: "Or enter Image URL",
+    choose_file: "Upload from device (Gallery / Camera)",
+    no_salon_photos_admin: "No photos uploaded yet. Upload salon photos to attract clients!",
+    tabs_salon_photos: "Salon Photos",
+    no_salon_photos_yet: "No photos uploaded yet",
+    photos_count: "photos",
+    view_all: "View all",
+    delete_photo_confirm: "Are you sure you want to delete this photo?",
   }
 };

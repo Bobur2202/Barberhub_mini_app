@@ -38,6 +38,9 @@ class Barber(BaseModel):
     subscription_status: str = "trial" # "trial" | "active" | "expired"
     linked_card: Optional[dict] = None # {"number": "8600 **** **** 1234", "expiry": "12/28", "holder": "USTA NOMI", "bank": "Uzcard/Humo"}
     payment_method: Optional[str] = None
+    # Working Hours & Salon Photos
+    work_hours: Optional[dict] = {"start": "09:00", "end": "22:00"}
+    salon_photos: List[str] = []
 
 class AppointmentCreate(BaseModel):
     barber_id: str

@@ -284,3 +284,54 @@ def pay_subscription(barber_id: str, data: SubscriptionRequest):
         "message": f"{data.payment_method.capitalize()} orqali to'lov qabul qilindi. Obuna faollashtirildi!",
         "status": barber.subscription_status
     }
+
+# ================= USTA PROFILI, ISH VAQTI VA SALON RASMLARI =================
+
+class WorkHoursUpdate(BaseModel):
+    start: str = "09:00"
+    end: str = "22:00"
+
+class AvatarUpdate(BaseModel):
+    avatar_url: str
+
+class SalonPhotoAdd(BaseModel):
+    photo_url: str
+
+@app.put("/api/barbers/{barber_id}/work-hours")
+def update_work_hours(barber_id: str, data: WorkHoursUpdate):
+    """Ustaning ish vaqtini yangilash (masalan 09:00 dan 22:00 gacha)"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    barber.work_hours = {"start": data.start, "end": data.end}
+    return {"success": True, "work_hours": barber.work_hours}
+
+@app.put("/api/barbers/{barber_id}/avatar")
+def update_barber_avatar(barber_id: str, data: AvatarUpdate):
+    """Ustaning profil rasmini yangilash"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    barber.avatar = data.avatar_url
+    return {"success": True, "avatar": barber.avatar}
+
+@app.post("/api/barbers/{barber_id}/salon-photos")
+def add_salon_photo(barber_id: str, data: SalonPhotoAdd):
+    """Sartaroshxona galereyasiga yangi rasm qo'shish"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    if not hasattr(barber, 'salon_photos') or barber.salon_photos is None:
+        barber.salon_photos = []
+    barber.salon_photos.insert(0, data.photo_url)
+    return {"success": True, "salon_photos": barber.salon_photos}
+
+@app.delete("/api/barbers/{barber_id}/salon-photos")
+def delete_salon_photo(barber_id: str, photo_url: str = Query(...)):
+    """Sartaroshxona galereyasidan rasmni o'chirish"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    if hasattr(barber, 'salon_photos') and barber.salon_photos:
+        barber.salon_photos = [p for p in barber.salon_photos if p != photo_url]
+    return {"success": True, "salon_photos": barber.salon_photos}

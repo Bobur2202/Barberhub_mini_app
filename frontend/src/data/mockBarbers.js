@@ -22,6 +22,13 @@ export const mockBarbers = [
     lng: 69.2912,
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250",
     bio: "Klassik va zamonaviy soch turmaklash bo'yicha 7 yillik tajribaga ega usta.",
+    workHours: { start: "09:00", end: "22:00" },
+    salonPhotos: [
+      "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
+      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700",
+      "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=700",
+      "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=700"
+    ],
     services: [
       { id: "s1", name: "Soch kesish va turmaklash", duration: "35 daq", price: 50000, isDiscount: false },
       { id: "s2", name: "Soch va soqol kompleks", duration: "50 daq", price: 80000, isDiscount: false },
@@ -46,6 +53,12 @@ export const mockBarbers = [
     lng: 69.2845,
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
     bio: "Zamonaviy soch turmaklari va soqol parvarishi. Har bir mijozga alohida e'tibor.",
+    workHours: { start: "09:00", end: "22:00" },
+    salonPhotos: [
+      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700",
+      "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
+      "https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&q=80&w=700"
+    ],
     services: [
       { id: "s201", name: "Soch kesish va turmaklash", duration: "40 daq", price: 60000, isDiscount: false },
       { id: "s202", name: "Soch va soqol parvarishi", duration: "60 daq", price: 90000, isDiscount: false },
@@ -70,6 +83,11 @@ export const mockBarbers = [
     lng: 69.2889,
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250",
     bio: "Fade, Crop va Pompadour uslubidagi sochlarni mukammal darajada kesish bo'yicha mutaxassis.",
+    workHours: { start: "10:00", end: "21:00" },
+    salonPhotos: [
+      "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=700",
+      "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=700"
+    ],
     services: [
       { id: "s301", name: "Fade & Crop soch kesish", duration: "45 daq", price: 55000, isDiscount: false },
       { id: "s302", name: "Premium soch + soqol + maska", duration: "70 daq", price: 110000, isDiscount: false },
@@ -92,6 +110,11 @@ export const mockBarbers = [
     lng: 69.2080,
     avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=250",
     bio: "Tez va sifatli soch kesish, talabalar uchun doimiy arzon narxlar.",
+    workHours: { start: "08:30", end: "20:00" },
+    salonPhotos: [
+      "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
+      "https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&q=80&w=700"
+    ],
     services: [
       { id: "s401", name: "Klassik soch kesish", duration: "30 daq", price: 45000, isDiscount: false },
       { id: "s402", name: "Soqol tekislash", duration: "20 daq", price: 25000, isDiscount: false }

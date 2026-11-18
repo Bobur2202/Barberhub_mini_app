@@ -26,7 +26,13 @@ export default function App() {
   const [selectedBarber, setSelectedBarber] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedDateTime, setSelectedDateTime] = useState(null);
-  const [currentBarberProfile, setCurrentBarberProfile] = useState(null);
+  const [currentBarberProfile, setCurrentBarberProfile] = useState(() => {
+    const saved = localStorage.getItem('barberhub_barber_profile');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return null;
+  });
 
   const t = translations[lang] || translations.uz;
 
@@ -152,6 +158,10 @@ export default function App() {
           t={t}
           lang={lang}
           currentBarber={currentBarberProfile}
+          onUpdateProfile={(updated) => {
+            setCurrentBarberProfile(updated);
+            localStorage.setItem('barberhub_barber_profile', JSON.stringify(updated));
+          }}
         />
       )}
 

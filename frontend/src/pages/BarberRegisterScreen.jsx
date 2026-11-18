@@ -107,6 +107,11 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t }) {
       phone: phone,
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
       bio: "Tajribali erkaklar sartaroshi. Zamonaviy soch turmaklari va soqol parvarishi.",
+      workHours: { start: "09:00", end: "22:00" },
+      salonPhotos: [
+        "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
+        "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700"
+      ],
       services: [
         { id: `s-${Date.now()}-1`, name: "Klassik soch kesish", duration: "35 daq", price: 50000 },
         { id: `s-${Date.now()}-2`, name: "Soch va soqol kompleks", duration: "50 daq", price: 80000 },
