@@ -5,7 +5,17 @@ from datetime import datetime
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from database import Barber, Service, Review, Appointment, AppointmentCreate, APPOINTMENTS_DB
+from database import (
+    Barber,
+    Service,
+    Review,
+    Appointment,
+    AppointmentCreate,
+    APPOINTMENTS_DB,
+    load_barbers_from_disk,
+    save_barbers_to_disk,
+    save_appointments_to_disk
+)
 from bot import bot, dp, send_appointment_notification_to_barber
 
 @asynccontextmanager
@@ -52,6 +62,11 @@ INITIAL_BARBERS = [
         avatar="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250",
         bio="Klassik va zamonaviy soch turmaklash bo'yicha 7 yillik tajribaga ega usta.",
         telegram_id=12345678,
+        work_hours={"start": "09:00", "end": "22:00"},
+        salon_photos=[
+            "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
+            "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700"
+        ],
         services=[
             Service(id="s1", name="Soch kesish va turmaklash", duration="35 daq", price=50000),
             Service(id="s2", name="Soch va soqol kompleks", duration="50 daq", price=80000),
@@ -70,6 +85,11 @@ INITIAL_BARBERS = [
         avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
         bio="Zamonaviy soch turmaklari va soqol parvarishi. Har bir mijozga alohida e'tibor.",
         telegram_id=87654321,
+        work_hours={"start": "09:00", "end": "22:00"},
+        salon_photos=[
+            "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700",
+            "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700"
+        ],
         services=[
             Service(id="s201", name="Soch kesish va turmaklash", duration="40 daq", price=60000),
             Service(id="s202", name="Soch va soqol parvarishi", duration="60 daq", price=90000),
@@ -88,6 +108,10 @@ INITIAL_BARBERS = [
         avatar="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250",
         bio="Fade, Crop va Pompadour uslubidagi sochlarni mukammal darajada kesish bo'yicha mutaxassis.",
         telegram_id=99988877,
+        work_hours={"start": "10:00", "end": "21:00"},
+        salon_photos=[
+            "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=700"
+        ],
         services=[
             Service(id="s301", name="Fade & Crop soch kesish", duration="45 daq", price=55000),
             Service(id="s302", name="Premium soch + soqol + maska", duration="70 daq", price=110000),
@@ -96,12 +120,15 @@ INITIAL_BARBERS = [
     )
 ]
 
+# Doimiy xotiradan (JSON fayldan) yuklangan ustalar bazasi
+BARBERS_DB: List[Barber] = load_barbers_from_disk(INITIAL_BARBERS)
+
 @app.get("/")
 def home():
     return {
         "status": "online",
         "service": "BarberHub API",
-        "endpoints": ["/api/barbers", "/api/appointments"]
+        "endpoints": ["/api/barbers", "/api/appointments", "/api/barbers/by-telegram/{telegram_id}"]
     }
 
 @app.get("/api/barbers", response_model=List[Barber])
@@ -110,17 +137,28 @@ def get_barbers(query: Optional[str] = None):
     Katalog uchun barcha sartaroshlarni qaytarish.
     """
     if not query:
-        return INITIAL_BARBERS
+        return BARBERS_DB
     
     q = query.lower()
     return [
-        b for b in INITIAL_BARBERS 
+        b for b in BARBERS_DB 
         if q in b.name.lower() or q in b.role.lower()
     ]
 
+@app.get("/api/barbers/by-telegram/{telegram_id}", response_model=Barber)
+def get_barber_by_telegram_id(telegram_id: int):
+    """
+    Usta botdan chiqib ketgan, tarixni tozalagan yoki qaytadan botga kirgan taqdirda ham,
+    uning Telegram ID si orqali barcha ma'lumotlarini (reyting, izohlar, rasmlar, xizmatlar) tiklash.
+    """
+    for b in BARBERS_DB:
+        if b.telegram_id and int(b.telegram_id) == int(telegram_id):
+            return b
+    raise HTTPException(status_code=404, detail="Bu Telegram ID ga tegishli usta topilmadi")
+
 @app.get("/api/barbers/{barber_id}", response_model=Barber)
 def get_barber_details(barber_id: str):
-    for b in INITIAL_BARBERS:
+    for b in BARBERS_DB:
         if b.id == barber_id:
             return b
     raise HTTPException(status_code=404, detail="Usta topilmadi")
@@ -130,7 +168,7 @@ async def create_appointment(data: AppointmentCreate):
     """
     Mijoz navbat band qilganda saqlash va Telegram orqali ustaga bildirishnoma jo'natish.
     """
-    barber = next((b for b in INITIAL_BARBERS if b.id == data.barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == data.barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
 
@@ -154,6 +192,7 @@ async def create_appointment(data: AppointmentCreate):
     )
     
     APPOINTMENTS_DB.append(appointment)
+    save_appointments_to_disk(APPOINTMENTS_DB)
 
     # Trigger Telegram Notification to Barber if token & chat_id provided
     if barber.telegram_id:
@@ -185,6 +224,7 @@ def update_appointment_status(appointment_id: str, status: str = Query(...)):
     for a in APPOINTMENTS_DB:
         if a.id == appointment_id:
             a.status = status
+            save_appointments_to_disk(APPOINTMENTS_DB)
             return a
     raise HTTPException(status_code=404, detail="Navbat topilmadi")
 
@@ -192,40 +232,62 @@ def update_appointment_status(appointment_id: str, status: str = Query(...)):
 
 @app.post("/api/barbers", response_model=Barber)
 def register_barber(barber: Barber):
-    """Yangi usta ro'yxatdan o'tganda katalogga qo'shish"""
-    INITIAL_BARBERS.append(barber)
+    """Yangi usta ro'yxatdan o'tganda katalogga va doimiy faylga qo'shish"""
+    BARBERS_DB.append(barber)
+    save_barbers_to_disk(BARBERS_DB)
     return barber
+
+@app.delete("/api/barbers/{barber_id}")
+def delete_barber_account(barber_id: str):
+    """
+    Ustaning o'z xohishi bilan akkauntini butunlay o'chirishi (Delete Account).
+    """
+    global BARBERS_DB, APPOINTMENTS_DB
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    
+    BARBERS_DB = [b for b in BARBERS_DB if b.id != barber_id]
+    save_barbers_to_disk(BARBERS_DB)
+
+    APPOINTMENTS_DB = [a for a in APPOINTMENTS_DB if a.barber_id != barber_id]
+    save_appointments_to_disk(APPOINTMENTS_DB)
+
+    return {"success": True, "message": "Akkaunt muvaffaqiyatli o'chirildi"}
 
 @app.post("/api/barbers/{barber_id}/services", response_model=Service)
 def add_barber_service(barber_id: str, service: Service):
     """Usta o'z profiliga yangi xizmat qo'shishi"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     barber.services.append(service)
+    save_barbers_to_disk(BARBERS_DB)
     return service
 
 @app.put("/api/barbers/{barber_id}/services/{service_id}", response_model=Service)
 def update_barber_service(barber_id: str, service_id: str, updated_service: Service):
     """Usta o'z xizmatini tahrirlashi (narx, chegirma, aksiya)"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     
     for idx, s in enumerate(barber.services):
         if s.id == service_id:
             barber.services[idx] = updated_service
+            save_barbers_to_disk(BARBERS_DB)
             return updated_service
     raise HTTPException(status_code=404, detail="Xizmat topilmadi")
 
 @app.delete("/api/barbers/{barber_id}/services/{service_id}")
 def delete_barber_service(barber_id: str, service_id: str):
     """Usta xizmatni o'chirishi"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     
     barber.services = [s for s in barber.services if s.id != service_id]
+    save_barbers_to_disk(BARBERS_DB)
     return {"success": True, "message": "Xizmat o'chirildi"}
 
 # ================= TO'LOV VA USTA KARTASINI BOSHQARISH =================
@@ -243,7 +305,7 @@ class SubscriptionRequest(BaseModel):
 @app.post("/api/barbers/{barber_id}/card")
 def link_barber_card(barber_id: str, data: CardLinkRequest):
     """Ustaning bank kartasini (Uzcard / Humo) avtomatik to'lov uchun ulash"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     
@@ -258,27 +320,30 @@ def link_barber_card(barber_id: str, data: CardLinkRequest):
         "bank": card_type,
         "linked_at": datetime.now().strftime("%Y-%m-%d %H:%M")
     }
+    save_barbers_to_disk(BARBERS_DB)
     return {"success": True, "card": barber.linked_card}
 
 @app.delete("/api/barbers/{barber_id}/card")
 def unlink_barber_card(barber_id: str):
     """Ustaning ulangan kartasini o'chirish/almashtirish"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     barber.linked_card = None
+    save_barbers_to_disk(BARBERS_DB)
     return {"success": True, "message": "Karta muvaffaqiyatli o'chirildi"}
 
 @app.post("/api/barbers/{barber_id}/subscription")
 def pay_subscription(barber_id: str, data: SubscriptionRequest):
     """Tarif to'lovini amalga oshirish (Click, Payme, Uzum, Paynet, Stars, Auto-Debit)"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     
     barber.subscription_status = "active"
     barber.is_trial = False
     barber.payment_method = data.payment_method
+    save_barbers_to_disk(BARBERS_DB)
     return {
         "success": True,
         "message": f"{data.payment_method.capitalize()} orqali to'lov qabul qilindi. Obuna faollashtirildi!",
@@ -300,38 +365,42 @@ class SalonPhotoAdd(BaseModel):
 @app.put("/api/barbers/{barber_id}/work-hours")
 def update_work_hours(barber_id: str, data: WorkHoursUpdate):
     """Ustaning ish vaqtini yangilash (masalan 09:00 dan 22:00 gacha)"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     barber.work_hours = {"start": data.start, "end": data.end}
+    save_barbers_to_disk(BARBERS_DB)
     return {"success": True, "work_hours": barber.work_hours}
 
 @app.put("/api/barbers/{barber_id}/avatar")
 def update_barber_avatar(barber_id: str, data: AvatarUpdate):
     """Ustaning profil rasmini yangilash"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     barber.avatar = data.avatar_url
+    save_barbers_to_disk(BARBERS_DB)
     return {"success": True, "avatar": barber.avatar}
 
 @app.post("/api/barbers/{barber_id}/salon-photos")
 def add_salon_photo(barber_id: str, data: SalonPhotoAdd):
     """Sartaroshxona galereyasiga yangi rasm qo'shish"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     if not hasattr(barber, 'salon_photos') or barber.salon_photos is None:
         barber.salon_photos = []
     barber.salon_photos.insert(0, data.photo_url)
+    save_barbers_to_disk(BARBERS_DB)
     return {"success": True, "salon_photos": barber.salon_photos}
 
 @app.delete("/api/barbers/{barber_id}/salon-photos")
 def delete_salon_photo(barber_id: str, photo_url: str = Query(...)):
     """Sartaroshxona galereyasidan rasmni o'chirish"""
-    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     if hasattr(barber, 'salon_photos') and barber.salon_photos:
         barber.salon_photos = [p for p in barber.salon_photos if p != photo_url]
+    save_barbers_to_disk(BARBERS_DB)
     return {"success": True, "salon_photos": barber.salon_photos}

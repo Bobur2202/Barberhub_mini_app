@@ -167,6 +167,19 @@ export const translations = {
     photos_count: "ta rasm",
     view_all: "Barchasini ko'rish",
     delete_photo_confirm: "Ushbu rasmni o'chirmoqchimisiz?",
+
+    // Akkaunt va Xavfsizlik (Logout & Delete Account)
+    account_settings_title: "Akkaunt va Xavfsizlik",
+    telegram_connected_badge: "Telegram ID bilan himoyalangan",
+    cloud_saved_badge: "Barcha ma'lumotlar saqlangan",
+    cloud_saved_desc: "Tarix tozalansa yoki botdan chiqib ketilsa ham ma'lumotlaringiz, izohlar va reyting saqlanib qoladi",
+    btn_logout: "Chiqish (Log Out)",
+    btn_delete_account: "Akkauntni butunlay o'chirish",
+    logout_modal_title: "Hisobdan chiqish",
+    logout_modal_desc: "Rostdan ham hisobingizdan chiqmoqchimisiz? Barcha xizmatlaringiz, mijozlar va reytingingiz xavfsiz saqlanadi. Qaytganingizda profilingiz bir zumda tiklanadi.",
+    delete_modal_title: "Akkauntni butunlay o'chirish",
+    delete_modal_warning: "DIQQAT! Akkauntingizni o'chirsangiz, siz umumiy usta katalogidan o'chirilasiz. Barcha to'plangan mijozlar, izohlar va reytingingiz butunlay yo'qoladi. Bu amalni ortga qaytarib bo'lmaydi!",
+    confirm_delete_btn: "Ha, akkauntimni o'chiraman",
   },
   
   ru: {
@@ -337,6 +350,19 @@ export const translations = {
     photos_count: "фото",
     view_all: "Смотреть все",
     delete_photo_confirm: "Вы действительно хотите удалить это фото?",
+
+    // Аккаунт и Безопасность (Logout & Delete Account)
+    account_settings_title: "Аккаунт и Безопасность",
+    telegram_connected_badge: "Защищено Telegram ID",
+    cloud_saved_badge: "Все данные сохранены в облаке",
+    cloud_saved_desc: "Даже если очистить историю или удалить бота, все отзывы, рейтинг и фото останутся в сохранности",
+    btn_logout: "Выйти из аккаунта",
+    btn_delete_account: "Удалить аккаунт навсегда",
+    logout_modal_title: "Выход из аккаунта",
+    logout_modal_desc: "Вы уверены, что хотите выйти? Все ваши услуги, клиенты и рейтинг останутся в сохранности. При повторном входе всё сразу восстановится.",
+    delete_modal_title: "Удаление аккаунта",
+    delete_modal_warning: "ВНИМАНИЕ! Ваш профиль будет полностью удален из каталога мастеров. Все отзывы, клиенты и рейтинг исчезнут навсегда. Это действие необратимо!",
+    confirm_delete_btn: "Да, удалить мой аккаунт",
   },
   
   en: {
@@ -507,5 +533,18 @@ export const translations = {
     photos_count: "photos",
     view_all: "View all",
     delete_photo_confirm: "Are you sure you want to delete this photo?",
+
+    // Account & Security (Logout & Delete Account)
+    account_settings_title: "Account & Security",
+    telegram_connected_badge: "Protected by Telegram ID",
+    cloud_saved_badge: "All data saved to Cloud",
+    cloud_saved_desc: "Even if you clear chat history or delete the bot, your profile, reviews, and ratings will remain safe",
+    btn_logout: "Log Out",
+    btn_delete_account: "Delete Account Permanently",
+    logout_modal_title: "Log Out",
+    logout_modal_desc: "Are you sure you want to log out? All your services, clients, and ratings will remain safe. You can log right back in anytime.",
+    delete_modal_title: "Delete Account",
+    delete_modal_warning: "WARNING! Deleting your account permanently removes you from the barbershop catalog. All reviews, clients, and ratings will be erased permanently. This cannot be undone!",
+    confirm_delete_btn: "Yes, delete my account",
   }
 };

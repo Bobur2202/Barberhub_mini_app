@@ -12,6 +12,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { UZBEKISTAN_REGIONS } from '../data/regionsData';
+import { registerBarberBackend } from '../services/api';
 
 export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t }) {
   const [barberName, setBarberName] = useState('');
@@ -79,7 +80,7 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -105,6 +106,7 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t }) {
       lat: finalLat,
       lng: finalLng,
       phone: phone,
+      telegram_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || Date.now(),
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
       bio: "Tajribali erkaklar sartaroshi. Zamonaviy soch turmaklari va soqol parvarishi.",
       workHours: { start: "09:00", end: "22:00" },
@@ -122,10 +124,13 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t }) {
       ]
     };
 
+    // Backendga doimiy saqlash
+    await registerBarberBackend(newBarber);
+
     setTimeout(() => {
       setIsSubmitting(false);
       onRegisterSuccess(newBarber);
-    }, 600);
+    }, 400);
   };
 
   return (

@@ -64,5 +64,55 @@ class Appointment(BaseModel):
     status: str = "pending" # pending | accepted | completed | cancelled
     created_at: str
 
-# In-memory storage for rapid development & live demonstration
-APPOINTMENTS_DB: List[Appointment] = []
+# Persistent JSON Storage Setup
+import os
+import json
+
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+os.makedirs(DATA_DIR, exist_ok=True)
+
+BARBERS_FILE = os.path.join(DATA_DIR, "barbers.json")
+APPOINTMENTS_FILE = os.path.join(DATA_DIR, "appointments.json")
+
+def load_barbers_from_disk(fallback_barbers: List[Barber]) -> List[Barber]:
+    """Fayldan barcha ustalarni yuklash (Server o'chib yonsa ham ma'lumotlar saqlanadi)"""
+    if os.path.exists(BARBERS_FILE):
+        try:
+            with open(BARBERS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return [Barber(**item) for item in data]
+        except Exception as e:
+            print(f"[DB] Barbers load error: {e}")
+    # Agar fayl bo'lmasa yoki xato bo'lsa boshlang'ich ustalarni saqlab qo'yamiz
+    save_barbers_to_disk(fallback_barbers)
+    return fallback_barbers
+
+def save_barbers_to_disk(barbers: List[Barber]):
+    """Barcha ustalarni (izohlari, reytingi, rasmlari, ish vaqti) doimiy faylga saqlash"""
+    try:
+        with open(BARBERS_FILE, "w", encoding="utf-8") as f:
+            json.dump([b.model_dump() for b in barbers], f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[DB] Barbers save error: {e}")
+
+def load_appointments_from_disk() -> List[Appointment]:
+    """Fayldan buyurtmalarni yuklash"""
+    if os.path.exists(APPOINTMENTS_FILE):
+        try:
+            with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return [Appointment(**item) for item in data]
+        except Exception as e:
+            print(f"[DB] Appointments load error: {e}")
+    return []
+
+def save_appointments_to_disk(appointments: List[Appointment]):
+    """Buyurtmalarni doimiy faylga saqlash"""
+    try:
+        with open(APPOINTMENTS_FILE, "w", encoding="utf-8") as f:
+            json.dump([a.model_dump() for a in appointments], f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[DB] Appointments save error: {e}")
+
+# In-memory working list (initialized from disk)
+APPOINTMENTS_DB: List[Appointment] = load_appointments_from_disk()

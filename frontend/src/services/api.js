@@ -116,3 +116,69 @@ export async function updateAppointmentStatus(appointmentId, status) {
     return { id: appointmentId, status };
   }
 }
+
+/**
+ * 5. Usta Telegram ID orqali o'z profilini tiklash
+ * (Bot o'chib ketsa, kesh tozalansa yoki qayta kirganda barcha izohlar va reyting saqlanib qolishi uchun)
+ */
+export async function getBarberByTelegramId(telegramId) {
+  if (!telegramId) return null;
+  try {
+    const response = await fetch(`${API_BASE_URL}/barbers/by-telegram/${telegramId}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('[API] Usta Telegram ID orqali tiklandi:', data.name);
+      return data;
+    }
+    return null;
+  } catch (error) {
+    console.warn('[API] Telegram ID orqali usta topilmadi:', error.message);
+    return null;
+  }
+}
+
+/**
+ * 6. Yangi ustani backendga saqlash
+ */
+export async function registerBarberBackend(barberData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/barbers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(barberData),
+      signal: AbortSignal.timeout(4000),
+    });
+
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Backendga usta qo\'shishda xatolik:', error.message);
+  }
+  return barberData;
+}
+
+/**
+ * 7. Ustaning o'z xohishi bilan akkauntini butunlay o'chirishi (Delete Account)
+ */
+export async function deleteBarberAccount(barberId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/barbers/${barberId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(4000),
+    });
+
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Akkauntni o\'chirishda xatolik:', error.message);
+  }
+  return { success: true };
+}

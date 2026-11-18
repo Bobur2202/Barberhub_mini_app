@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { translations } from './i18n/translations';
 import { mockBarbers } from './data/mockBarbers';
+import { getBarberByTelegramId, deleteBarberAccount } from './services/api';
 import HeaderBar from './components/HeaderBar';
 import SplashScreen from './pages/SplashScreen';
 import RoleSelectionScreen from './pages/RoleSelectionScreen';
@@ -36,7 +37,7 @@ export default function App() {
 
   const t = translations[lang] || translations.uz;
 
-  // Telegram WebApp Initialization
+  // Telegram WebApp Initialization va Telegram ID orqali ustani tiklash
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
@@ -45,6 +46,31 @@ export default function App() {
       if (tg.setHeaderColor) tg.setHeaderColor('#004B86');
       if (tg.setBackgroundColor) tg.setBackgroundColor('#E6EDF9');
     }
+
+    // Agar usta botdan chiqib ketgan yoki tarix tozalangan bo'lsa ham,
+    // uning doimiy Telegram ID si orqali profilini bazadan tiklash
+    async function restoreBarberByTelegramId() {
+      const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+      const tgId = tgUser?.id;
+      if (tgId) {
+        const found = await getBarberByTelegramId(tgId);
+        if (found) {
+          console.log('[Auth] Usta Telegram ID orqali tanildi va tiklandi:', found.name);
+          setUserRole('barber');
+          setCurrentBarberProfile(found);
+          localStorage.setItem('barberhub_user_role', 'barber');
+          localStorage.setItem('barberhub_barber_profile', JSON.stringify(found));
+          
+          const idx = mockBarbers.findIndex(b => b.id === found.id);
+          if (idx !== -1) {
+            mockBarbers[idx] = { ...mockBarbers[idx], ...found };
+          } else {
+            mockBarbers.unshift(found);
+          }
+        }
+      }
+    }
+    restoreBarberByTelegramId();
   }, []);
 
   // 1. Splash ekranda til tanlanganda
@@ -96,7 +122,30 @@ export default function App() {
     }
   };
 
-  // 5. Mijoz oqimi (Navigation)
+  // 4. Usta hisobidan chiqish (Log Out)
+  const handleLogout = () => {
+    localStorage.removeItem('barberhub_user_role');
+    localStorage.removeItem('barberhub_barber_profile');
+    setUserRole(null);
+    setCurrentBarberProfile(null);
+    setCurrentStep('role_select');
+  };
+
+  // 5. Usta akkauntini butunlay o'chirish (Delete Account)
+  const handleDeleteAccount = async () => {
+    if (currentBarberProfile?.id) {
+      await deleteBarberAccount(currentBarberProfile.id);
+      const idx = mockBarbers.findIndex(b => b.id === currentBarberProfile.id);
+      if (idx !== -1) mockBarbers.splice(idx, 1);
+    }
+    localStorage.removeItem('barberhub_user_role');
+    localStorage.removeItem('barberhub_barber_profile');
+    setUserRole(null);
+    setCurrentBarberProfile(null);
+    setCurrentStep('role_select');
+  };
+
+  // 6. Mijoz oqimi (Navigation)
   const handleSelectBarber = (barber) => {
     setSelectedBarber(barber);
     setCurrentStep('profile');
@@ -162,6 +211,8 @@ export default function App() {
             setCurrentBarberProfile(updated);
             localStorage.setItem('barberhub_barber_profile', JSON.stringify(updated));
           }}
+          onLogout={handleLogout}
+          onDeleteAccount={handleDeleteAccount}
         />
       )}
 

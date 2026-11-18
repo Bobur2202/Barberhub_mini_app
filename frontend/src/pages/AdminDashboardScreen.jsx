@@ -23,7 +23,9 @@ import {
   Image as ImageIcon,
   Upload,
   Eye,
-  MapPin
+  MapPin,
+  LogOut,
+  Cloud
 } from 'lucide-react';
 import { getAdminAppointments, updateAppointmentStatus } from '../services/api';
 import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
@@ -49,8 +51,19 @@ const SALON_PRESETS = [
   "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&q=80&w=700"
 ];
 
-export default function AdminDashboardScreen({ t, currentBarber, lang = 'uz', onUpdateProfile }) {
+export default function AdminDashboardScreen({
+  t,
+  currentBarber,
+  lang = 'uz',
+  onUpdateProfile,
+  onLogout,
+  onDeleteAccount
+}) {
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'pending' | 'accepted' | 'completed'
+
+  // Modal for Logout & Delete Account
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
   // Usta profili (Avatar, Ish vaqti, Salon rasmlari)
   const [barberProfile, setBarberProfile] = useState(() => {
@@ -914,6 +927,59 @@ export default function AdminDashboardScreen({ t, currentBarber, lang = 'uz', on
             </div>
           )}
         </div>
+
+        {/* 7. Akkaunt va Xavfsizlik (Cloud Persistence, Logout, Delete Account) */}
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50 mt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center space-x-1.5">
+              <ShieldCheck className="w-4 h-4 text-brand-blue" />
+              <span>{t.account_settings_title || "Akkaunt va Xavfsizlik"}</span>
+            </h3>
+            <span className="text-[10px] text-brand-blue font-extrabold bg-blue-50 px-2.5 py-0.5 rounded-full flex items-center space-x-1 border border-blue-100">
+              <Cloud className="w-3 h-3 text-brand-orange" />
+              <span>{t.cloud_saved_badge || "Bulutda saqlangan"}</span>
+            </span>
+          </div>
+
+          {/* Telegram ID Protection Card */}
+          <div className="p-3.5 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-xl bg-brand-blue text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-2xs">
+              <Smartphone className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-brand-blue">
+                  Telegram ID: <code>{barberProfile.telegram_id || "87654321"}</code>
+                </span>
+                <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  Avto-tiklash ON
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
+                {t.cloud_saved_desc || "Tarix tozalansa yoki botdan chiqib ketilsa ham sizning barcha ma'lumotlaringiz, izohlar va reyting saqlanib qoladi."}
+              </p>
+            </div>
+          </div>
+
+          {/* Actions: Logout & Delete Account */}
+          <div className="space-y-2 mt-4 pt-3 border-t border-gray-100">
+            <button
+              onClick={() => setShowLogoutModal(true)}
+              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>{t.btn_logout || "Hisobdan chiqish (Log Out)"}</span>
+            </button>
+
+            <button
+              onClick={() => setShowDeleteAccountModal(true)}
+              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors flex items-center justify-center space-x-2"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>{t.btn_delete_account || "Akkauntni butunlay o'chirish"}</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* MODAL: Ish vaqtini belgilash */}
@@ -1541,6 +1607,74 @@ export default function AdminDashboardScreen({ t, currentBarber, lang = 'uz', on
                   <span>{t.pay_with_stars}</span>
                 </div>
                 <span className="text-[11px] text-amber-700 font-extrabold">⭐️ 250</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Hisobdan chiqish (Log Out) */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center mx-auto mb-3">
+              <LogOut className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-extrabold text-brand-blue text-center mb-1">
+              {t.logout_modal_title || "Hisobdan chiqish"}
+            </h3>
+            <p className="text-xs text-gray-500 text-center mb-5 leading-relaxed">
+              {t.logout_modal_desc || "Hisobdan chiqsangiz ham barcha xizmatlaringiz, mijozlar va reytingingiz saqlanadi."}
+            </p>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
+              >
+                {t.btn_cancel}
+              </button>
+              <button
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  if (onLogout) onLogout();
+                }}
+                className="flex-1 py-2.5 text-xs font-extrabold rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white shadow-md"
+              >
+                {t.btn_logout || "Chiqish"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Akkauntni butunlay o'chirish (Delete Account) */}
+      {showDeleteAccountModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl border-2 border-red-200">
+            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-extrabold text-red-600 text-center mb-1">
+              {t.delete_modal_title || "Akkauntni butunlay o'chirish"}
+            </h3>
+            <div className="p-3 bg-red-50/70 rounded-2xl border border-red-100 my-3 text-[11px] text-red-700 leading-relaxed">
+              {t.delete_modal_warning || "DIQQAT! Akkauntingizni o'chirsangiz, siz umumiy usta katalogidan o'chirilasiz. Barcha mijozlar, izohlar va reytingingiz qayta tiklanmaydi!"}
+            </div>
+            <div className="flex space-x-2 mt-4">
+              <button
+                onClick={() => setShowDeleteAccountModal(false)}
+                className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
+              >
+                {t.btn_cancel}
+              </button>
+              <button
+                onClick={async () => {
+                  setShowDeleteAccountModal(false);
+                  if (onDeleteAccount) await onDeleteAccount();
+                }}
+                className="flex-1 py-2.5 text-xs font-extrabold rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-md"
+              >
+                {t.confirm_delete_btn || "Ha, o'chirish"}
               </button>
             </div>
           </div>
