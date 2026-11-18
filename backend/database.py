@@ -32,6 +32,12 @@ class Barber(BaseModel):
     telegram_id: Optional[int] = None # Barbershop usta telegram id
     services: List[Service] = []
     reviews: List[Review] = []
+    # Subscription & Trial
+    trial_days_left: int = 14
+    is_trial: bool = True
+    subscription_status: str = "trial" # "trial" | "active" | "expired"
+    linked_card: Optional[dict] = None # {"number": "8600 **** **** 1234", "expiry": "12/28", "holder": "USTA NOMI", "bank": "Uzcard/Humo"}
+    payment_method: Optional[str] = None
 
 class AppointmentCreate(BaseModel):
     barber_id: str

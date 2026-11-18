@@ -187,3 +187,100 @@ def update_appointment_status(appointment_id: str, status: str = Query(...)):
             a.status = status
             return a
     raise HTTPException(status_code=404, detail="Navbat topilmadi")
+
+# ================= USTA XIZMATLARINI BOSHQARISH (CRUD) =================
+
+@app.post("/api/barbers", response_model=Barber)
+def register_barber(barber: Barber):
+    """Yangi usta ro'yxatdan o'tganda katalogga qo'shish"""
+    INITIAL_BARBERS.append(barber)
+    return barber
+
+@app.post("/api/barbers/{barber_id}/services", response_model=Service)
+def add_barber_service(barber_id: str, service: Service):
+    """Usta o'z profiliga yangi xizmat qo'shishi"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    barber.services.append(service)
+    return service
+
+@app.put("/api/barbers/{barber_id}/services/{service_id}", response_model=Service)
+def update_barber_service(barber_id: str, service_id: str, updated_service: Service):
+    """Usta o'z xizmatini tahrirlashi (narx, chegirma, aksiya)"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    
+    for idx, s in enumerate(barber.services):
+        if s.id == service_id:
+            barber.services[idx] = updated_service
+            return updated_service
+    raise HTTPException(status_code=404, detail="Xizmat topilmadi")
+
+@app.delete("/api/barbers/{barber_id}/services/{service_id}")
+def delete_barber_service(barber_id: str, service_id: str):
+    """Usta xizmatni o'chirishi"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    
+    barber.services = [s for s in barber.services if s.id != service_id]
+    return {"success": True, "message": "Xizmat o'chirildi"}
+
+# ================= TO'LOV VA USTA KARTASINI BOSHQARISH =================
+
+class CardLinkRequest(BaseModel):
+    card_number: str
+    card_expiry: str
+    card_holder: Optional[str] = "USTA"
+
+class SubscriptionRequest(BaseModel):
+    plan_id: str # monthly, 3_months, yearly
+    payment_method: str # click, payme, uzumbank, paynet, stars, auto_debit
+    amount: int
+
+@app.post("/api/barbers/{barber_id}/card")
+def link_barber_card(barber_id: str, data: CardLinkRequest):
+    """Ustaning bank kartasini (Uzcard / Humo) avtomatik to'lov uchun ulash"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    
+    clean_num = data.card_number.replace(" ", "")
+    masked_number = f"{clean_num[:4]} **** **** {clean_num[-4:]}"
+    card_type = "Uzcard" if clean_num.startswith("8600") else ("Humo" if clean_num.startswith("9860") else "Bank Card")
+
+    barber.linked_card = {
+        "number": masked_number,
+        "expiry": data.card_expiry,
+        "holder": data.card_holder,
+        "bank": card_type,
+        "linked_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+    }
+    return {"success": True, "card": barber.linked_card}
+
+@app.delete("/api/barbers/{barber_id}/card")
+def unlink_barber_card(barber_id: str):
+    """Ustaning ulangan kartasini o'chirish/almashtirish"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    barber.linked_card = None
+    return {"success": True, "message": "Karta muvaffaqiyatli o'chirildi"}
+
+@app.post("/api/barbers/{barber_id}/subscription")
+def pay_subscription(barber_id: str, data: SubscriptionRequest):
+    """Tarif to'lovini amalga oshirish (Click, Payme, Uzum, Paynet, Stars, Auto-Debit)"""
+    barber = next((b for b in INITIAL_BARBERS if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    
+    barber.subscription_status = "active"
+    barber.is_trial = False
+    barber.payment_method = data.payment_method
+    return {
+        "success": True,
+        "message": f"{data.payment_method.capitalize()} orqali to'lov qabul qilindi. Obuna faollashtirildi!",
+        "status": barber.subscription_status
+    }
