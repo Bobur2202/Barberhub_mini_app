@@ -1,7 +1,22 @@
-import React from 'react';
-import { User, Scissors, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Scissors, ArrowRight, ShieldCheck, Sparkles, Crown, Lock } from 'lucide-react';
 
 export default function RoleSelectionScreen({ onSelectRole, t }) {
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState(false);
+
+  const handleVerifyPin = (e) => {
+    e.preventDefault();
+    if (pinInput === '7777' || pinInput === 'admin2026') {
+      setShowPinModal(false);
+      onSelectRole('super_admin');
+    } else {
+      setPinError(true);
+      setTimeout(() => setPinError(false), 2500);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#E6EDF9] flex flex-col justify-between px-5 py-8 max-w-md mx-auto">
       {/* Top Header */}
@@ -78,12 +93,71 @@ export default function RoleSelectionScreen({ onSelectRole, t }) {
         </div>
       </div>
 
-      {/* Footer Info */}
-      <div className="text-center pb-2">
-        <p className="text-[11px] text-gray-400">
+      {/* Footer Info & Super Admin Button */}
+      <div className="text-center pb-2 space-y-2">
+        <button
+          onClick={() => setShowPinModal(true)}
+          className="text-xs font-bold text-gray-400 hover:text-brand-blue transition-colors inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl hover:bg-white/60"
+        >
+          <Crown className="w-3.5 h-3.5 text-amber-500" />
+          <span>Platforma egasi (Super Admin)</span>
+        </button>
+
+        <p className="text-[10px] text-gray-400">
           Tanlovni keyinchalik sozlamalar bo'limidan o'zgartirish mumkin
         </p>
       </div>
+
+      {/* PIN Verification Modal */}
+      {showPinModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full shadow-2xl text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-brand-orange flex items-center justify-center mx-auto mb-3">
+              <Lock className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-black text-brand-blue">
+              Super Admin Kirish
+            </h3>
+            <p className="text-xs text-gray-500 mt-1 mb-4 leading-relaxed">
+              Platforma egasi uchun xavfsizlik PIN kodini kiriting:
+            </p>
+
+            <form onSubmit={handleVerifyPin} className="space-y-3">
+              <input
+                type="password"
+                maxLength={8}
+                autoFocus
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                placeholder="PIN kod (Standart: 7777)"
+                className="w-full text-center text-lg font-black tracking-widest bg-gray-50 rounded-2xl p-3 border border-gray-200 focus:outline-none focus:border-brand-blue"
+              />
+
+              {pinError && (
+                <p className="text-xs font-bold text-red-500 animate-shake">
+                  Noto'g'ri PIN kod! Qaytadan urinib ko'ring.
+                </p>
+              )}
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPinModal(false)}
+                  className="flex-1 py-2.5 text-xs font-bold text-gray-600 bg-gray-100 rounded-xl"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 text-xs font-extrabold text-brand-blue bg-brand-orange rounded-xl shadow-md"
+                >
+                  Kirish
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

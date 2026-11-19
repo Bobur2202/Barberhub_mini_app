@@ -21,7 +21,8 @@ from bot import (
     dp,
     send_appointment_notification_to_barber,
     send_appointment_status_to_client,
-    send_appointment_reminder_to_client
+    send_appointment_reminder_to_client,
+    ACTIVE_BARBER_CHAT_IDS
 )
 from sms_service import send_sms
 
@@ -651,3 +652,191 @@ def delete_salon_photo(barber_id: str, photo_url: str = Query(...)):
         barber.salon_photos = [p for p in barber.salon_photos if p != photo_url]
     save_barbers_to_disk(BARBERS_DB)
     return {"success": True, "salon_photos": barber.salon_photos}
+
+# ================= SUPER ADMIN PANEL (PLATFORMA EGASI BOSHQARUVI) =================
+
+class BroadcastPayload(BaseModel):
+    target: str = "all" # "all" | "barbers" | "clients"
+    title: str = "Muhim yangilik"
+    message: str
+
+class SubscriptionManagePayload(BaseModel):
+    action: str # "extend_trial_7" | "activate_paid" | "suspend"
+
+@app.get("/api/super-admin/stats")
+def get_super_admin_stats():
+    """
+    Platforma egasi uchun barcha statistikalar:
+    - Jami ustalar soni (viloyatlar kesimida)
+    - Jami buyurtmalar va faol mijozlar
+    - Sinov muddati tugayotgan va obuna to'lagan ustalar
+    """
+    total_barbers = len(BARBERS_DB)
+    total_appointments = len(APPOINTMENTS_DB)
+    
+    # Faol mijozlar (unikal telefon raqamlar)
+    unique_clients = set(a.client_phone for a in APPOINTMENTS_DB if a.client_phone)
+    active_clients_count = len(unique_clients)
+    
+    # Umumiy aylanma
+    total_revenue_volume = sum(a.price for a in APPOINTMENTS_DB if a.status in ["completed", "accepted"])
+
+    # Viloyatlar kesimida ustalar soni
+    regions_map = {
+        "Toshkent shahri": 0,
+        "Toshkent viloyati": 0,
+        "Samarqand": 0,
+        "Farg'ona": 0,
+        "Andijon": 0,
+        "Namangan": 0,
+        "Buxoro": 0,
+        "Qashqadaryo": 0,
+        "Boshqa viloyatlar": 0
+    }
+
+    for b in BARBERS_DB:
+        addr = (b.address or "").lower()
+        if "toshkent" in addr and ("sh." in addr or "mavze" in addr or "chilonzor" in addr or "yunusobod" in addr or "mirobod" in addr or "temur" in addr or "shahar" in addr):
+            regions_map["Toshkent shahri"] += 1
+        elif "toshkent vil" in addr or "chirchiq" in addr or "angren" in addr or "olmaliq" in addr:
+            regions_map["Toshkent viloyati"] += 1
+        elif "samarqand" in addr:
+            regions_map["Samarqand"] += 1
+        elif "farg'ona" in addr or "fargona" in addr or "qo'qon" in addr:
+            regions_map["Farg'ona"] += 1
+        elif "andijon" in addr or "asaka" in addr:
+            regions_map["Andijon"] += 1
+        elif "namangan" in addr:
+            regions_map["Namangan"] += 1
+        elif "buxoro" in addr:
+            regions_map["Buxoro"] += 1
+        elif "qashqadaryo" in addr or "qarshi" in addr:
+            regions_map["Qashqadaryo"] += 1
+        else:
+            regions_map["Toshkent shahri"] += 1
+
+    # To'lovlar va obunalar monitoringi
+    expiring_trial_barbers = []
+    active_paid_barbers = []
+    suspended_barbers = []
+    active_trial_barbers = []
+
+    for b in BARBERS_DB:
+        b_info = {
+            "id": b.id,
+            "name": b.name,
+            "phone": getattr(b, "phone", "+998 90 123 45 67"),
+            "address": b.address,
+            "trial_days_left": getattr(b, "trial_days_left", 14),
+            "subscription_status": getattr(b, "subscription_status", "trial"),
+            "linked_card": getattr(b, "linked_card", None),
+            "reviews_count": getattr(b, "reviews_count", 0),
+            "rating": getattr(b, "rating", 5.0)
+        }
+
+        status = getattr(b, "subscription_status", "trial")
+        days_left = getattr(b, "trial_days_left", 14)
+
+        if status == "active":
+            active_paid_barbers.append(b_info)
+        elif status == "expired":
+            suspended_barbers.append(b_info)
+        elif days_left <= 3:
+            expiring_trial_barbers.append(b_info)
+        else:
+            active_trial_barbers.append(b_info)
+
+    return {
+        "total_barbers": total_barbers,
+        "total_appointments": total_appointments,
+        "active_clients_count": active_clients_count,
+        "total_revenue_volume": total_revenue_volume,
+        "regions_breakdown": [{"region": k, "count": v} for k, v in regions_map.items() if v > 0],
+        "billing": {
+            "trial_expiring_count": len(expiring_trial_barbers),
+            "trial_expiring": expiring_trial_barbers,
+            "active_paid_count": len(active_paid_barbers),
+            "active_paid": active_paid_barbers,
+            "suspended_count": len(suspended_barbers),
+            "suspended": suspended_barbers,
+            "active_trial_count": len(active_trial_barbers),
+            "all_barbers": [b.model_dump() for b in BARBERS_DB]
+        }
+    }
+
+@app.post("/api/super-admin/barbers/{barber_id}/subscription")
+def manage_barber_subscription(barber_id: str, data: SubscriptionManagePayload):
+    """Admin usta sinov muddatini uzaytirishi yoki obunasini yoqishi/to'xtatishi"""
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+
+    if data.action == "extend_trial_7":
+        barber.trial_days_left = getattr(barber, "trial_days_left", 0) + 7
+        barber.subscription_status = "trial"
+    elif data.action == "activate_paid":
+        barber.subscription_status = "active"
+        barber.is_trial = False
+    elif data.action == "suspend":
+        barber.subscription_status = "expired"
+        barber.trial_days_left = 0
+
+    save_barbers_to_disk(BARBERS_DB)
+    return {
+        "success": True,
+        "barber_id": barber.id,
+        "trial_days_left": barber.trial_days_left,
+        "subscription_status": barber.subscription_status
+    }
+
+@app.post("/api/super-admin/broadcast")
+async def send_broadcast(data: BroadcastPayload):
+    """
+    Ommaviy xabarnoma (Broadcast):
+    Barcha ustalarga, barcha mijozlarga yoki hammaga Telegram orqali xabar yuborish
+    """
+    recipients = set()
+
+    # 1. Ustalarni yig'ish
+    if data.target in ["all", "barbers"]:
+        for b in BARBERS_DB:
+            if getattr(b, "telegram_id", None):
+                recipients.add(b.telegram_id)
+        for chat_id in ACTIVE_BARBER_CHAT_IDS:
+            recipients.add(chat_id)
+
+    # 2. Mijozlarni yig'ish
+    if data.target in ["all", "clients"]:
+        for a in APPOINTMENTS_DB:
+            if getattr(a, "client_telegram_id", None):
+                recipients.add(a.client_telegram_id)
+
+    formatted_text = (
+        f"📢 <b>{data.title}</b>\n\n"
+        f"{data.message}\n\n"
+        f"💈 <i>Hurmat bilan, BarberHub platformasi ma'muriyati</i>"
+    )
+
+    sent_count = 0
+    if bot:
+        for chat_id in recipients:
+            try:
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text=formatted_text,
+                    parse_mode="HTML"
+                )
+                sent_count += 1
+            except Exception as err:
+                print(f"Broadcast xatosi ({chat_id}): {err}")
+    else:
+        print(f"\n[BROADCAST SIMULATSIYA] {len(recipients)} ta foydalanuvchiga yuborildi:\n{formatted_text}")
+        sent_count = max(len(recipients), 1)
+
+    return {
+        "success": True,
+        "target": data.target,
+        "recipients_count": len(recipients),
+        "sent_count": sent_count,
+        "message": f"{sent_count} ta foydalanuvchiga xabarnoma muvaffaqiyatli yuborildi!"
+    }

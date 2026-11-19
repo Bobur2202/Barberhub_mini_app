@@ -313,3 +313,62 @@ export async function rescheduleAppointment(appointmentId, { date_str, time_slot
   }
   return { id: appointmentId, date_str, time_slot };
 }
+
+/**
+ * 14. Super Admin: Platforma egasi uchun to'liq statistika
+ */
+export async function getSuperAdminStats() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/super-admin/stats`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Super Admin statistika xatosi:', error.message);
+  }
+  return null;
+}
+
+/**
+ * 15. Super Admin: Ustaning obunasi va sinov muddatini boshqarish
+ */
+export async function manageBarberSubscription(barberId, action) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/super-admin/barbers/${barberId}/subscription`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Obunani boshqarish xatosi:', error.message);
+  }
+  return null;
+}
+
+/**
+ * 16. Super Admin: Ommaviy xabarnoma (Broadcast)
+ */
+export async function sendSuperAdminBroadcast({ target, title, message }) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/super-admin/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target, title, message }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Broadcast yuborishda xatolik:', error.message);
+  }
+  return { success: true, message: 'Xabarnoma muvaffaqiyatli tarqatildi (Simulyatsiya)!' };
+}

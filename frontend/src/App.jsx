@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Scissors, Calendar } from 'lucide-react';
+import { Scissors, Calendar, Lock, Crown } from 'lucide-react';
 import { translations } from './i18n/translations';
 import { mockBarbers } from './data/mockBarbers';
 import { getBarberByTelegramId, deleteBarberAccount } from './services/api';
@@ -13,6 +13,7 @@ import DateTimeScreen from './pages/DateTimeScreen';
 import ConfirmScreen from './pages/ConfirmScreen';
 import AdminDashboardScreen from './pages/AdminDashboardScreen';
 import ClientAppointmentsScreen from './pages/ClientAppointmentsScreen';
+import SuperAdminScreen from './pages/SuperAdminScreen';
 
 export default function App() {
   // Application State
@@ -29,6 +30,11 @@ export default function App() {
   const [selectedBarber, setSelectedBarber] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedDateTime, setSelectedDateTime] = useState(null);
+
+  // Super Admin PIN modal state (Header orqali ochilganda)
+  const [showSuperAdminPinModal, setShowSuperAdminPinModal] = useState(false);
+  const [headerPinInput, setHeaderPinInput] = useState('');
+  const [headerPinError, setHeaderPinError] = useState(false);
 
   // Mijozning navbatlari va tarixi
   const [clientAppointments, setClientAppointments] = useState(() => {
@@ -141,6 +147,8 @@ export default function App() {
     } else if (role === 'barber') {
       // Ustani ro'yxatdan o'tkazish sahifasiga o'tadi
       setCurrentStep('barber_register');
+    } else if (role === 'super_admin') {
+      setCurrentStep('super_admin');
     }
   };
 
@@ -228,13 +236,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#E6EDF9] font-sans antialiased text-gray-900">
-      {/* Top Header Bar (Faqat splash, role_select va barber_register'dan tashqari ko'rinadi) */}
-      {!['splash', 'role_select', 'barber_register'].includes(currentStep) && (
+      {/* Top Header Bar (Faqat splash, role_select, barber_register va super_admin'dan tashqari ko'rinadi) */}
+      {!['splash', 'role_select', 'barber_register', 'super_admin'].includes(currentStep) && (
         <HeaderBar
           lang={lang}
           setLang={setLang}
           t={t}
           userRole={userRole}
+          onOpenSuperAdmin={() => {
+            setHeaderPinInput('');
+            setHeaderPinError(false);
+            setShowSuperAdminPinModal(true);
+          }}
         />
       )}
 
@@ -328,6 +341,94 @@ export default function App() {
           onBack={() => setCurrentStep('datetime')}
           onBookingSuccess={handleBookingSuccess}
         />
+      )}
+
+      {/* 7. PLATFORMA EGASI: SUPER ADMIN PANELI */}
+      {currentStep === 'super_admin' && (
+        <SuperAdminScreen
+          t={t}
+          onExit={() => {
+            if (userRole === 'barber') {
+              setCurrentStep('admin');
+            } else if (userRole === 'client') {
+              setCurrentStep('catalog');
+            } else {
+              setCurrentStep('role_select');
+            }
+          }}
+        />
+      )}
+
+      {/* Super Admin Kirish PIN Modali (Header orqali ochilganda) */}
+      {showSuperAdminPinModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-100">
+            <div className="w-12 h-12 rounded-2xl bg-brand-blue/10 flex items-center justify-center mx-auto text-brand-blue mb-3">
+              <Crown className="w-6 h-6 text-brand-orange" />
+            </div>
+            <h3 className="text-center font-black text-lg text-brand-blue">
+              Super Admin Kirish
+            </h3>
+            <p className="text-center text-xs text-gray-500 mt-1 mb-4">
+              Platforma egasi boshqaruv paneliga kirish uchun maxfiy PIN kodni kiriting:
+            </p>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (headerPinInput === '7777' || headerPinInput === 'admin2026') {
+                  setShowSuperAdminPinModal(false);
+                  setHeaderPinInput('');
+                  setCurrentStep('super_admin');
+                } else {
+                  setHeaderPinError(true);
+                  setTimeout(() => setHeaderPinError(false), 2500);
+                }
+              }}
+              className="space-y-3"
+            >
+              <div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    autoFocus
+                    value={headerPinInput}
+                    onChange={(e) => setHeaderPinInput(e.target.value)}
+                    placeholder="PIN kod (masalan: 7777)"
+                    maxLength={10}
+                    className={`w-full pl-10 pr-4 py-3 bg-gray-50 rounded-2xl border text-center font-mono tracking-widest text-lg font-black focus:outline-none focus:ring-2 ${
+                      headerPinError
+                        ? 'border-red-400 bg-red-50 text-red-600 focus:ring-red-300'
+                        : 'border-gray-200 focus:ring-brand-blue text-brand-blue'
+                    }`}
+                  />
+                </div>
+                {headerPinError && (
+                  <p className="text-[11px] text-red-500 font-bold text-center mt-1.5 animate-bounce">
+                    Noto'g'ri PIN kod! Qayta urinib ko'ring.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSuperAdminPinModal(false)}
+                  className="flex-1 py-2.5 rounded-2xl bg-gray-100 text-gray-700 font-bold text-xs hover:bg-gray-200 transition-colors"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-2xl bg-brand-blue text-white font-bold text-xs shadow hover:bg-brand-blue/90 active:scale-95 transition-all"
+                >
+                  Tasdiqlash
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Mijoz uchun Qulay Bottom Navigation Bar (Faqat katalog va navbatlarim ekranida) */}

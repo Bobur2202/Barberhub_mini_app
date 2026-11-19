@@ -1,7 +1,7 @@
 import React from 'react';
-import { Scissors } from 'lucide-react';
+import { Scissors, Crown } from 'lucide-react';
 
-export default function HeaderBar({ lang, setLang, t, userRole }) {
+export default function HeaderBar({ lang, setLang, t, userRole, onOpenSuperAdmin }) {
   return (
     <div className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100 px-4 py-2.5 flex items-center justify-between shadow-sm">
       {/* Brand logo / name */}
@@ -19,8 +19,18 @@ export default function HeaderBar({ lang, setLang, t, userRole }) {
         </div>
       </div>
 
-      {/* Language Selector (Faqat til tanlash turadi, hech qanday ortiqcha rejim switcheri yo'q) */}
+      {/* Language Selector & Super Admin Button */}
       <div className="flex items-center space-x-1.5">
+        {onOpenSuperAdmin && (
+          <button
+            onClick={onOpenSuperAdmin}
+            className="p-1 rounded-full text-gray-300 hover:text-amber-500 hover:bg-gray-100 transition-colors"
+            title="Super Admin"
+          >
+            <Crown className="w-3.5 h-3.5" />
+          </button>
+        )}
+
         <div className="relative flex items-center bg-gray-100 rounded-full p-0.5 border border-gray-200">
           <button
             onClick={() => setLang('uz')}
