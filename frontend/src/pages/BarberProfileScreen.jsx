@@ -78,15 +78,32 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
           </span>
         </div>
 
-        {/* Working Hours Badge */}
-        <div className="mt-2.5 inline-flex items-center space-x-1.5 bg-white/90 border border-blue-100 px-3 py-1.5 rounded-full shadow-2xs text-xs">
+        {/* Working Hours & Status Badge */}
+        <div className="mt-2.5 inline-flex flex-wrap items-center justify-center gap-1.5 bg-white/90 border border-blue-100 px-3 py-1.5 rounded-full shadow-2xs text-xs">
           <Clock className="w-3.5 h-3.5 text-brand-blue" />
           <span className="text-gray-600 font-medium">
             {t.work_hours_badge || "Ish vaqti"}: <strong className="text-brand-blue">{barber.workHours?.start || "09:00"} — {barber.workHours?.end || "22:00"}</strong>
           </span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-1"></span>
-          <span className="text-emerald-700 font-bold text-[10px]">{t.open_status || "Ochiq"}</span>
+          {barber.is_working_today === false || barber.isWorkingToday === false ? (
+            <span className="text-red-700 font-bold text-[10px] bg-red-100 px-2 py-0.5 rounded-full flex items-center space-x-1">
+              <span>🔴</span>
+              <span>{t.day_off_badge || "Bugun dam olish"}</span>
+            </span>
+          ) : (
+            <span className="text-emerald-700 font-bold text-[10px] bg-emerald-100 px-2 py-0.5 rounded-full flex items-center space-x-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>{t.open_status || "Ochiq"}</span>
+            </span>
+          )}
         </div>
+
+        {/* Weekly days off notice if configured */}
+        {(barber.days_off?.length > 0 || barber.daysOff?.length > 0) && (
+          <div className="mt-1 text-[11px] text-gray-500 flex items-center justify-center space-x-1">
+            <span className="text-gray-400">{t.days_off_title || "Dam olish kunlari"}:</span>
+            <span className="font-bold text-red-500">{(barber.days_off || barber.daysOff).join(', ')}</span>
+          </div>
+        )}
 
         {/* Address */}
         {barber.address && (

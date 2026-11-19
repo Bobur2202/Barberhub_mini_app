@@ -16,7 +16,7 @@ from database import (
     save_barbers_to_disk,
     save_appointments_to_disk
 )
-from bot import bot, dp, send_appointment_notification_to_barber
+from bot import bot, dp, send_appointment_notification_to_barber, send_appointment_status_to_client
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -186,6 +186,7 @@ async def create_appointment(data: AppointmentCreate):
         price=service.price,
         client_name=data.client_name,
         client_phone=data.client_phone,
+        client_telegram_id=data.client_telegram_id,
         date_str=data.date_str,
         time_slot=data.time_slot,
         status="pending",
@@ -219,16 +220,45 @@ def get_admin_appointments(barber_id: Optional[str] = None):
     return APPOINTMENTS_DB
 
 @app.patch("/api/admin/appointments/{appointment_id}/status")
-def update_appointment_status(appointment_id: str, status: str = Query(...)):
+async def update_appointment_status(appointment_id: str, status: str = Query(...)):
     """
     Usta navbatni qabul qilishi, bekor qilishi yoki 'keldi' deb belgilashi.
+    Mijozga avtomatik tarzda Telegram orqali xabar boradi!
     """
     for a in APPOINTMENTS_DB:
         if a.id == appointment_id:
             a.status = status
             save_appointments_to_disk(APPOINTMENTS_DB)
+
+            # Agar mijozning Telegram ID si mavjud bo'lsa, xabar jo'natamiz
+            if a.client_telegram_id:
+                try:
+                    await send_appointment_status_to_client(
+                        bot=bot,
+                        client_chat_id=a.client_telegram_id,
+                        appointment_data=a.model_dump(),
+                        status=status
+                    )
+                except Exception as err:
+                    print(f"Mijozga bildirishnoma xatolik: {err}")
+
             return a
     raise HTTPException(status_code=404, detail="Navbat topilmadi")
+
+class ScheduleUpdate(BaseModel):
+    is_working_today: bool = True
+    days_off: List[str] = []
+
+@app.put("/api/barbers/{barber_id}/schedule")
+def update_barber_schedule(barber_id: str, data: ScheduleUpdate):
+    """Ustaning bugungi ish holati va haftalik dam olish kunlarini yangilash"""
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    barber.is_working_today = data.is_working_today
+    barber.days_off = data.days_off
+    save_barbers_to_disk(BARBERS_DB)
+    return {"success": True, "is_working_today": barber.is_working_today, "days_off": barber.days_off}
 
 @app.get("/api/appointments/client", response_model=List[Appointment])
 def get_client_appointments(phone: Optional[str] = None):

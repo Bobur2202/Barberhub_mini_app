@@ -27,7 +27,7 @@ import {
   LogOut,
   Cloud
 } from 'lucide-react';
-import { getAdminAppointments, updateAppointmentStatus } from '../services/api';
+import { getAdminAppointments, updateAppointmentStatus, updateBarberSchedule } from '../services/api';
 import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
 import { mockBarbers } from '../data/mockBarbers';
 
@@ -100,17 +100,45 @@ export default function AdminDashboardScreen({
     }
   };
 
-  // 1. Ish vaqti sozlamalari
+  // 1. Ish vaqti va Dam olish kunlari sozlamalari
   const [showWorkHoursModal, setShowWorkHoursModal] = useState(false);
   const [tempWorkStart, setTempWorkStart] = useState(barberProfile.workHours?.start || "09:00");
   const [tempWorkEnd, setTempWorkEnd] = useState(barberProfile.workHours?.end || "22:00");
+  const [tempIsWorkingToday, setTempIsWorkingToday] = useState(barberProfile.isWorkingToday !== false);
+  const [tempDaysOff, setTempDaysOff] = useState(barberProfile.daysOff || []);
 
-  const handleSaveWorkHours = (e) => {
+  const handleToggleWorkingToday = async () => {
+    const nextStatus = barberProfile.isWorkingToday === false ? true : false;
+    updateProfileData({ isWorkingToday: nextStatus });
+    setTempIsWorkingToday(nextStatus);
+    if (barberProfile.id) {
+      await updateBarberSchedule(barberProfile.id, {
+        isWorkingToday: nextStatus,
+        daysOff: barberProfile.daysOff || [],
+      });
+    }
+  };
+
+  const handleToggleDayOff = (dayName) => {
+    setTempDaysOff(prev =>
+      prev.includes(dayName) ? prev.filter(d => d !== dayName) : [...prev, dayName]
+    );
+  };
+
+  const handleSaveWorkHours = async (e) => {
     e.preventDefault();
     updateProfileData({
-      workHours: { start: tempWorkStart, end: tempWorkEnd }
+      workHours: { start: tempWorkStart, end: tempWorkEnd },
+      isWorkingToday: tempIsWorkingToday,
+      daysOff: tempDaysOff,
     });
     setShowWorkHoursModal(false);
+    if (barberProfile.id) {
+      await updateBarberSchedule(barberProfile.id, {
+        isWorkingToday: tempIsWorkingToday,
+        daysOff: tempDaysOff,
+      });
+    }
   };
 
   // 2. Profil rasmi (Avatar)
@@ -429,17 +457,25 @@ export default function AdminDashboardScreen({
                 <h2 className="font-extrabold text-base text-brand-blue truncate">
                   {barberProfile.name}
                 </h2>
-                <div className="px-2.5 py-0.5 bg-green-100 text-green-700 font-bold rounded-full text-[10px] flex items-center space-x-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                  <span>{t.online_status}</span>
-                </div>
+                <button
+                  onClick={handleToggleWorkingToday}
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold flex items-center space-x-1 transition-all shadow-2xs ${
+                    barberProfile.isWorkingToday !== false
+                      ? 'bg-green-100 text-green-800 hover:bg-green-200 border border-green-200'
+                      : 'bg-red-100 text-red-800 hover:bg-red-200 border border-red-200'
+                  }`}
+                  title="Ish holatini o'zgartirish uchun bosing"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${barberProfile.isWorkingToday !== false ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                  <span>{barberProfile.isWorkingToday !== false ? (t.online_status || "Ishda") : (t.day_off_badge || "Dam olish")}</span>
+                </button>
               </div>
               
               <p className="text-xs text-gray-500 font-medium truncate mt-0.5">
                 {barberProfile.role || "Erkaklar sartaroshi"}
               </p>
 
-              {/* Ish vaqti tugmasi */}
+              {/* Ish vaqti va Dam olish kunlari tugmasi */}
               <div className="mt-2 flex items-center justify-between">
                 <button
                   onClick={() => setShowWorkHoursModal(true)}
@@ -457,6 +493,23 @@ export default function AdminDashboardScreen({
                   {t.change_avatar_btn || "Rasmni almashtirish"}
                 </button>
               </div>
+
+              {/* Dam olish holati xabarnomasi */}
+              {barberProfile.isWorkingToday === false && (
+                <div className="mt-2.5 p-2 bg-red-50 border border-red-200 rounded-xl flex items-center space-x-1.5 text-[11px] font-bold text-red-700">
+                  <AlertCircle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
+                  <span>Bugun dam olish kuni belgilangan (Mijozlar bugunga yozila olmaydi)</span>
+                </div>
+              )}
+
+              {barberProfile.daysOff && barberProfile.daysOff.length > 0 && barberProfile.isWorkingToday !== false && (
+                <div className="mt-2 text-[10px] text-gray-500 flex items-center space-x-1">
+                  <span>Haftalik dam olish:</span>
+                  <span className="font-bold text-brand-orange bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                    {barberProfile.daysOff.join(", ")}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1006,7 +1059,82 @@ export default function AdminDashboardScreen({
             </p>
 
             <form onSubmit={handleSaveWorkHours} className="space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
+              {/* Bugungi holat */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  {t.working_status_label || "Bugungi ish holati:"}
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTempIsWorkingToday(true)}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all ${
+                      tempIsWorkingToday
+                        ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <span>🟢</span>
+                    <span>{t.status_working || "Ishdaman"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTempIsWorkingToday(false)}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all ${
+                      !tempIsWorkingToday
+                        ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <span>🔴</span>
+                    <span>{t.status_day_off || "Bugun dam olish"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Haftalik dam olish kunlari */}
+              <div className="pt-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-0.5">
+                  {t.weekly_days_off || "Haftalik dam olish kunlari:"}
+                </label>
+                <p className="text-[10px] text-gray-400 mb-2">
+                  {t.days_off_desc || "Belgilangan kunlarda mijozlar navbat ololmaydi"}
+                </p>
+                <div className="grid grid-cols-7 gap-1">
+                  {[
+                    { key: "Dush", label: "Du" },
+                    { key: "Sesh", label: "Se" },
+                    { key: "Chor", label: "Ch" },
+                    { key: "Pay", label: "Pa" },
+                    { key: "Juma", label: "Ju" },
+                    { key: "Shan", label: "Sh" },
+                    { key: "Yak", label: "Ya" },
+                  ].map(day => {
+                    const isOff = tempDaysOff.includes(day.key);
+                    return (
+                      <button
+                        key={day.key}
+                        type="button"
+                        onClick={() => handleToggleDayOff(day.key)}
+                        className={`py-2 rounded-xl text-xs font-bold transition-all text-center ${
+                          isOff
+                            ? 'bg-red-500 text-white shadow-xs'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {day.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {tempDaysOff.length > 0 && (
+                  <p className="text-[10px] text-red-500 font-semibold mt-1">
+                    Dam olish: {tempDaysOff.join(", ")}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-1">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
                     {t.work_start_label || "Boshlanish vaqti"}

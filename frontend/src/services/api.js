@@ -251,3 +251,26 @@ export async function cancelClientAppointment(appointmentId) {
   }
   return { id: appointmentId, status: 'cancelled' };
 }
+
+/**
+ * 11. Ustaning ish rejimi va dam olish kunlarini yangilash
+ */
+export async function updateBarberSchedule(barberId, { isWorkingToday, daysOff }) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/barbers/${barberId}/schedule`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        is_working_today: isWorkingToday,
+        days_off: daysOff || [],
+      }),
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Ish rejimini yangilashda xatolik:', error.message);
+  }
+  return null;
+}

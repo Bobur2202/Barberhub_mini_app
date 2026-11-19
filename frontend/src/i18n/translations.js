@@ -201,6 +201,17 @@ export const translations = {
     comment_placeholder: "Soch turmagi, xizmat sifati va qulaylik haqida yozing...",
     submit_review_btn: "Izohni yuborish",
     review_success_toast: "Rahmat! Izohingiz qo'shildi va ustaning reytingi oshdi! ⭐",
+
+    // Ish holati va Dam olish kunlari (Schedule & Days Off)
+    working_status_label: "Bugungi ish holati",
+    status_working: "Bugun ishlayapman (Qabul ochiq)",
+    status_day_off: "Bugun dam olyapman (Qabul yopiq)",
+    days_off_title: "Dam olish kunlari",
+    weekly_days_off: "Haftalik dam olish kunlari",
+    days_off_desc: "Belgilangan kunlarda mijozlar navbat ololmaydi",
+    barber_not_working_today: "Usta bugun dam olmoqda",
+    day_off_badge: "Dam olish kuni",
+    select_another_day_notice: "Usta ushbu kunda dam oladi. Iltimos, boshqa ish kunini tanlang.",
   },
   
   ru: {
@@ -405,6 +416,17 @@ export const translations = {
     comment_placeholder: "Напишите о стрижке, сервисе и впечатлениях...",
     submit_review_btn: "Отправить отзыв",
     review_success_toast: "Спасибо! Ваш отзыв добавлен, рейтинг мастера повышен! ⭐",
+
+    // Статус работы и Выходные дни (Schedule & Days Off)
+    working_status_label: "Статус работы на сегодня",
+    status_working: "Работаю сегодня (Запись открыта)",
+    status_day_off: "Сегодня выходной (Запись закрыта)",
+    days_off_title: "Выходные дни",
+    weekly_days_off: "Еженедельные выходные дни",
+    days_off_desc: "В выбранные дни клиенты не смогут записаться",
+    barber_not_working_today: "Мастер сегодня отдыхает",
+    day_off_badge: "Выходной день",
+    select_another_day_notice: "Мастер отдыхает в этот день. Пожалуйста, выберите рабочий день.",
   },
   
   en: {
@@ -609,5 +631,16 @@ export const translations = {
     comment_placeholder: "Write about the haircut, comfort, and service...",
     submit_review_btn: "Submit Review",
     review_success_toast: "Thank you! Your review has been added and barber's rating increased! ⭐",
+
+    // Work Status & Days Off
+    working_status_label: "Today's Work Status",
+    status_working: "Working Today (Open for Bookings)",
+    status_day_off: "Day Off Today (Closed for Bookings)",
+    days_off_title: "Days Off",
+    weekly_days_off: "Weekly Days Off",
+    days_off_desc: "Clients will not be able to book on selected days",
+    barber_not_working_today: "Barber is off today",
+    day_off_badge: "Day Off",
+    select_another_day_notice: "The barber is resting on this day. Please select a working day.",
   }
 };

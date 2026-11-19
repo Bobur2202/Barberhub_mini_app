@@ -41,12 +41,16 @@ class Barber(BaseModel):
     # Working Hours & Salon Photos
     work_hours: Optional[dict] = {"start": "09:00", "end": "22:00"}
     salon_photos: List[str] = []
+    # Dam olish kunlari va ish holati
+    is_working_today: bool = True
+    days_off: List[str] = [] # e.g. ["Dush", "Yak"]
 
 class AppointmentCreate(BaseModel):
     barber_id: str
     service_id: str
     client_name: str
     client_phone: str
+    client_telegram_id: Optional[int] = None
     date_str: str
     time_slot: str
     notes: Optional[str] = None
@@ -60,6 +64,7 @@ class Appointment(BaseModel):
     price: int
     client_name: str
     client_phone: str
+    client_telegram_id: Optional[int] = None
     date_str: str
     time_slot: str
     status: str = "pending" # pending | accepted | completed | cancelled

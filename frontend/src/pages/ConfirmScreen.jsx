@@ -12,7 +12,9 @@ export default function ConfirmScreen({
   onBack,
   onBookingSuccess,
 }) {
-  const [clientName, setClientName] = useState('Sardorbek');
+  const [clientName, setClientName] = useState(() => {
+    return window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Sardorbek';
+  });
   const [phoneNumber, setPhoneNumber] = useState('+998 90 123 45 67');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -31,6 +33,7 @@ export default function ConfirmScreen({
       price: service.price,
       client_name: clientName,
       client_phone: phoneNumber,
+      client_telegram_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null,
       date_str: `${dateTime.day.dayName} ${dateTime.day.dateNum}-Noyabr`,
       time_slot: dateTime.time,
     };

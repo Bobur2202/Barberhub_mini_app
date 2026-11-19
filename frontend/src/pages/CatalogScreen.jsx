@@ -269,7 +269,7 @@ export default function CatalogScreen({
                   <h3 className="font-bold text-brand-blue text-base truncate">
                     {barber.name}
                   </h3>
-                  <div className="flex items-center space-x-3 mt-0.5">
+                  <div className="flex items-center space-x-2 mt-0.5">
                     <div className="flex items-center text-amber-500 text-xs font-bold">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 mr-0.5" />
                       <span>{barber.rating}</span>
@@ -280,6 +280,17 @@ export default function CatalogScreen({
                       <Navigation className="w-2.5 h-2.5 mr-1 text-brand-orange" />
                       <span>{barber.displayDistance}</span>
                     </div>
+
+                    {/* Working Status Badge */}
+                    {barber.is_working_today === false || barber.isWorkingToday === false ? (
+                      <span className="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
+                        🔴 {t.day_off_badge || "Dam olish"}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        🟢 {t.open_status || "Ochiq"}
+                      </span>
+                    )}
                   </div>
                   <span className="text-[11px] text-gray-400 block mt-0.5 truncate">
                     {barber.address || t.barber_role}

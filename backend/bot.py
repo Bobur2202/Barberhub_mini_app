@@ -122,6 +122,64 @@ async def send_appointment_notification_to_barber(
             logger.error(f"Xabar yuborishda xatolik ({chat_id}): {e}")
 
 
+async def send_appointment_status_to_client(
+    bot: Bot,
+    client_chat_id: int,
+    appointment_data: dict,
+    status: str  # "accepted" | "rejected" | "cancelled" | "completed"
+):
+    """
+    Usta navbatni qabul qilganda, rad etganda yoki yakunlaganda mijozga Telegram orqali boradigan tezkor xabar.
+    """
+    if not client_chat_id:
+        return
+
+    barber_name = appointment_data.get("barber_name", "Usta")
+    service = appointment_data.get("service_name", "Xizmat")
+    date_str = appointment_data.get("date_str", "")
+    time_slot = appointment_data.get("time_slot", "")
+    price = appointment_data.get("price", 0)
+
+    if status == "accepted":
+        text = (
+            "🎉 <b>NAVBATINGIZ QABUL QILINDI!</b>\n\n"
+            f"💈 <b>Usta:</b> {barber_name}\n"
+            f"✂️ <b>Xizmat:</b> {service}\n"
+            f"📅 <b>Sana:</b> {date_str}\n"
+            f"⏰ <b>Vaqt:</b> {time_slot}\n"
+            f"💰 <b>Narxi:</b> {price:,} UZS\n\n"
+            "✅ Usta sizni belgilangan vaqtda kutadi. Sartaroshxonaga o'z vaqtida kelishingizni so'raymiz!"
+        )
+    elif status in ["rejected", "cancelled"]:
+        text = (
+            "❌ <b>NAVBAT BEKOR QILINDI</b>\n\n"
+            f"Hurmatli mijoz, usta <b>{barber_name}</b> {date_str} {time_slot} dagi navbatingizni bekor qildi.\n\n"
+            "Iltimos, boshqa bo'sh vaqt yoki boshqa ustani tanlang."
+        )
+    elif status == "completed":
+        text = (
+            "✨ <b>XIZMAT YAKUNLANDI!</b>\n\n"
+            f"💈 <b>Usta:</b> {barber_name}\n"
+            f"✂️ <b>Xizmat:</b> {service}\n\n"
+            "Tashrifingiz uchun tashakkur! Iltimos, Mini-App'ga kirib ustaga o'z baho va fikringizni bildiring ⭐"
+        )
+    else:
+        text = f"Navbatingiz holati yangilandi: {status}"
+
+    if not bot:
+        logger.info(f"\n[TELEGRAM PUSH SIMULATSIYA] Mijozga xabar yuborildi (Chat ID: {client_chat_id}):\n{text}")
+        return
+
+    try:
+        await bot.send_message(
+            chat_id=client_chat_id,
+            text=text,
+            parse_mode=ParseMode.HTML
+        )
+        logger.info(f"Mijozga xabarnoma yuborildi: {client_chat_id}")
+    except Exception as e:
+        logger.error(f"Mijozga xabar yuborishda xatolik ({client_chat_id}): {e}")
+
 
 @dp.callback_query(F.data.startswith("accept_"))
 async def callback_accept_appointment(callback: types.CallbackQuery):

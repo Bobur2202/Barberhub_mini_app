@@ -23,6 +23,8 @@ export const mockBarbers = [
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250",
     bio: "Klassik va zamonaviy soch turmaklash bo'yicha 7 yillik tajribaga ega usta.",
     workHours: { start: "09:00", end: "22:00" },
+    isWorkingToday: true,
+    daysOff: ["Dush"],
     salonPhotos: [
       "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
       "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700",
@@ -54,6 +56,8 @@ export const mockBarbers = [
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
     bio: "Zamonaviy soch turmaklari va soqol parvarishi. Har bir mijozga alohida e'tibor.",
     workHours: { start: "09:00", end: "22:00" },
+    isWorkingToday: true,
+    daysOff: ["Dush"],
     salonPhotos: [
       "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700",
       "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
@@ -84,6 +88,8 @@ export const mockBarbers = [
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250",
     bio: "Fade, Crop va Pompadour uslubidagi sochlarni mukammal darajada kesish bo'yicha mutaxassis.",
     workHours: { start: "10:00", end: "21:00" },
+    isWorkingToday: true,
+    daysOff: ["Yak"],
     salonPhotos: [
       "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=700",
       "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=700"
