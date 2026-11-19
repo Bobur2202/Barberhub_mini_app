@@ -55,6 +55,7 @@ class Appointment(BaseModel):
     id: str
     barber_id: str
     barber_name: str
+    barber_avatar: Optional[str] = None
     service_name: str
     price: int
     client_name: str
@@ -62,6 +63,9 @@ class Appointment(BaseModel):
     date_str: str
     time_slot: str
     status: str = "pending" # pending | accepted | completed | cancelled
+    reviewed: bool = False
+    client_rating: Optional[int] = None
+    client_comment: Optional[str] = None
     created_at: str
 
 # Persistent JSON Storage Setup

@@ -181,6 +181,7 @@ async def create_appointment(data: AppointmentCreate):
         id=apt_id,
         barber_id=barber.id,
         barber_name=barber.name,
+        barber_avatar=barber.avatar,
         service_name=service.name,
         price=service.price,
         client_name=data.client_name,
@@ -188,6 +189,7 @@ async def create_appointment(data: AppointmentCreate):
         date_str=data.date_str,
         time_slot=data.time_slot,
         status="pending",
+        reviewed=False,
         created_at=datetime.now().strftime("%Y-%m-%d %H:%M")
     )
     
@@ -227,6 +229,85 @@ def update_appointment_status(appointment_id: str, status: str = Query(...)):
             save_appointments_to_disk(APPOINTMENTS_DB)
             return a
     raise HTTPException(status_code=404, detail="Navbat topilmadi")
+
+@app.get("/api/appointments/client", response_model=List[Appointment])
+def get_client_appointments(phone: Optional[str] = None):
+    """Mijozning o'z navbatlari ro'yxatini olish"""
+    if phone:
+        clean_phone = phone.replace(" ", "").replace("-", "")
+        return [
+            a for a in APPOINTMENTS_DB 
+            if a.client_phone.replace(" ", "").replace("-", "") == clean_phone
+        ]
+    return APPOINTMENTS_DB
+
+@app.patch("/api/appointments/{appointment_id}/cancel")
+def client_cancel_appointment(appointment_id: str):
+    """Mijoz navbatni bekor qilishi"""
+    for a in APPOINTMENTS_DB:
+        if a.id == appointment_id:
+            a.status = "cancelled"
+            save_appointments_to_disk(APPOINTMENTS_DB)
+            return a
+    raise HTTPException(status_code=404, detail="Navbat topilmadi")
+
+# ================= MIJOZ TOMONIDAN IZOH VA REYTING (REVIEWS) =================
+
+class ReviewCreate(BaseModel):
+    author: str
+    rating: int  # 1 to 5
+    comment: str
+    appointment_id: Optional[str] = None
+
+@app.post("/api/barbers/{barber_id}/reviews")
+def add_barber_review(barber_id: str, data: ReviewCreate):
+    """
+    Mijoz xizmatdan foydalangandan so'ng ustaga izoh va baho (1-5) berishi.
+    Ustaning umumiy reytingi va izohlar soni avtomatik qayta hisoblanadi.
+    """
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+
+    rating_val = max(1, min(5, data.rating))
+
+    new_review = Review(
+        id=f"rev-{uuid.uuid4().hex[:8]}",
+        author=data.author or "Mijoz",
+        rating=rating_val,
+        date=datetime.now().strftime("%d-%m-%Y"),
+        comment=data.comment or "Xizmat a'lo darajada!"
+    )
+
+    if not hasattr(barber, 'reviews') or barber.reviews is None:
+        barber.reviews = []
+    
+    barber.reviews.insert(0, new_review)
+
+    # Reytingni qayta hisoblash
+    all_ratings = [r.rating for r in barber.reviews if r.rating > 0]
+    if all_ratings:
+        barber.rating = round(sum(all_ratings) / len(all_ratings), 1)
+    barber.reviews_count = len(barber.reviews)
+
+    save_barbers_to_disk(BARBERS_DB)
+
+    # Agar appointment_id berilgan bo'lsa, navbatni "izoh qoldirilgan" deb belgilaymiz
+    if data.appointment_id:
+        for apt in APPOINTMENTS_DB:
+            if apt.id == data.appointment_id:
+                apt.reviewed = True
+                apt.client_rating = rating_val
+                apt.client_comment = data.comment
+                save_appointments_to_disk(APPOINTMENTS_DB)
+                break
+
+    return {
+        "success": True,
+        "new_rating": barber.rating,
+        "reviews_count": barber.reviews_count,
+        "review": new_review
+    }
 
 # ================= USTA XIZMATLARINI BOSHQARISH (CRUD) =================
 

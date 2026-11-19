@@ -7,13 +7,20 @@ import {
   Loader2,
   Navigation,
   Crosshair,
-  Check
+  Check,
+  Scissors,
+  Calendar
 } from 'lucide-react';
 import { getBarbers } from '../services/api';
 import { calculateDistanceKm, formatDistance } from '../data/mockBarbers';
 import { UZBEKISTAN_REGIONS } from '../data/regionsData';
 
-export default function CatalogScreen({ t, onSelectBarber }) {
+export default function CatalogScreen({
+  t,
+  onSelectBarber,
+  onGoToAppointments,
+  activeAppointmentsCount = 0
+}) {
   const [selectedFilter, setSelectedFilter] = useState('nearest'); // 'nearest' | 'top_rated' | 'available_today'
   const [searchQuery, setSearchQuery] = useState('');
   const [barbersList, setBarbersList] = useState([]);
@@ -119,6 +126,29 @@ export default function CatalogScreen({ t, onSelectBarber }) {
     <div className="min-h-screen bg-[#E6EDF9] pb-24 max-w-md mx-auto">
       {/* Top Location Bar */}
       <div className="pt-4 px-4 pb-2">
+        {/* Client Top Tab Navigation */}
+        <div className="grid grid-cols-2 gap-2 bg-gray-200/60 p-1 rounded-2xl mb-3">
+          <button
+            className="py-2 rounded-xl text-xs font-bold bg-brand-blue text-white shadow-sm flex items-center justify-center space-x-1.5"
+          >
+            <Scissors className="w-3.5 h-3.5" />
+            <span>{t.catalog_tab || "Ustalar"}</span>
+          </button>
+
+          <button
+            onClick={onGoToAppointments}
+            className="py-2 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 transition-all flex items-center justify-center space-x-1.5"
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{t.my_appointments_tab || "Navbatlarim"}</span>
+            {activeAppointmentsCount > 0 && (
+              <span className="text-[10px] bg-brand-orange text-brand-blue font-extrabold px-1.5 py-0.2 rounded-full">
+                {activeAppointmentsCount}
+              </span>
+            )}
+          </button>
+        </div>
+
         <span className="text-[11px] text-gray-400 font-medium block">
           {t.location_label}
         </span>

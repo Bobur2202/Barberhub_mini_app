@@ -23,21 +23,24 @@ export default function ConfirmScreen({
 
     const payload = {
       barber_id: barber.id,
+      barber_name: barber.name,
+      barber_avatar: barber.avatar,
+      barber_phone: barber.phone || "+998 90 123 45 67",
       service_id: service.id,
+      service_name: service.name,
+      price: service.price,
       client_name: clientName,
       client_phone: phoneNumber,
       date_str: `${dateTime.day.dayName} ${dateTime.day.dateNum}-Noyabr`,
       time_slot: dateTime.time,
-      service_name: service.name,
-      price: service.price,
-      barber_name: barber.name,
     };
 
     try {
       const result = await createAppointment(payload);
-      setConfirmedData(result);
+      setConfirmedData(result || payload);
     } catch (err) {
       console.error('Booking xatosi:', err);
+      setConfirmedData(payload);
     } finally {
       setIsSubmitting(false);
       setShowSuccessModal(true);
@@ -208,15 +211,27 @@ export default function ConfirmScreen({
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                setShowSuccessModal(false);
-                onBookingSuccess();
-              }}
-              className="w-full mt-5 py-3 rounded-xl bg-brand-blue text-white font-bold text-xs hover:bg-brand-blue-dark transition-all"
-            >
-              {t.back_to_catalog}
-            </button>
+            <div className="space-y-2 mt-5">
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  onBookingSuccess(confirmedData || payload, 'appointments');
+                }}
+                className="w-full py-3.5 rounded-xl bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-extrabold text-xs shadow-md transition-all flex items-center justify-center space-x-1.5"
+              >
+                <span>📋 {t.my_appointments_tab || "Navbatlarimni ko'rish"}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  onBookingSuccess(confirmedData || payload, 'catalog');
+                }}
+                className="w-full py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition-all"
+              >
+                {t.back_to_catalog}
+              </button>
+            </div>
           </div>
         </div>
       )}

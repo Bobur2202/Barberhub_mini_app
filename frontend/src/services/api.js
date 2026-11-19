@@ -182,3 +182,72 @@ export async function deleteBarberAccount(barberId) {
   }
   return { success: true };
 }
+
+/**
+ * 8. Mijoz tomonidan ustaga izoh va baho berish (Review)
+ * Ustaning umumiy reytingi oshadi
+ */
+export async function submitBarberReview({ barberId, author, rating, comment, appointmentId }) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/barbers/${barberId}/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        author,
+        rating,
+        comment,
+        appointment_id: appointmentId
+      }),
+      signal: AbortSignal.timeout(4000),
+    });
+
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Izoh yuborishda xatolik:', error.message);
+  }
+  return null;
+}
+
+/**
+ * 9. Mijozning navbatlarini olish
+ */
+export async function getClientAppointments(phone = null) {
+  try {
+    const url = phone 
+      ? `${API_BASE_URL}/appointments/client?phone=${encodeURIComponent(phone)}`
+      : `${API_BASE_URL}/appointments/client`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000),
+    });
+
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Mijoz navbatlarini olishda xatolik:', error.message);
+  }
+  return [];
+}
+
+/**
+ * 10. Mijoz navbatni bekor qilishi
+ */
+export async function cancelClientAppointment(appointmentId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/cancel`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Navbatni bekor qilishda xatolik:', error.message);
+  }
+  return { id: appointmentId, status: 'cancelled' };
+}
