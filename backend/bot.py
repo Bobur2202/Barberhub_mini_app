@@ -181,6 +181,44 @@ async def send_appointment_status_to_client(
         logger.error(f"Mijozga xabar yuborishda xatolik ({client_chat_id}): {e}")
 
 
+async def send_appointment_reminder_to_client(bot, client_chat_id: int, appointment_data: dict, minutes_left: int = 60):
+    """
+    Navbatga 1 soat (yoki belgilangan vaqt) qolganda mijozga Telegram eslatmasi
+    """
+    if not client_chat_id:
+        return
+
+    barber_name = appointment_data.get("barber_name", "Sartarosh")
+    service = appointment_data.get("service_name", "Soch turmaklash")
+    date_str = appointment_data.get("date_str", "Bugun")
+    time_slot = appointment_data.get("time_slot", "15:00")
+    client_name = appointment_data.get("client_name", "Mijoz")
+
+    text = (
+        f"⏰ <b>QABULINGIZGA 1 SOAT QOLDI!</b>\n\n"
+        f"Hurmatli <b>{client_name}</b>,\n"
+        f"Sizning <b>{barber_name}</b> qabuliga yozilgan navbatingizga taxminan 1 soat vaqt qoldi.\n\n"
+        f"💈 <b>Usta:</b> {barber_name}\n"
+        f"✂️ <b>Xizmat:</b> {service}\n"
+        f"🕒 <b>Vaqti:</b> {date_str}, {time_slot}\n\n"
+        f"📍 Sartaroshxonaga o'z vaqtida yetib kelishingizni so'raymiz! ✂️"
+    )
+
+    if not bot:
+        logger.info(f"\n[TELEGRAM ESLATMA SIMULATSIYA] Mijozga eslatma yuborildi (Chat ID: {client_chat_id}):\n{text}")
+        return
+
+    try:
+        await bot.send_message(
+            chat_id=client_chat_id,
+            text=text,
+            parse_mode=ParseMode.HTML
+        )
+        logger.info(f"Mijozga 1 soatlik eslatma yuborildi: {client_chat_id}")
+    except Exception as e:
+        logger.error(f"Mijozga eslatma yuborishda xatolik ({client_chat_id}): {e}")
+
+
 @dp.callback_query(F.data.startswith("accept_"))
 async def callback_accept_appointment(callback: types.CallbackQuery):
     apt_id = callback.data.split("_")[1]

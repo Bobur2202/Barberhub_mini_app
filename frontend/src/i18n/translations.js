@@ -212,6 +212,12 @@ export const translations = {
     barber_not_working_today: "Usta bugun dam olmoqda",
     day_off_badge: "Dam olish kuni",
     select_another_day_notice: "Usta ushbu kunda dam oladi. Iltimos, boshqa ish kunini tanlang.",
+
+    // Eslatmalar (Reminders SMS & Telegram)
+    btn_send_reminder: "🔔 Eslatma (SMS + TG)",
+    reminder_sent_badge: "Eslatma yuborildi (SMS + TG)",
+    reminder_success_toast: "Mijozga 1 soatlik eslatma SMS va Telegram orqali yuborildi! 🔔",
+    auto_reminder_badge: "Avto-eslatma: 1 soat oldin (SMS + Telegram)",
   },
   
   ru: {
@@ -427,6 +433,12 @@ export const translations = {
     barber_not_working_today: "Мастер сегодня отдыхает",
     day_off_badge: "Выходной день",
     select_another_day_notice: "Мастер отдыхает в этот день. Пожалуйста, выберите рабочий день.",
+
+    // Напоминания (Reminders SMS & Telegram)
+    btn_send_reminder: "🔔 Напомнить (SMS + TG)",
+    reminder_sent_badge: "Напоминание отправлено (SMS + TG)",
+    reminder_success_toast: "Клиенту отправлено напоминание через SMS и Telegram! 🔔",
+    auto_reminder_badge: "Авто-напоминание: за 1 час (SMS + Telegram)",
   },
   
   en: {
@@ -642,5 +654,11 @@ export const translations = {
     barber_not_working_today: "Barber is off today",
     day_off_badge: "Day Off",
     select_another_day_notice: "The barber is resting on this day. Please select a working day.",
+
+    // Reminders SMS & Telegram
+    btn_send_reminder: "🔔 Reminder (SMS + TG)",
+    reminder_sent_badge: "Reminder sent (SMS + TG)",
+    reminder_success_toast: "Reminder sent to client via SMS and Telegram! 🔔",
+    auto_reminder_badge: "Auto-reminder: 1h before (SMS + Telegram)",
   }
 };

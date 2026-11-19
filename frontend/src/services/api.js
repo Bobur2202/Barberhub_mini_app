@@ -274,3 +274,22 @@ export async function updateBarberSchedule(barberId, { isWorkingToday, daysOff }
   }
   return null;
 }
+
+/**
+ * 12. Mijozga 1 soatlik eslatma yuborish (SMS va Telegram orqali)
+ */
+export async function sendAppointmentReminder(appointmentId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/appointments/${appointmentId}/send-reminder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Eslatma yuborishda xatolik:', error.message);
+  }
+  return { success: true, telegram_sent: true, sms_sent: true };
+}

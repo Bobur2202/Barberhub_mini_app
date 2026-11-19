@@ -71,6 +71,8 @@ class Appointment(BaseModel):
     reviewed: bool = False
     client_rating: Optional[int] = None
     client_comment: Optional[str] = None
+    reminder_sent: bool = False
+    sms_sent: bool = False
     created_at: str
 
 # Persistent JSON Storage Setup

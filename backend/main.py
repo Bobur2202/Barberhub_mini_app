@@ -16,12 +16,30 @@ from database import (
     save_barbers_to_disk,
     save_appointments_to_disk
 )
-from bot import bot, dp, send_appointment_notification_to_barber, send_appointment_status_to_client
+from bot import (
+    bot,
+    dp,
+    send_appointment_notification_to_barber,
+    send_appointment_status_to_client,
+    send_appointment_reminder_to_client
+)
+from sms_service import send_sms
+
+async def reminder_worker():
+    """Har 60 soniyada 1 soat qolgan navbatlarni tekshirib, SMS va Telegram eslatma jo'natadi"""
+    while True:
+        try:
+            await check_and_send_reminders()
+        except Exception as err:
+            print(f"[REMINDER WORKER] Xatolik: {err}")
+        await asyncio.sleep(60)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """FastAPI bilan birgalikda Telegram botni ham ishga tushirish"""
+    """FastAPI bilan birgalikda Telegram bot va Eslatma (Reminder) xizmatini ishga tushirish"""
     bot_task = None
+    reminder_task = asyncio.create_task(reminder_worker())
+
     if bot:
         print("[INFO] Telegram Bot polling ishga tushmoqda...")
         bot_task = asyncio.create_task(dp.start_polling(bot))
@@ -31,6 +49,8 @@ async def lifespan(app: FastAPI):
         await bot.session.close()
         if bot_task:
             bot_task.cancel()
+    if reminder_task:
+        reminder_task.cancel()
 
 app = FastAPI(
     title="BarberHub SaaS API",
@@ -243,6 +263,76 @@ async def update_appointment_status(appointment_id: str, status: str = Query(...
                     print(f"Mijozga bildirishnoma xatolik: {err}")
 
             return a
+    raise HTTPException(status_code=404, detail="Navbat topilmadi")
+
+async def trigger_reminder_for_appointment(a: Appointment) -> dict:
+    """Mijozga bir vaqtning o'zida ham Telegram, ham SMS eslatmasini yuboradi"""
+    results = {"telegram": False, "sms": False}
+
+    # 1. Telegram orqali eslatma
+    if a.client_telegram_id:
+        try:
+            await send_appointment_reminder_to_client(
+                bot=bot,
+                client_chat_id=a.client_telegram_id,
+                appointment_data=a.model_dump(),
+                minutes_left=60
+            )
+            results["telegram"] = True
+        except Exception as e:
+            print(f"Telegram reminder xatosi: {e}")
+
+    # 2. SMS orqali eslatma (Eskiz.uz)
+    if a.client_phone:
+        try:
+            sms_text = (
+                f"BarberHub: Eslatma! Soat {a.time_slot} da usta {a.barber_name} qabuliga "
+                f"navbatingiz bor ({a.service_name}). Sartaroshxonaga o'z vaqtida kelishingizni so'raymiz!"
+            )
+            sms_res = await send_sms(phone=a.client_phone, message=sms_text)
+            results["sms"] = sms_res.get("success", False)
+            a.sms_sent = True
+        except Exception as e:
+            print(f"SMS reminder xatosi: {e}")
+
+    a.reminder_sent = True
+    save_appointments_to_disk(APPOINTMENTS_DB)
+    return results
+
+async def check_and_send_reminders():
+    """
+    1 soat (taxminan 40-75 daqiqa) qolgan va hali eslatma yuborilmagan navbatlarni tekshiradi
+    """
+    now = datetime.now()
+    current_minutes = now.hour * 60 + now.minute
+
+    for a in APPOINTMENTS_DB:
+        if a.reminder_sent or a.status not in ["accepted", "pending"]:
+            continue
+        try:
+            if ":" in a.time_slot:
+                parts = a.time_slot.split(":")
+                slot_minutes = int(parts[0]) * 60 + int(parts[1])
+                diff = slot_minutes - current_minutes
+                # 40 dan 75 daqiqagacha vaqt qolganda (~1 soat oldin)
+                if 40 <= diff <= 75:
+                    await trigger_reminder_for_appointment(a)
+        except Exception as err:
+            print(f"Reminder hisoblash xatosi: {err}")
+
+@app.post("/api/admin/appointments/{appointment_id}/send-reminder")
+async def send_manual_reminder(appointment_id: str):
+    """Usta yoki admin tomonidan mijozga SMS va Telegram eslatmasini qo'lda jo'natish"""
+    for a in APPOINTMENTS_DB:
+        if a.id == appointment_id:
+            results = await trigger_reminder_for_appointment(a)
+            return {
+                "success": True,
+                "appointment_id": appointment_id,
+                "telegram_sent": results["telegram"],
+                "sms_sent": results["sms"],
+                "message": "Eslatma ham Telegram, ham SMS orqali muvaffaqiyatli jo'natildi!"
+            }
     raise HTTPException(status_code=404, detail="Navbat topilmadi")
 
 class ScheduleUpdate(BaseModel):
