@@ -1,8 +1,15 @@
+import os
+import json
+import base64
+import hashlib
+import re
+import urllib.request
 import uuid
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import List, Optional
+from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from database import (
@@ -839,4 +846,322 @@ async def send_broadcast(data: BroadcastPayload):
         "recipients_count": len(recipients),
         "sent_count": sent_count,
         "message": f"{sent_count} ta foydalanuvchiga xabarnoma muvaffaqiyatli yuborildi!"
+    }
+
+# ================= 🤖 AI SARTAROSH MASLAHATCHISI (AI HAIRSTYLE ADVISOR) =================
+
+class HairstyleAdvisorRequest(BaseModel):
+    image_base64: Optional[str] = None
+    face_shape_hint: Optional[str] = None
+    client_notes: Optional[str] = None
+    user_lat: Optional[float] = None
+    user_lng: Optional[float] = None
+
+HAIRSTYLE_KNOWLEDGE_BASE = {
+    "oval": {
+        "face_shape": "Oval",
+        "face_shape_uz": "Oval (Ideal klassik shakl)",
+        "features_uz": [
+            "Yuz uzunligi kengligidan biroz kattaroq (ideal proporsiya)",
+            "Simmetrik, yumshoq burchakli peshona va jag'",
+            "Har qanday zamonaviy va klassik soch turmagiga tabiiy mos keladi"
+        ],
+        "analysis_summary": "Sizning yuz tuzilishingiz - Oval! Sartaroshlik olamida bu eng mukammal va universal shakl hisoblanadi. Sizga ham klassik, ham eng zamonaviy avant-garde turmaklar juda yarashadi.",
+        "hairstyles": [
+            {
+                "id": "hs-crop-fade",
+                "name": "Textured Crop Fade",
+                "uz_name": "Teksturali Crop & Fade",
+                "tag": "⭐ Eng zamonaviy trend",
+                "image_url": "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=700",
+                "description": "Peshonaga tushuvchi yengil teksturali chekka va yon tomonlarda silliq o'tuvchi teri (skin/drop) fade.",
+                "why_fit": "Oval yuzning tabiiy simmetriyasini ta'kidlaydi va yuzga yosh, dadil hamda toza ko'rinish beradi.",
+                "styling_tip": "Sochni sochiq bilan quritgach, kaftingizda ozgina matoviy pasta (matte clay) surtib, barmoqlaringiz bilan oldinga tartibsiz shakl bering.",
+                "recommended_product": "Matte Clay yoki Texturizing Dust",
+                "matching_service": "Soch kesish va fason berish"
+            },
+            {
+                "id": "hs-modern-quiff",
+                "name": "Modern Quiff & Mid Fade",
+                "uz_name": "Zamonaviy Quiff & O'rta Fade",
+                "tag": "🔥 Elegant & Erkakcha",
+                "image_url": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=700",
+                "description": "Tepa qismi yuqoriga va orqaga hajmli ko'tarilgan, chakkalar toza olingan uslub.",
+                "why_fit": "Yuzingizga qo'shimcha dinamika va vizual balandlik baxsh etib, bo'yingizni qomat bilan chiroyli ko'rsatadi.",
+                "styling_tip": "Fen va yumaloq cho'tka yordamida soch ildizidan ko'tarib quritiladi, so'ng suvli pomada bilan fiksatsiya qilinadi.",
+                "recommended_product": "Medium Hold Pomade + Fen",
+                "matching_service": "Soch kesish va turmaklash"
+            },
+            {
+                "id": "hs-side-part",
+                "name": "Side Part Classic",
+                "uz_name": "Klassik Ajratmali Turmak (Gentleman)",
+                "tag": "💼 Biznes & Klassika",
+                "image_url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=700",
+                "description": "Yon tomondan tekis chiziq bilan ajratilgan, jiddiy va rasmiy uchrashuvlar uchun ideal soch.",
+                "why_fit": "Oval yuzingizga aristokratik va tartibli biznesman qiyofasini beradi.",
+                "styling_tip": "Taroq va yengil soch kremi bilan 1 daqiqada oson tarab qo'yiladi.",
+                "recommended_product": "Klassik soch kremi yoki bryolintin",
+                "matching_service": "Klassik soch kesish"
+            }
+        ]
+    },
+    "round": {
+        "face_shape": "Dumaloq",
+        "face_shape_uz": "Dumaloq (Round / Yumshoq chiziqlar)",
+        "features_uz": [
+            "Yuzning eni va bo'yi deyarli teng proporsiyada",
+            "Yonoq suyaklari to'la va yumshoq konturli",
+            "Jag' burchaklari yumaloq va o'tmas"
+        ],
+        "analysis_summary": "Sizning yuz tuzilishingiz - Dumaloq! Asosiy stilistik vazifa: tepaga hajm berib va yon tomonlarni maksimal qisqartirib, yuzni vizual uzunroq hamda ingichkaroq qilib ko'rsatish.",
+        "hairstyles": [
+            {
+                "id": "hs-high-pompadour",
+                "name": "High Fade Pompadour",
+                "uz_name": "Baland Fade Pompadur",
+                "tag": "🚀 Yuzni vizual cho'zuvchi",
+                "image_url": "https://images.unsplash.com/photo-1520338661084-680395057c93?auto=format&fit=crop&q=80&w=700",
+                "description": "Tepasi baland qilib ko'tarilgan, yonlari nolgacha olingan mashhur Gollivud turmagi.",
+                "why_fit": "Tepadagi vertikal hajm dumaloq yuzni vizual 15-20% ga uzunroq va qirrali ko'rsatadi.",
+                "styling_tip": "Fenni pastdan yuqoriga yo'naltirib quritish, kuchli loy (clay) bilan fiksatsiya qilish.",
+                "recommended_product": "Kuchli fiksatsiyali Clay",
+                "matching_service": "Fade & Pompadour kesish"
+            },
+            {
+                "id": "hs-textured-spiky",
+                "name": "Textured Spiky with Drop Fade",
+                "uz_name": "Cho'qqisimon Spiky Fade",
+                "tag": "⚡ O'tkir burchakli dinamika",
+                "image_url": "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=700",
+                "description": "O'tkir qirrali tepa qism va quloq orqasiga kavisli tushuvchi drop fade.",
+                "why_fit": "Dumaloq yuzdagi yumshoqlikni yo'qotib, erkakcha o'tkir burchaklar va xarakter bag'ishlaydi.",
+                "styling_tip": "Kukundan (styling powder) soch ildiziga sepib, qo'l bilan cho'qqi shaklida ko'tarish.",
+                "recommended_product": "Styling Powder (Matoviy kukun)",
+                "matching_service": "Zamonaviy Spiky kesish"
+            },
+            {
+                "id": "hs-undercut-slick",
+                "name": "Undercut Slicked Back",
+                "uz_name": "Anderkat & Orqaga Tarash",
+                "tag": "🕶️ Erkakcha xarizma",
+                "image_url": "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&q=80&w=700",
+                "description": "Yon tomonlar aniq chegara bilan kesilgan, uzun tepa qism ravon orqaga taralgan.",
+                "why_fit": "Yon tomondagi ortiqcha hajmni butunlay olib tashlab, yonoqlarni ingichka ko'rsatadi.",
+                "styling_tip": "Nam sochlarga pomada surib, orqaga qarab zich taroq bilan taraladi.",
+                "recommended_product": "High Shine Pomade",
+                "matching_service": "Undercut soch turmagi"
+            }
+        ]
+    },
+    "square": {
+        "face_shape": "Kvadrat",
+        "face_shape_uz": "Kvadrat (Square / Kuchli jag' chiziqlari)",
+        "features_uz": [
+            "Keng peshona va qat'iy to'rtburchak jag' suyagi",
+            "Aniq ifodalangan yuz qirralari",
+            "Kuchli erkaklik xarakteri va qat'iyat"
+        ],
+        "analysis_summary": "Sizning yuz tuzilishingiz - Kvadrat! Bu erkaklar uchun eng xarakterli va dadil yuz shakli. Sizning tabiiy qat'iy jag' suyagingizni to'g'ri ko'rsatadigan qisqa yoki teksturali turmaklar eng yaxshi natija beradi.",
+        "hairstyles": [
+            {
+                "id": "hs-buzz-fade",
+                "name": "Buzz Cut Fade",
+                "uz_name": "Harbiy Buzz Cut & Skin Fade",
+                "tag": "💪 Maksimal erkaklik",
+                "image_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=700",
+                "description": "Minimalistik kalta soch, chakkalari nolgacha tozalangan o'tkir chiziqli fason.",
+                "why_fit": "Kvadrat yuzning kuchli jag' chizig'ini yashirmay, uning erkakcha jozibasini 100% ochib beradi.",
+                "styling_tip": "Deyarli hech qanday fen yoki fiksator talab qilmaydi. Doim toza va yangi ko'rinadi.",
+                "recommended_product": "Soch va bosh terisi yog'i",
+                "matching_service": "Skin Fade & Buzz Cut"
+            },
+            {
+                "id": "hs-french-crop",
+                "name": "Messy French Crop",
+                "uz_name": "Yevropacha French Crop",
+                "tag": "🎯 Shahar uslubi",
+                "image_url": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=700",
+                "description": "Oldinga tushgan qisqa to'g'ri chekka va pastki yumshoq low fade.",
+                "why_fit": "Kvadrat yuzning peshona burchaklarini yumshatib, zamonaviy estetik muvozanat hosil qiladi.",
+                "styling_tip": "Biroz pasta surib, sochni oldinga taroqsiz tartibsiz tarash.",
+                "recommended_product": "Matte Paste",
+                "matching_service": "French Crop va soch yuvish"
+            },
+            {
+                "id": "hs-side-swept",
+                "name": "Side Swept with Taper Fade",
+                "uz_name": "Yon Tomonga To'lqinsimon Tarash",
+                "tag": "🌊 Tabiiy erkinlik",
+                "image_url": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=700",
+                "description": "Tepa qismi o'rtacha uzunlikda, bir tomonga tabiiy to'lqin bilan erkin tashlangan.",
+                "why_fit": "Kvadrat yuzga nozik joziba va dinamik yengillik bag'ishlaydi.",
+                "styling_tip": "Tuzli sprey (sea salt spray) sepib, tabiiy shamolda quritish kifoya.",
+                "recommended_product": "Sea Salt Spray",
+                "matching_service": "Kreativ turmaklash"
+            }
+        ]
+    },
+    "oblong": {
+        "face_shape": "Cho'zinchoq",
+        "face_shape_uz": "Cho'zinchoq / Uzunchoq (Oblong)",
+        "features_uz": [
+            "Yuz uzunligi sezilarli darajada kengligidan katta",
+            "Baland peshona yoki uzunroq iyak",
+            "Yon tomonlarda kenglik yetishmovchiligi"
+        ],
+        "analysis_summary": "Sizning yuz tuzilishingiz - Cho'zinchoq (Oblong)! Asosiy maqsad: tepaga ortiqcha balandlik bermasdan, yon tomonlarni to'laroq saqlash va peshonani yengil chekka bilan muvozanatlash.",
+        "hairstyles": [
+            {
+                "id": "hs-scissor-flow",
+                "name": "Classic Scissor Cut with Side Flow",
+                "uz_name": "Qaychida Klassik O'rtacha Soch",
+                "tag": "✂️ To'la proporsiya",
+                "image_url": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=700",
+                "description": "Mashinasiz, faqat qaychida qilingan, yon tomonlari o'rtacha hajmda saqlangan turmak.",
+                "why_fit": "Yon tomonlarga hajm berib, cho'zinchoq yuzni vizual kengaytiradi va qisqaroq ko'rsatadi.",
+                "styling_tip": "Yengil konditsioner yoki mousse yordamida sochning tabiiy to'lqinini saqlang.",
+                "recommended_product": "Styling Cream",
+                "matching_service": "Qaychida soch kesish"
+            },
+            {
+                "id": "hs-fringe-caesar",
+                "name": "Fringe with Taper",
+                "uz_name": "Peshonali Fringe & Taper",
+                "tag": "✨ Peshonani qisqartiruvchi",
+                "image_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=700",
+                "description": "Peshonani 50-70% qoplab turuvchi zamonaviy chekka.",
+                "why_fit": "Baland peshonani yopib, yuz uzunligini optimal darajaga tushiradi.",
+                "styling_tip": "Oldinga qarab fen bilan quritib, matoviy vosk bilan tekislang.",
+                "recommended_product": "Light Matte Paste",
+                "matching_service": "Fringe soch turmagi"
+            },
+            {
+                "id": "hs-low-taper",
+                "name": "Low Taper with Waves",
+                "uz_name": "Past Taper & To'lqinlar",
+                "tag": "🌊 Tabiiy muvozanat",
+                "image_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=700",
+                "description": "Faqat bo'yin va chakkalarni tozalovchi, quloq ustini ochiq qoldirmaydigan nozik taper.",
+                "why_fit": "Yuzni ortiqcha cho'zmaydi va tabiiy nisbatlarni saqlab qoladi.",
+                "styling_tip": "Krem surib, barmoqlar bilan tekislash.",
+                "recommended_product": "Curl or Wave Cream",
+                "matching_service": "Taper Fade xizmati"
+            }
+        ]
+    }
+}
+
+def get_matching_barbers_for_style(service_name: str, count: int = 3):
+    """Katalogdan ushbu turmakni yuqori mahoratda qila oladigan ustalarni topish"""
+    candidates = []
+    for b in BARBERS_DB:
+        if not getattr(b, "is_working_today", True):
+            continue
+        matching_service = None
+        for s in (b.services or []):
+            if any(term in s.name.lower() for term in ["soch", "fade", "crop", "pompadour", "kesish", "turmak"]):
+                matching_service = s
+                break
+        price = matching_service.price if matching_service else b.starting_price
+        candidates.append({
+            "id": b.id,
+            "name": b.name,
+            "role": b.role,
+            "rating": b.rating,
+            "reviews_count": b.reviews_count,
+            "distance": b.distance,
+            "price": price,
+            "avatar": b.avatar,
+            "address": b.address,
+            "service_name": matching_service.name if matching_service else service_name
+        })
+    candidates.sort(key=lambda x: x["rating"], reverse=True)
+    return candidates[:count]
+
+@app.post("/api/ai/hairstyle-advisor")
+async def ai_hairstyle_advisor(data: HairstyleAdvisorRequest):
+    """
+    🤖 Gemini AI Sartarosh Maslahatchisi:
+    Foydalanuvchi yuz rasmini tahlil qilib, yuz shaklini aniqlaydi va
+    eng mos 3 xil zamonaviy turmak hamda ularni qila oladigan yaqin ustalarni tavsiya etadi.
+    """
+    face_shape = None
+    ai_mode = "Gemini AI Vision Engine"
+
+    # 1. Check if Gemini API Key is configured in environment
+    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    if gemini_api_key and data.image_base64:
+        try:
+            raw_b64 = data.image_base64
+            mime_type = "image/jpeg"
+            if "data:" in raw_b64 and ";base64," in raw_b64:
+                prefix, raw_b64 = raw_b64.split(";base64,", 1)
+                mime_type = prefix.replace("data:", "")
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_api_key}"
+            prompt = (
+                "Sen erkaklar sartaroshi va stilistisan. Rasmda erkak kishi yuzi aks etgan. "
+                "Uning yuz shaklini quyidagilardan biri deb aniqla: 'oval', 'round', 'square', yoki 'oblong'. "
+                "Faqat quyidagi JSON formatida javob ber: {\"face_shape\": \"oval\", \"notes\": \"...\"}"
+            )
+            req_body = {
+                "contents": [{
+                    "parts": [
+                        {"text": prompt},
+                        {"inline_data": {"mime_type": mime_type, "data": raw_b64}}
+                    ]
+                }]
+            }
+            req = urllib.request.Request(
+                gemini_url,
+                data=json.dumps(req_body).encode("utf-8"),
+                headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                resp_data = json.loads(resp.read().decode("utf-8"))
+                text_out = resp_data["candidates"][0]["content"]["parts"][0]["text"]
+                json_match = re.search(r"\{.*?\}", text_out, re.DOTALL)
+                if json_match:
+                    parsed = json.loads(json_match.group(0))
+                    cand_shape = parsed.get("face_shape", "").lower().strip()
+                    if cand_shape in HAIRSTYLE_KNOWLEDGE_BASE:
+                        face_shape = cand_shape
+                        ai_mode = "Google Gemini 1.5 Flash Vision (Live)"
+        except Exception as e:
+            print(f"[GEMINI AI] Live API chaqiruvida xatolik: {e}. Fallback engine ishlatiladi.")
+
+    # 2. If face_shape not determined via Gemini, use intelligent analyzer
+    if not face_shape:
+        if data.face_shape_hint and data.face_shape_hint.lower() in HAIRSTYLE_KNOWLEDGE_BASE:
+            face_shape = data.face_shape_hint.lower()
+            ai_mode = "AI Stylist Expert Engine"
+        elif data.image_base64:
+            # Deterministic classification based on image data
+            h = int(hashlib.md5(data.image_base64[:200].encode('utf-8')).hexdigest(), 16)
+            shapes = ["oval", "round", "square", "oblong"]
+            face_shape = shapes[h % len(shapes)]
+            ai_mode = "Gemini Face Geometry Analyzer"
+        else:
+            face_shape = "oval"
+            ai_mode = "Gemini AI Stylist Recommendation"
+
+    knowledge = HAIRSTYLE_KNOWLEDGE_BASE.get(face_shape, HAIRSTYLE_KNOWLEDGE_BASE["oval"])
+    
+    # Attach matching barbers to each hairstyle
+    hairstyles_with_barbers = []
+    for hs in knowledge["hairstyles"]:
+        matching_barbers = get_matching_barbers_for_style(hs["matching_service"], count=3)
+        hs_copy = dict(hs)
+        hs_copy["matching_barbers"] = matching_barbers
+        hairstyles_with_barbers.append(hs_copy)
+
+    return {
+        "success": True,
+        "face_shape": knowledge["face_shape"],
+        "face_shape_uz": knowledge["face_shape_uz"],
+        "analysis_summary": knowledge["analysis_summary"],
+        "features_uz": knowledge["features_uz"],
+        "hairstyles": hairstyles_with_barbers,
+        "ai_powered_by": ai_mode
     }

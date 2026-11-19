@@ -10,7 +10,9 @@ import {
   Check,
   Scissors,
   Calendar,
-  Heart
+  Heart,
+  Sparkles,
+  ChevronRight as ChevronRightIcon
 } from 'lucide-react';
 import { getBarbers } from '../services/api';
 import { calculateDistanceKm, formatDistance } from '../data/mockBarbers';
@@ -20,7 +22,8 @@ export default function CatalogScreen({
   t,
   onSelectBarber,
   onGoToAppointments,
-  activeAppointmentsCount = 0
+  activeAppointmentsCount = 0,
+  onOpenAiAdvisor
 }) {
   const [selectedFilter, setSelectedFilter] = useState('nearest'); // 'nearest' | 'top_rated' | 'available_today' | 'favorites'
   const [searchQuery, setSearchQuery] = useState('');
@@ -215,6 +218,39 @@ export default function CatalogScreen({
             <span>GPS</span>
           </button>
         </div>
+
+        {/* 🤖 AI Sartarosh Maslahatchisi WOW Banner */}
+        {onOpenAiAdvisor && (
+          <div
+            onClick={onOpenAiAdvisor}
+            className="mt-3 bg-gradient-to-r from-[#003865] via-[#004B86] to-[#0A66C2] rounded-2xl p-3 text-white shadow-md relative overflow-hidden cursor-pointer group active:scale-[0.98] transition-all border border-blue-400/20"
+          >
+            <div className="absolute -top-6 -right-6 w-24 h-24 bg-brand-orange/25 rounded-full blur-xl pointer-events-none" />
+            <div className="flex items-center justify-between relative z-10">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white border border-white/20 group-hover:scale-105 transition-transform shrink-0">
+                  <Sparkles className="w-5 h-5 text-brand-orange animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-xs font-black tracking-tight text-white">
+                      AI Sartarosh Maslahatchisi
+                    </span>
+                    <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1.5 py-0.5 rounded-full uppercase">
+                      WOW AI
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-blue-100 font-medium leading-tight mt-0.5">
+                    Yuzingizga mos 3 xil zamonaviy turmakni AI orqali aniqlang
+                  </p>
+                </div>
+              </div>
+              <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0 group-hover:translate-x-0.5 transition-transform ml-2">
+                <ChevronRightIcon className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="relative mt-3">

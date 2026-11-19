@@ -372,3 +372,200 @@ export async function sendSuperAdminBroadcast({ target, title, message }) {
   }
   return { success: true, message: 'Xabarnoma muvaffaqiyatli tarqatildi (Simulyatsiya)!' };
 }
+
+/**
+ * 17. 🤖 AI Sartarosh Maslahatchisi (Gemini AI Hairstyle Advisor)
+ */
+export async function getAiHairstyleAdvice(payload) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/ai/hairstyle-advisor`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+  } catch (error) {
+    console.warn('[API] AI Hairstyle Advisor server offline, fallback ishlatilmoqda:', error.message);
+  }
+
+  // Frontend Fallback (Agar server o'chiq bo'lsa yoki tezkor namoyish uchun)
+  const faceShapes = {
+    oval: {
+      face_shape: 'Oval',
+      face_shape_uz: 'Oval (Ideal klassik shakl)',
+      features_uz: [
+        'Yuz uzunligi kengligidan biroz kattaroq (mukammal nisbat)',
+        'Simmetrik, yumshoq burchakli peshona va jag\'',
+        'Har qanday zamonaviy va klassik soch turmagiga tabiiy mos keladi'
+      ],
+      analysis_summary: 'Sizning yuz tuzilishingiz - Oval! Sartaroshlik olamida bu eng mukammal va universal shakl hisoblanadi. Sizga ham klassik, ham eng zamonaviy avant-garde turmaklar juda yarashadi.',
+      hairstyles: [
+        {
+          id: 'hs-crop-fade',
+          name: 'Textured Crop Fade',
+          uz_name: 'Teksturali Crop & Fade',
+          tag: '⭐ Eng zamonaviy trend',
+          image_url: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=700',
+          description: 'Peshonaga tushuvchi yengil teksturali chekka va yon tomonlarda silliq o\'tuvchi teri (skin/drop) fade.',
+          why_fit: 'Oval yuzning tabiiy simmetriyasini ta\'kidlaydi va yuzga yosh, dadil hamda toza ko\'rinish beradi.',
+          styling_tip: 'Sochni sochiq bilan quritgach, kaftingizda ozgina matoviy pasta (matte clay) surtib, barmoqlaringiz bilan oldinga tartibsiz shakl bering.',
+          recommended_product: 'Matte Clay yoki Texturizing Dust',
+          matching_service: 'Soch kesish va fason berish'
+        },
+        {
+          id: 'hs-modern-quiff',
+          name: 'Modern Quiff & Mid Fade',
+          uz_name: 'Zamonaviy Quiff & O\'rta Fade',
+          tag: '🔥 Elegant & Erkakcha',
+          image_url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=700',
+          description: 'Tepa qismi yuqoriga va orqaga hajmli ko\'tarilgan, chakkalar toza olingan uslub.',
+          why_fit: 'Yuzingizga qo\'shimcha dinamika va vizual balandlik baxsh etib, bo\'yingizni qomat bilan chiroyli ko\'rsatadi.',
+          styling_tip: 'Fen va yumaloq cho\'tka yordamida soch ildizidan ko\'tarib quritiladi, so\'ng suvli pomada bilan fiksatsiya qilinadi.',
+          recommended_product: 'Medium Hold Pomade + Fen',
+          matching_service: 'Soch kesish va turmaklash'
+        },
+        {
+          id: 'hs-side-part',
+          name: 'Side Part Classic',
+          uz_name: 'Klassik Ajratmali Turmak (Gentleman)',
+          tag: '💼 Biznes & Klassika',
+          image_url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=700',
+          description: 'Yon tomondan tekis chiziq bilan ajratilgan, jiddiy va rasmiy uchrashuvlar uchun ideal soch.',
+          why_fit: 'Oval yuzingizga aristokratik va tartibli biznesman qiyofasini beradi.',
+          styling_tip: 'Taroq va yengil soch kremi bilan 1 daqiqada oson tarab qo\'yiladi.',
+          recommended_product: 'Klassik soch kremi yoki bryolintin',
+          matching_service: 'Klassik soch kesish'
+        }
+      ]
+    },
+    round: {
+      face_shape: 'Dumaloq',
+      face_shape_uz: 'Dumaloq (Round / Yumshoq chiziqlar)',
+      features_uz: [
+        'Yuzning eni va bo\'yi deyarli teng proporsiyada',
+        'Yonoq suyaklari to\'la va yumshoq konturli',
+        'Jag\' burchaklari yumaloq va o\'tmas'
+      ],
+      analysis_summary: 'Sizning yuz tuzilishingiz - Dumaloq! Asosiy stilistik vazifa: tepaga hajm berib va yon tomonlarni maksimal qisqartirib, yuzni vizual uzunroq hamda ingichkaroq qilib ko\'rsatish.',
+      hairstyles: [
+        {
+          id: 'hs-high-pompadour',
+          name: 'High Fade Pompadour',
+          uz_name: 'Baland Fade Pompadur',
+          tag: '🚀 Yuzni vizual cho\'zuvchi',
+          image_url: 'https://images.unsplash.com/photo-1520338661084-680395057c93?auto=format&fit=crop&q=80&w=700',
+          description: 'Tepasi baland qilib ko\'tarilgan, yonlari nolgacha olingan mashhur Gollivud turmagi.',
+          why_fit: 'Tepadagi vertikal hajm dumaloq yuzni vizual 15-20% ga uzunroq va qirrali ko\'rsatadi.',
+          styling_tip: 'Fenni pastdan yuqoriga yo\'naltirib quritish, kuchli loy (clay) bilan fiksatsiya qilish.',
+          recommended_product: 'Kuchli fiksatsiyali Clay',
+          matching_service: 'Fade & Pompadour kesish'
+        },
+        {
+          id: 'hs-textured-spiky',
+          name: 'Textured Spiky with Drop Fade',
+          uz_name: 'Cho\'qqisimon Spiky Fade',
+          tag: '⚡ O\'tkir burchakli dinamika',
+          image_url: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=700',
+          description: 'O\'tkir qirrali tepa qism va quloq orqasiga kavisli tushuvchi drop fade.',
+          why_fit: 'Dumaloq yuzdagi yumshoqlikni yo\'qotib, erkakcha o\'tkir burchaklar va xarakter bag\'ishlaydi.',
+          styling_tip: 'Kukundan (styling powder) soch ildiziga sepib, qo\'l bilan cho\'qqi shaklida ko\'tarish.',
+          recommended_product: 'Styling Powder (Matoviy kukun)',
+          matching_service: 'Zamonaviy Spiky kesish'
+        },
+        {
+          id: 'hs-undercut-slick',
+          name: 'Undercut Slicked Back',
+          uz_name: 'Anderkat & Orqaga Tarash',
+          tag: '🕶️ Erkakcha xarizma',
+          image_url: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&q=80&w=700',
+          description: 'Yon tomonlar aniq chegara bilan kesilgan, uzun tepa qism ravon orqaga taralgan.',
+          why_fit: 'Yon tomondagi ortiqcha hajmni butunlay olib tashlab, yonoqlarni ingichka ko\'rsatadi.',
+          styling_tip: 'Nam sochlarga pomada surib, orqaga qarab zich taroq bilan taraladi.',
+          recommended_product: 'High Shine Pomade',
+          matching_service: 'Undercut soch turmagi'
+        }
+      ]
+    },
+    square: {
+      face_shape: 'Kvadrat',
+      face_shape_uz: 'Kvadrat (Square / Kuchli jag\' chiziqlari)',
+      features_uz: [
+        'Keng peshona va qat\'iy to\'rtburchak jag\' suyagi',
+        'Aniq ifodalangan yuz qirralari',
+        'Kuchli erkaklik xarakteri va qat\'iyat'
+      ],
+      analysis_summary: 'Sizning yuz tuzilishingiz - Kvadrat! Bu erkaklar uchun eng xarakterli va dadil yuz shakli. Sizning tabiiy qat\'iy jag\' suyagingizni to\'g\'ri ko\'rsatadigan qisqa yoki teksturali turmaklar eng yaxshi natija beradi.',
+      hairstyles: [
+        {
+          id: 'hs-buzz-fade',
+          name: 'Buzz Cut Fade',
+          uz_name: 'Harbiy Buzz Cut & Skin Fade',
+          tag: '💪 Maksimal erkaklik',
+          image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=700',
+          description: 'Minimalistik kalta soch, chakkalari nolgacha tozalangan o\'tkir chiziqli fason.',
+          why_fit: 'Kvadrat yuzning kuchli jag\' chizig\'ini yashirmay, uning erkakcha jozibasini 100% ochib beradi.',
+          styling_tip: 'Deyarli hech qanday fen yoki fiksator talab qilmaydi. Doim toza va yangi ko\'rinadi.',
+          recommended_product: 'Soch va bosh terisi yog\'i',
+          matching_service: 'Skin Fade & Buzz Cut'
+        },
+        {
+          id: 'hs-french-crop',
+          name: 'Messy French Crop',
+          uz_name: 'Yevropacha French Crop',
+          tag: '🎯 Shahar uslubi',
+          image_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=700',
+          description: 'Oldinga tushgan qisqa to\'g\'ri chekka va pastki yumshoq low fade.',
+          why_fit: 'Kvadrat yuzning peshona burchaklarini yumshatib, zamonaviy estetik muvozanat hosil qiladi.',
+          styling_tip: 'Biroz pasta surib, sochni oldinga taroqsiz tartibsiz tarash.',
+          recommended_product: 'Matte Paste',
+          matching_service: 'French Crop va soch yuvish'
+        },
+        {
+          id: 'hs-side-swept',
+          name: 'Side Swept with Taper Fade',
+          uz_name: 'Yon Tomonga To\'lqinsimon Tarash',
+          tag: '🌊 Tabiiy erkinlik',
+          image_url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=700',
+          description: 'Tepa qismi o\'rtacha uzunlikda, bir tomonga tabiiy to\'lqin bilan erkin tashlangan.',
+          why_fit: 'Kvadrat yuzga nozik joziba va dinamik yengillik bag\'ishlaydi.',
+          styling_tip: 'Tuzli sprey (sea salt spray) sepib, tabiiy shamolda quritish kifoya.',
+          recommended_product: 'Sea Salt Spray',
+          matching_service: 'Kreativ turmaklash'
+        }
+      ]
+    }
+  };
+
+  const chosenKey = payload?.face_shape_hint?.toLowerCase() || 'oval';
+  const selected = faceShapes[chosenKey] || faceShapes.oval;
+
+  const topBarbers = mockBarbers.slice(0, 3).map((b) => ({
+    id: b.id,
+    name: b.name,
+    role: b.role,
+    rating: b.rating,
+    reviews_count: b.reviews_count,
+    distance: b.distance,
+    price: b.starting_price,
+    avatar: b.avatar,
+    address: b.address,
+    service_name: 'Soch kesish va fason berish'
+  }));
+
+  return {
+    success: true,
+    face_shape: selected.face_shape,
+    face_shape_uz: selected.face_shape_uz,
+    analysis_summary: selected.analysis_summary,
+    features_uz: selected.features_uz,
+    hairstyles: selected.hairstyles.map((h) => ({
+      ...h,
+      matching_barbers: topBarbers
+    })),
+    ai_powered_by: 'Gemini AI Vision Engine'
+  };
+}

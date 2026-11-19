@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Scissors, Calendar, Lock, Crown } from 'lucide-react';
+import { Scissors, Calendar, Lock, Crown, Sparkles } from 'lucide-react';
 import { translations } from './i18n/translations';
 import { mockBarbers } from './data/mockBarbers';
 import { getBarberByTelegramId, deleteBarberAccount } from './services/api';
@@ -14,6 +14,7 @@ import ConfirmScreen from './pages/ConfirmScreen';
 import AdminDashboardScreen from './pages/AdminDashboardScreen';
 import ClientAppointmentsScreen from './pages/ClientAppointmentsScreen';
 import SuperAdminScreen from './pages/SuperAdminScreen';
+import AiHairstyleAdvisorScreen from './pages/AiHairstyleAdvisorScreen';
 
 export default function App() {
   // Application State
@@ -204,6 +205,24 @@ export default function App() {
     setCurrentStep('profile');
   };
 
+  const handleSelectBarberWithStyle = (barber, hairstyle) => {
+    const fullBarber = mockBarbers.find((b) => b.id === barber.id) || barber;
+    setSelectedBarber(fullBarber);
+
+    const matchingService = fullBarber.services?.find((s) =>
+      s.name.toLowerCase().includes('soch') || s.name.toLowerCase().includes('kesish')
+    ) || {
+      id: `ai-svc-${hairstyle?.id || 'style'}`,
+      name: hairstyle?.uz_name || hairstyle?.name || 'Soch kesish va turmaklash',
+      price: barber.price || fullBarber.starting_price || 60000,
+      duration: '45 daq',
+      note: `AI Maslahat: ${hairstyle?.name || ''}`
+    };
+
+    setSelectedService(matchingService);
+    setCurrentStep('datetime');
+  };
+
   const handleContinueFromProfile = (service) => {
     setSelectedService(service);
     setCurrentStep('datetime');
@@ -236,8 +255,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#E6EDF9] font-sans antialiased text-gray-900">
-      {/* Top Header Bar (Faqat splash, role_select, barber_register va super_admin'dan tashqari ko'rinadi) */}
-      {!['splash', 'role_select', 'barber_register', 'super_admin'].includes(currentStep) && (
+      {/* Top Header Bar (Faqat splash, role_select, barber_register, super_admin va ai_advisor'dan tashqari ko'rinadi) */}
+      {!['splash', 'role_select', 'barber_register', 'super_admin', 'ai_advisor'].includes(currentStep) && (
         <HeaderBar
           lang={lang}
           setLang={setLang}
@@ -295,7 +314,17 @@ export default function App() {
           lang={lang}
           onSelectBarber={handleSelectBarber}
           onGoToAppointments={() => setCurrentStep('my_appointments')}
+          onOpenAiAdvisor={() => setCurrentStep('ai_advisor')}
           activeAppointmentsCount={activeAppointmentsCount}
+        />
+      )}
+
+      {/* 5.5. 🤖 AI SARTAROSH MASLAHATCHISI (GEMINI AI VISION) */}
+      {currentStep === 'ai_advisor' && (
+        <AiHairstyleAdvisorScreen
+          t={t}
+          onBack={() => setCurrentStep('catalog')}
+          onSelectBarberWithStyle={handleSelectBarberWithStyle}
         />
       )}
 
@@ -431,9 +460,9 @@ export default function App() {
         </div>
       )}
 
-      {/* Mijoz uchun Qulay Bottom Navigation Bar (Faqat katalog va navbatlarim ekranida) */}
-      {userRole === 'client' && ['catalog', 'my_appointments'].includes(currentStep) && (
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 py-2.5 px-6 flex items-center justify-around shadow-lg z-40">
+      {/* Mijoz uchun Qulay Bottom Navigation Bar (Katalog, AI Maslahat va Navbatlarim) */}
+      {userRole === 'client' && ['catalog', 'ai_advisor', 'my_appointments'].includes(currentStep) && (
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 py-2 px-4 flex items-center justify-around shadow-lg z-40">
           <button
             onClick={() => setCurrentStep('catalog')}
             className={`flex flex-col items-center space-y-1 transition-all ${
@@ -444,6 +473,26 @@ export default function App() {
               <Scissors className="w-5 h-5" />
             </div>
             <span className="text-[11px]">{t.catalog_tab || "Ustalar"}</span>
+          </button>
+
+          {/* 🤖 AI Maslahatchi Tab */}
+          <button
+            onClick={() => setCurrentStep('ai_advisor')}
+            className={`flex flex-col items-center space-y-1 relative transition-all ${
+              currentStep === 'ai_advisor' ? 'text-brand-blue font-extrabold scale-105' : 'text-gray-400 font-medium hover:text-gray-600'
+            }`}
+          >
+            <div className={`p-1 rounded-xl relative ${
+              currentStep === 'ai_advisor'
+                ? 'bg-gradient-to-r from-brand-blue to-blue-600 text-white shadow-sm'
+                : 'text-gray-500 hover:text-brand-blue'
+            }`}>
+              <Sparkles className="w-5 h-5 text-brand-orange animate-pulse" />
+            </div>
+            <span className="text-[11px] flex items-center space-x-0.5">
+              <span>{t.ai_advisor_tab || "AI Maslahat"}</span>
+              <span className="text-[8px] bg-brand-orange text-brand-blue font-black px-1 rounded-full leading-tight">AI</span>
+            </span>
           </button>
 
           <button

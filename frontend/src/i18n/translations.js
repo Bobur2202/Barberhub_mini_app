@@ -184,6 +184,7 @@ export const translations = {
     // Mijoz Navbatlari, Tarixi va Izoh/Reyting (Client Appointments & Reviews)
     my_appointments_tab: "Navbatlarim",
     catalog_tab: "Ustalar",
+    ai_advisor_tab: "AI Maslahat",
     active_appointments: "Faol navbatlar",
     history_appointments: "Navbatlar tarixi",
     no_active_appointments: "Hozircha faol navbatingiz yo'q",
@@ -439,6 +440,7 @@ export const translations = {
     // Записи клиента, история и отзывы (Client Appointments & Reviews)
     my_appointments_tab: "Мои записи",
     catalog_tab: "Мастера",
+    ai_advisor_tab: "AI Советник",
     active_appointments: "Активные записи",
     history_appointments: "История записей",
     no_active_appointments: "У вас пока нет активных записей",
@@ -694,6 +696,7 @@ export const translations = {
     // Client Appointments, History & Reviews
     my_appointments_tab: "My Bookings",
     catalog_tab: "Barbers",
+    ai_advisor_tab: "AI Advisor",
     active_appointments: "Active Bookings",
     history_appointments: "Booking History",
     no_active_appointments: "No active bookings yet",
