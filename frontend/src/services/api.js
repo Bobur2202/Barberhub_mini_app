@@ -293,3 +293,23 @@ export async function sendAppointmentReminder(appointmentId) {
   }
   return { success: true, telegram_sent: true, sms_sent: true };
 }
+
+/**
+ * 13. Mijoz tomonidan navbat vaqtini ko'chirish (Reschedule)
+ */
+export async function rescheduleAppointment(appointmentId, { date_str, time_slot }) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/reschedule`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date_str, time_slot }),
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Navbatni ko\'chirishda xatolik:', error.message);
+  }
+  return { id: appointmentId, date_str, time_slot };
+}

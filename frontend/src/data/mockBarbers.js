@@ -23,6 +23,7 @@ export const mockBarbers = [
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250",
     bio: "Klassik va zamonaviy soch turmaklash bo'yicha 7 yillik tajribaga ega usta.",
     workHours: { start: "09:00", end: "22:00" },
+    breakTime: { enabled: true, start: "13:00", end: "14:00" },
     isWorkingToday: true,
     daysOff: ["Dush"],
     salonPhotos: [
@@ -56,6 +57,7 @@ export const mockBarbers = [
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
     bio: "Zamonaviy soch turmaklari va soqol parvarishi. Har bir mijozga alohida e'tibor.",
     workHours: { start: "09:00", end: "22:00" },
+    breakTime: { enabled: true, start: "13:00", end: "14:00" },
     isWorkingToday: true,
     daysOff: ["Dush"],
     salonPhotos: [

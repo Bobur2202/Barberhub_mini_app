@@ -12,10 +12,11 @@ import {
   Check,
   X,
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  RefreshCw
 } from 'lucide-react';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
-import { submitBarberReview, cancelClientAppointment } from '../services/api';
+import { submitBarberReview, cancelClientAppointment, rescheduleAppointment } from '../services/api';
 import { mockBarbers } from '../data/mockBarbers';
 
 export default function ClientAppointmentsScreen({
@@ -34,6 +35,44 @@ export default function ClientAppointmentsScreen({
   const [reviewAuthor, setReviewAuthor] = useState('Mijoz');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewSuccessMessage, setReviewSuccessMessage] = useState(null);
+
+  // Reschedule Modal State
+  const [selectedAptForReschedule, setSelectedAptForReschedule] = useState(null);
+  const [rescheduleDate, setRescheduleDate] = useState('Ertaga');
+  const [rescheduleTime, setRescheduleTime] = useState('15:30');
+  const [isSubmittingReschedule, setIsSubmittingReschedule] = useState(false);
+  const [rescheduleToast, setRescheduleToast] = useState('');
+
+  const handleOpenRescheduleModal = (apt) => {
+    setSelectedAptForReschedule(apt);
+    setRescheduleDate(apt.date_str || apt.date || 'Ertaga');
+    setRescheduleTime(apt.time_slot || apt.time || '15:30');
+  };
+
+  const handleConfirmReschedule = async () => {
+    if (!selectedAptForReschedule || !rescheduleTime) return;
+    setIsSubmittingReschedule(true);
+    try {
+      await rescheduleAppointment(selectedAptForReschedule.id, {
+        date_str: rescheduleDate,
+        time_slot: rescheduleTime
+      });
+
+      const updated = appointments.map(a =>
+        a.id === selectedAptForReschedule.id
+          ? { ...a, date_str: rescheduleDate, date: rescheduleDate, time_slot: rescheduleTime, time: rescheduleTime }
+          : a
+      );
+      if (onUpdateAppointments) onUpdateAppointments(updated);
+      setSelectedAptForReschedule(null);
+      setRescheduleToast(t.reschedule_success_toast || "Navbat muvaffaqiyatli ko'chirildi! 🔄");
+      setTimeout(() => setRescheduleToast(''), 4000);
+    } catch (err) {
+      console.warn("Reschedule xatosi:", err);
+    } finally {
+      setIsSubmittingReschedule(false);
+    }
+  };
 
   // Filter active and history appointments
   const activeAppointments = appointments.filter(
@@ -128,6 +167,14 @@ export default function ClientAppointmentsScreen({
 
   return (
     <div className="min-h-screen bg-[#E6EDF9] pb-28 max-w-md mx-auto">
+      {/* Reschedule Toast */}
+      {rescheduleToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-blue text-white py-2.5 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in max-w-xs text-center border border-white/20">
+          <span>🔄</span>
+          <span>{rescheduleToast}</span>
+        </div>
+      )}
+
       {/* Top Header */}
       <div className="sticky top-0 bg-[#E6EDF9]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2">
         <div className="flex items-center justify-between">
@@ -272,19 +319,26 @@ export default function ClientAppointmentsScreen({
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex space-x-2 mt-3 pt-2 border-t border-gray-100">
+                    <div className="flex items-center space-x-2 mt-3 pt-2 border-t border-gray-100">
                       {apt.barber_phone && (
                         <a
                           href={`tel:${apt.barber_phone}`}
-                          className="flex-1 py-2 text-xs font-bold text-brand-blue bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors flex items-center justify-center space-x-1.5"
+                          className="py-2 px-2.5 text-xs font-bold text-brand-blue bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors flex items-center justify-center space-x-1"
                         >
                           <Phone className="w-3 h-3" />
                           <span>{t.call_barber_btn || "Qo'ng'iroq"}</span>
                         </a>
                       )}
                       <button
+                        onClick={() => handleOpenRescheduleModal(apt)}
+                        className="flex-1 py-2 text-xs font-bold text-brand-blue bg-amber-50 hover:bg-amber-100 border border-amber-200/70 rounded-xl transition-colors flex items-center justify-center space-x-1"
+                      >
+                        <RefreshCw className="w-3 h-3 text-brand-orange" />
+                        <span>{t.btn_reschedule || "Ko'chirish"}</span>
+                      </button>
+                      <button
                         onClick={() => handleCancelAppointment(apt.id)}
-                        className="flex-1 py-2 text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors border border-red-100"
+                        className="py-2 px-2.5 text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors border border-red-100"
                       >
                         {t.cancel_booking_btn || "Bekor qilish"}
                       </button>
@@ -520,6 +574,114 @@ export default function ClientAppointmentsScreen({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Navbat vaqtini ko'chirish (Reschedule) */}
+      {selectedAptForReschedule && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+              <div className="flex items-center space-x-2">
+                <RefreshCw className="w-5 h-5 text-brand-orange" />
+                <h3 className="text-base font-extrabold text-brand-blue">
+                  {t.reschedule_modal_title || "Vaqtni ko'chirish"}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedAptForReschedule(null)}
+                className="text-gray-400 hover:text-gray-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+              {t.reschedule_desc || "O'zingizga qulay yangi sana va soatni tanlang:"}
+            </p>
+
+            <div className="space-y-3.5">
+              {/* Kun tanlash */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Kunni tanlang:
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    "Bugun",
+                    "Ertaga",
+                    "Indinga"
+                  ].map((dStr) => (
+                    <button
+                      key={dStr}
+                      type="button"
+                      onClick={() => setRescheduleDate(dStr)}
+                      className={`py-2 px-2 rounded-xl text-xs font-bold transition-all ${
+                        rescheduleDate === dStr
+                          ? 'bg-brand-blue text-white shadow-sm ring-2 ring-brand-blue/20'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {dStr}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Soat tanlash */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Bo'sh soatni tanlang:
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    "10:00",
+                    "11:30",
+                    "14:00",
+                    "15:30",
+                    "17:00",
+                    "18:30",
+                    "20:00"
+                  ].map((tStr) => (
+                    <button
+                      key={tStr}
+                      type="button"
+                      onClick={() => setRescheduleTime(tStr)}
+                      className={`py-2 px-1 rounded-xl text-xs font-bold transition-all ${
+                        rescheduleTime === tStr
+                          ? 'bg-brand-orange text-brand-blue shadow-sm ring-2 ring-amber-300'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {tStr}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-2.5 bg-blue-50/70 rounded-xl border border-blue-100 text-[11px] text-brand-blue font-semibold">
+                Tanlangan yangi vaqt: <strong className="text-brand-blue">{rescheduleDate}, {rescheduleTime}</strong>
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedAptForReschedule(null)}
+                  className="flex-1 py-2.5 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl"
+                >
+                  {t.btn_cancel || "Bekor qilish"}
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmittingReschedule}
+                  onClick={handleConfirmReschedule}
+                  className="flex-1 py-2.5 text-xs font-extrabold text-brand-blue bg-brand-orange hover:bg-brand-orange-hover rounded-xl shadow-md disabled:opacity-50"
+                >
+                  {isSubmittingReschedule ? "Saqlanmoqda..." : (t.reschedule_confirm_btn || "Tasdiqlash")}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

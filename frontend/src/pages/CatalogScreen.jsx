@@ -9,7 +9,8 @@ import {
   Crosshair,
   Check,
   Scissors,
-  Calendar
+  Calendar,
+  Heart
 } from 'lucide-react';
 import { getBarbers } from '../services/api';
 import { calculateDistanceKm, formatDistance } from '../data/mockBarbers';
@@ -21,10 +22,31 @@ export default function CatalogScreen({
   onGoToAppointments,
   activeAppointmentsCount = 0
 }) {
-  const [selectedFilter, setSelectedFilter] = useState('nearest'); // 'nearest' | 'top_rated' | 'available_today'
+  const [selectedFilter, setSelectedFilter] = useState('nearest'); // 'nearest' | 'top_rated' | 'available_today' | 'favorites'
   const [searchQuery, setSearchQuery] = useState('');
   const [barbersList, setBarbersList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Favorites state
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('barberhub_favorites') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const handleToggleFavorite = (e, barberId) => {
+    e.stopPropagation();
+    let updated;
+    if (favorites.includes(barberId)) {
+      updated = favorites.filter(id => id !== barberId);
+    } else {
+      updated = [...favorites, barberId];
+    }
+    setFavorites(updated);
+    localStorage.setItem('barberhub_favorites', JSON.stringify(updated));
+  };
 
   // Geolokatsiya holatlari (Standart: Yunusobod markazi)
   const [userCoords, setUserCoords] = useState({ lat: 41.3644, lng: 69.2882 });
@@ -120,6 +142,14 @@ export default function CatalogScreen({
       return (a.startingPrice || 50000) - (b.startingPrice || 50000);
     }
     return 0;
+  });
+
+  // Sevimlilar yoki barcha ustalarni filtrlash
+  const displayedBarbers = sortedBarbers.filter(barber => {
+    if (selectedFilter === 'favorites') {
+      return favorites.includes(barber.id);
+    }
+    return true;
   });
 
   return (
@@ -231,16 +261,34 @@ export default function CatalogScreen({
           >
             {t.filter_available_today}
           </button>
+          <button
+            onClick={() => setSelectedFilter('favorites')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm flex items-center space-x-1 ${
+              selectedFilter === 'favorites'
+                ? 'bg-red-500 text-white shadow-red-900/20'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <span>❤️</span>
+            <span>{t.tab_favorites || "Sevimlilar"}</span>
+            {favorites.length > 0 && (
+              <span className={`text-[10px] px-1.5 rounded-full font-bold ${
+                selectedFilter === 'favorites' ? 'bg-white text-red-600' : 'bg-red-100 text-red-600'
+              }`}>
+                {favorites.length}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
       {/* Barbers Feed Header */}
       <div className="px-4 mt-3 flex items-center justify-between">
         <h2 className="text-base font-bold text-gray-800">
-          {t.nearby_barbers}
+          {selectedFilter === 'favorites' ? (t.tab_favorites || "Sevimlilar") : t.nearby_barbers}
         </h2>
         <span className="text-xs text-gray-500 font-medium">
-          {sortedBarbers.length} {t.barbers_count}
+          {displayedBarbers.length} {t.barbers_count}
         </span>
       </div>
 
@@ -252,23 +300,40 @@ export default function CatalogScreen({
             <span className="text-xs font-medium text-gray-500">Ustalar yuklanmoqda...</span>
           </div>
         ) : (
-          sortedBarbers.map((barber) => (
+          displayedBarbers.map((barber) => (
             <div
               key={barber.id}
               onClick={() => onSelectBarber(barber)}
-              className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer border border-blue-50/60 active:scale-[0.99]"
+              className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer border border-blue-50/60 active:scale-[0.99] relative"
             >
               {/* Top row: Avatar & Info */}
-              <div className="flex items-center space-x-3">
+              <div className="flex items-start space-x-3">
                 <img
                   src={barber.avatar}
                   alt={barber.name}
-                  className="w-14 h-14 rounded-full object-cover border-2 border-brand-blue/10 shadow-inner"
+                  className="w-14 h-14 rounded-full object-cover border-2 border-brand-blue/10 shadow-inner flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-brand-blue text-base truncate">
-                    {barber.name}
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-brand-blue text-base truncate">
+                      {barber.name}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleFavorite(e, barber.id)}
+                      className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                      title="Sevimli usta"
+                    >
+                      <Heart
+                        className={`w-4 h-4 transition-all ${
+                          favorites.includes(barber.id)
+                            ? 'fill-red-500 text-red-500 scale-110'
+                            : 'text-gray-300 hover:text-red-400'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
                   <div className="flex items-center space-x-2 mt-0.5">
                     <div className="flex items-center text-amber-500 text-xs font-bold">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 mr-0.5" />
@@ -323,11 +388,20 @@ export default function CatalogScreen({
           ))
         )}
 
-        {!isLoading && sortedBarbers.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-blue-50 mt-4">
-            <p className="text-gray-500 text-sm font-medium">
-              Hech qanday usta topilmadi.
-            </p>
+        {!isLoading && displayedBarbers.length === 0 && (
+          <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-blue-50 mt-4 p-5">
+            {selectedFilter === 'favorites' ? (
+              <>
+                <Heart className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-500 text-xs font-medium max-w-xs mx-auto leading-relaxed">
+                  {t.no_favorites || "Hozircha sevimli ustalar yo'q. Usta kartasidagi ❤️ tugmasini bosib saqlab qo'yishingiz mumkin."}
+                </p>
+              </>
+            ) : (
+              <p className="text-gray-500 text-sm font-medium">
+                Hech qanday usta topilmadi.
+              </p>
+            )}
           </div>
         )}
       </div>

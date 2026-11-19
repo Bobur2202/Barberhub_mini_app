@@ -65,6 +65,17 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
     const startMinutes = (startH || 9) * 60 + (startM || 0);
     const endMinutes = (endH || 22) * 60 + (endM || 0);
 
+    // Tushlik / Tanaffus vaqti hisobi
+    const breakData = barber?.breakTime || barber?.break_time;
+    let breakStartMin = -1;
+    let breakEndMin = -1;
+    if (breakData && breakData.enabled !== false && breakData.start && breakData.end) {
+      const [bsh, bsm] = breakData.start.split(':').map(Number);
+      const [beh, bem] = breakData.end.split(':').map(Number);
+      breakStartMin = (bsh || 13) * 60 + (bsm || 0);
+      breakEndMin = (beh || 14) * 60 + (bem || 0);
+    }
+
     const slots = [];
     let current = startMinutes;
     let idx = 0;
@@ -74,12 +85,14 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
       const m = current % 60;
       const timeFormatted = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 
+      // Tushlik oralig'iga tushishini tekshirish
+      const isBreak = breakStartMin !== -1 && current >= breakStartMin && current < breakEndMin;
       // Simulate occasional booked slots
-      const isBooked = idx === 1 || idx === 5 || idx === 9;
+      const isBooked = !isBreak && (idx === 1 || idx === 5 || idx === 9);
 
       slots.push({
         time: timeFormatted,
-        status: isBooked ? 'booked' : 'available'
+        status: isBreak ? 'break' : isBooked ? 'booked' : 'available'
       });
 
       current += 45; // 45-minute slots
@@ -230,23 +243,31 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
           /* 3-Column Grid */
           <div className="grid grid-cols-3 gap-2.5">
             {timeSlots.map((slot, idx) => {
+              const isBreak = slot.status === 'break';
               const isBooked = slot.status === 'booked';
               const isSelected = selectedTime === slot.time;
 
               return (
                 <button
                   key={idx}
-                  disabled={isBooked}
+                  disabled={isBooked || isBreak}
                   onClick={() => setSelectedTime(slot.time)}
-                  className={`py-3 rounded-xl text-center text-xs font-bold transition-all ${
-                    isBooked
+                  className={`py-3 rounded-xl text-center text-xs font-bold transition-all relative ${
+                    isBreak
+                      ? 'bg-amber-50 text-amber-800/80 border border-amber-200 cursor-not-allowed opacity-80'
+                      : isBooked
                       ? 'bg-gray-200/60 text-gray-400 line-through cursor-not-allowed border border-transparent'
                       : isSelected
                       ? 'bg-brand-blue text-white shadow-md shadow-blue-900/25 ring-2 ring-brand-blue/30 scale-[1.02]'
                       : 'bg-white text-gray-800 border border-blue-50 shadow-sm hover:border-brand-blue/40'
                   }`}
                 >
-                  {slot.time}
+                  <span>{slot.time}</span>
+                  {isBreak && (
+                    <span className="block text-[8px] font-extrabold text-amber-700 mt-0.5">
+                      ☕ Tushlik
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -254,7 +275,7 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
         )}
 
         {/* Legend */}
-        <div className="flex items-center justify-center space-x-4 mt-5 text-[11px] text-gray-500">
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-5 text-[11px] text-gray-500">
           <div className="flex items-center space-x-1">
             <div className="w-2.5 h-2.5 rounded-full bg-white border border-gray-300"></div>
             <span>{t.slot_available}</span>
@@ -262,6 +283,10 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
           <div className="flex items-center space-x-1">
             <div className="w-2.5 h-2.5 rounded-full bg-brand-blue"></div>
             <span>{t.slot_selected}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+            <span>{t.break_badge_profile || "☕ Tushlik"}</span>
           </div>
           <div className="flex items-center space-x-1">
             <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>

@@ -40,6 +40,7 @@ class Barber(BaseModel):
     payment_method: Optional[str] = None
     # Working Hours & Salon Photos
     work_hours: Optional[dict] = {"start": "09:00", "end": "22:00"}
+    break_time: Optional[dict] = {"enabled": True, "start": "13:00", "end": "14:00"}
     salon_photos: List[str] = []
     # Dam olish kunlari va ish holati
     is_working_today: bool = True

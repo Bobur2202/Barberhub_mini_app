@@ -338,17 +338,63 @@ async def send_manual_reminder(appointment_id: str):
 class ScheduleUpdate(BaseModel):
     is_working_today: bool = True
     days_off: List[str] = []
+    work_hours: Optional[dict] = None
+    break_time: Optional[dict] = None
 
 @app.put("/api/barbers/{barber_id}/schedule")
 def update_barber_schedule(barber_id: str, data: ScheduleUpdate):
-    """Ustaning bugungi ish holati va haftalik dam olish kunlarini yangilash"""
+    """Ustaning bugungi ish holati, haftalik dam olish kunlari va tushlik vaqtini yangilash"""
     barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     barber.is_working_today = data.is_working_today
     barber.days_off = data.days_off
+    if data.work_hours:
+        barber.work_hours = data.work_hours
+    if data.break_time:
+        barber.break_time = data.break_time
     save_barbers_to_disk(BARBERS_DB)
-    return {"success": True, "is_working_today": barber.is_working_today, "days_off": barber.days_off}
+    return {
+        "success": True,
+        "is_working_today": barber.is_working_today,
+        "days_off": barber.days_off,
+        "work_hours": barber.work_hours,
+        "break_time": barber.break_time
+    }
+
+class RescheduleRequest(BaseModel):
+    date_str: str
+    time_slot: str
+
+@app.patch("/api/appointments/{appointment_id}/reschedule")
+async def reschedule_appointment(appointment_id: str, data: RescheduleRequest):
+    """Mijoz navbatni boshqa sana yoki soatga ko'chirishi"""
+    for a in APPOINTMENTS_DB:
+        if a.id == appointment_id:
+            old_date = a.date_str
+            old_time = a.time_slot
+            a.date_str = data.date_str
+            a.time_slot = data.time_slot
+            a.reminder_sent = False # Yangi vaqt uchun eslatma qayta faollashadi
+            save_appointments_to_disk(APPOINTMENTS_DB)
+
+            # Ustaga Telegram orqali xabar berish
+            barber = next((b for b in BARBERS_DB if b.id == a.barber_id), None)
+            if barber and barber.telegram_id and bot:
+                try:
+                    text = (
+                        f"🔄 <b>NAVBAT VAQTI KO'CHIRILDI!</b>\n\n"
+                        f"👤 <b>Mijoz:</b> {a.client_name} ({a.client_phone})\n"
+                        f"✂️ <b>Xizmat:</b> {a.service_name}\n"
+                        f"❌ <b>Eski vaqt:</b> {old_date}, {old_time}\n"
+                        f"✅ <b>Yangi vaqt:</b> {a.date_str}, {a.time_slot}\n"
+                    )
+                    await bot.send_message(chat_id=barber.telegram_id, text=text, parse_mode="HTML")
+                except Exception as e:
+                    print(f"Reschedule bildirishnoma xatolik: {e}")
+
+            return a
+    raise HTTPException(status_code=404, detail="Navbat topilmadi")
 
 @app.get("/api/appointments/client", response_model=List[Appointment])
 def get_client_appointments(phone: Optional[str] = None):

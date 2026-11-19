@@ -10,7 +10,9 @@ import {
   ChevronRight,
   X,
   MapPin,
-  Sparkles
+  Sparkles,
+  Heart,
+  Share2
 } from 'lucide-react';
 import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
 
@@ -18,6 +20,54 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
   const [activeTab, setActiveTab] = useState('services'); // 'services' | 'gallery' | 'reviews'
   const [selectedService, setSelectedService] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [showShareToast, setShowShareToast] = useState(false);
+
+  // Favorites state
+  const [isFavorite, setIsFavorite] = useState(() => {
+    try {
+      const favs = JSON.parse(localStorage.getItem('barberhub_favorites') || '[]');
+      return favs.includes(barber.id);
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleFavorite = () => {
+    try {
+      const favs = JSON.parse(localStorage.getItem('barberhub_favorites') || '[]');
+      let updated;
+      if (favs.includes(barber.id)) {
+        updated = favs.filter(id => id !== barber.id);
+        setIsFavorite(false);
+      } else {
+        updated = [...favs, barber.id];
+        setIsFavorite(true);
+      }
+      localStorage.setItem('barberhub_favorites', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Favorite xatosi:', e);
+    }
+  };
+
+  const handleShare = () => {
+    const shareUrl = window.location.href;
+    const shareText = `${t.share_text || "Ushbu mohir sartaroshni tavsiya qilaman!"}\n💈 ${barber.name}\n📍 ${barber.address || "Toshkent"}\n⭐ Reyting: ${barber.rating}/5`;
+
+    if (window.Telegram?.WebApp?.openTelegramLink) {
+      const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+      window.Telegram.WebApp.openTelegramLink(tgUrl);
+    } else if (navigator.share) {
+      navigator.share({
+        title: barber.name,
+        text: shareText,
+        url: shareUrl
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      setShowShareToast(true);
+      setTimeout(() => setShowShareToast(false), 3000);
+    }
+  };
 
   const salonPhotos = barber.salonPhotos || [];
 
@@ -41,6 +91,14 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
 
   return (
     <div className="min-h-screen bg-[#E6EDF9] pb-32 max-w-md mx-auto">
+      {/* Toast */}
+      {showShareToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-blue text-white py-2 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in border border-white/20">
+          <span>📋</span>
+          <span>{t.share_copied_toast || "Havola nusxalandi!"}</span>
+        </div>
+      )}
+
       {/* Top Header */}
       <div className="sticky top-0 bg-[#E6EDF9]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
         <button
@@ -52,7 +110,27 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
         <h1 className="text-lg font-bold text-brand-blue">
           {t.barber_profile}
         </h1>
-        <div className="w-9"></div> {/* Balancer */}
+        <div className="flex items-center space-x-1.5">
+          {/* Share Button */}
+          <button
+            onClick={handleShare}
+            className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-blue hover:bg-gray-100 transition-colors"
+            title={t.btn_share_profile || "Ulashish"}
+          >
+            <Share2 className="w-4 h-4 text-brand-blue" />
+          </button>
+
+          {/* Favorite Button */}
+          <button
+            onClick={handleToggleFavorite}
+            className={`w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center transition-colors ${
+              isFavorite ? 'text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-gray-50'
+            }`}
+            title="Sevimli usta sifatida saqlash"
+          >
+            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* Barber Hero Card */}
@@ -102,6 +180,14 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
           <div className="mt-1 text-[11px] text-gray-500 flex items-center justify-center space-x-1">
             <span className="text-gray-400">{t.days_off_title || "Dam olish kunlari"}:</span>
             <span className="font-bold text-red-500">{(barber.days_off || barber.daysOff).join(', ')}</span>
+          </div>
+        )}
+
+        {/* Break Time Badge if configured */}
+        {(barber.breakTime?.enabled !== false && barber.break_time?.enabled !== false) && (barber.breakTime?.start || barber.break_time?.start) && (
+          <div className="mt-1.5 inline-flex items-center space-x-1 bg-amber-50 border border-amber-200 px-3 py-0.5 rounded-full text-[11px] text-amber-800 font-bold">
+            <span>☕</span>
+            <span>{t.break_time_title || "Tushlik"}: {barber.breakTime?.start || barber.break_time?.start} — {barber.breakTime?.end || barber.break_time?.end}</span>
           </div>
         )}
 

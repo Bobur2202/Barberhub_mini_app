@@ -218,6 +218,40 @@ export const translations = {
     reminder_sent_badge: "Eslatma yuborildi (SMS + TG)",
     reminder_success_toast: "Mijozga 1 soatlik eslatma SMS va Telegram orqali yuborildi! 🔔",
     auto_reminder_badge: "Avto-eslatma: 1 soat oldin (SMS + Telegram)",
+
+    // Kassa va Statistika
+    analytics_title: "Kassa va Statistika",
+    today_revenue: "Bugungi kassa",
+    today_clients: "Bugungi mijozlar",
+    month_revenue: "Bu oylik tushum",
+    top_service: "Top xizmat",
+    total_appointments_count: "Jami qabullar",
+
+    // Tushlik va Tanaffus
+    break_time_title: "Tushlik / Tanaffus vaqti",
+    break_enabled_label: "Tushlik vaqtini belgilash",
+    break_start_label: "Tushlik boshlanishi",
+    break_end_label: "Tushlik tugashi",
+    break_slot_badge: "☕ Tushlik (Yopiq)",
+    break_badge_profile: "☕ Tushlik",
+
+    // Sevimlilar (Favorites)
+    tab_favorites: "❤️ Sevimlilar",
+    added_to_favorites: "Usta sevimlilarga qo'shildi! ❤️",
+    removed_from_favorites: "Usta sevimlilardan olib tashlandi",
+    no_favorites: "Hali sevimli ustalar yo'q. Ustani saqlash uchun ❤️ belgisini bosing.",
+
+    // Navbatni ko'chirish (Reschedule)
+    btn_reschedule: "🔄 Ko'chirish",
+    reschedule_modal_title: "Navbat vaqtini ko'chirish",
+    reschedule_desc: "O'zingizga qulay yangi sana va soatni tanlang:",
+    reschedule_confirm_btn: "Vaqtni ko'chirishni tasdiqlash",
+    reschedule_success_toast: "Navbat muvaffaqiyatli yangi vaqtga ko'chirildi! 🔄",
+
+    // Ulashish (Share Profile)
+    btn_share_profile: "Ulashish",
+    share_copied_toast: "Profil havolasi nusxalandi! 📋",
+    share_text: "Ushbu mohir erkaklar sartaroshini tavsiya qilaman! BarberHub orqali navbat oling:"
   },
   
   ru: {
@@ -439,6 +473,40 @@ export const translations = {
     reminder_sent_badge: "Напоминание отправлено (SMS + TG)",
     reminder_success_toast: "Клиенту отправлено напоминание через SMS и Telegram! 🔔",
     auto_reminder_badge: "Авто-напоминание: за 1 час (SMS + Telegram)",
+
+    // Касса и Статистика
+    analytics_title: "Касса и Статистика",
+    today_revenue: "Касса за сегодня",
+    today_clients: "Клиентов сегодня",
+    month_revenue: "Выручка за месяц",
+    top_service: "Топ услуга",
+    total_appointments_count: "Всего записей",
+
+    // Обед и Перерыв
+    break_time_title: "Обед / Перерыв",
+    break_enabled_label: "Включить обеденный перерыв",
+    break_start_label: "Начало обеда",
+    break_end_label: "Конец обеда",
+    break_slot_badge: "☕ Перерыв (Закрыто)",
+    break_badge_profile: "☕ Обед",
+
+    // Избранное (Favorites)
+    tab_favorites: "❤️ Избранные",
+    added_to_favorites: "Мастер добавлен в избранное! ❤️",
+    removed_from_favorites: "Мастер удален из избранного",
+    no_favorites: "Пока нет избранных мастеров. Нажмите ❤️ на карточке мастера, чтобы сохранить.",
+
+    // Перенос записи (Reschedule)
+    btn_reschedule: "🔄 Перенести",
+    reschedule_modal_title: "Перенос времени записи",
+    reschedule_desc: "Выберите новую удобную дату и время:",
+    reschedule_confirm_btn: "Подтвердить перенос",
+    reschedule_success_toast: "Запись успешно перенесена на новое время! 🔄",
+
+    // Поделиться (Share Profile)
+    btn_share_profile: "Поделиться",
+    share_copied_toast: "Ссылка на профиль скопирована! 📋",
+    share_text: "Рекомендую отличного мужского мастера! Запишитесь через BarberHub:"
   },
   
   en: {
@@ -660,5 +728,39 @@ export const translations = {
     reminder_sent_badge: "Reminder sent (SMS + TG)",
     reminder_success_toast: "Reminder sent to client via SMS and Telegram! 🔔",
     auto_reminder_badge: "Auto-reminder: 1h before (SMS + Telegram)",
+
+    // Revenue & Analytics
+    analytics_title: "Cash & Analytics",
+    today_revenue: "Today's Revenue",
+    today_clients: "Today's Clients",
+    month_revenue: "This Month Revenue",
+    top_service: "Top Service",
+    total_appointments_count: "Total Bookings",
+
+    // Break & Lunch
+    break_time_title: "Lunch / Break Time",
+    break_enabled_label: "Enable Lunch Break",
+    break_start_label: "Break Start",
+    break_end_label: "Break End",
+    break_slot_badge: "☕ Break (Closed)",
+    break_badge_profile: "☕ Break",
+
+    // Favorites
+    tab_favorites: "❤️ Favorites",
+    added_to_favorites: "Barber added to favorites! ❤️",
+    removed_from_favorites: "Barber removed from favorites",
+    no_favorites: "No favorite barbers yet. Tap ❤️ on any barber card to save.",
+
+    // Reschedule
+    btn_reschedule: "🔄 Reschedule",
+    reschedule_modal_title: "Reschedule Appointment",
+    reschedule_desc: "Choose a new convenient date and time:",
+    reschedule_confirm_btn: "Confirm Reschedule",
+    reschedule_success_toast: "Appointment successfully rescheduled! 🔄",
+
+    // Share Profile
+    btn_share_profile: "Share",
+    share_copied_toast: "Profile link copied! 📋",
+    share_text: "I recommend this great men's barber! Book via BarberHub:"
   }
 };
