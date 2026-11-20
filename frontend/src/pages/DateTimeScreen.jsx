@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Calendar, Clock, Check } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Check, Users, UserPlus, AlertCircle } from 'lucide-react';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
 
 export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack, onContinue }) {
@@ -114,6 +114,31 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
   const timeSlots = generateTimeSlots();
   const [selectedTime, setSelectedTime] = useState(null);
 
+  // 👨‍👦 Multi-person Booking State
+  const [isMultiPerson, setIsMultiPerson] = useState(false);
+  const [companionType, setCompanionType] = useState('child'); // 'child' | 'friend'
+
+  // Companion details
+  const companionPrice = companionType === 'child' ? 40000 : service.price;
+  const companionTitle = companionType === 'child' ? "O'g'lim (Bola)" : "Do'stim / Akam";
+  const companionService = companionType === 'child' ? "Bolalar soch turmagi" : service.name;
+
+  // Find consecutive slot if multi-person is active
+  const selectedIndex = timeSlots.findIndex((s) => s.time === selectedTime);
+  let secondSlot = null;
+  let multiPersonError = '';
+
+  if (isMultiPerson && selectedTime && selectedIndex !== -1) {
+    const nextSlot = timeSlots[selectedIndex + 1];
+    if (!nextSlot || nextSlot.status !== 'available') {
+      multiPersonError = "Ketma-ket 2 ta bo'sh vaqt kerak. Ushbu soatdan keyingi vaqt band yoki tushlik. Boshqa vaqtni tanlang.";
+    } else {
+      secondSlot = nextSlot.time;
+    }
+  }
+
+  const isContinueDisabled = !selectedTime || (isMultiPerson && (!secondSlot || !!multiPersonError));
+
   return (
     <div className="min-h-screen bg-[#E6EDF9] pb-32 max-w-md mx-auto">
       {/* Top Header */}
@@ -165,6 +190,98 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>{t.open_status || "Ochiq"}</span>
             </span>
+          )}
+        </div>
+
+        {/* 👨‍👦 Multi-person booking toggle card */}
+        <div className="mt-2.5 bg-white rounded-2xl p-3.5 shadow-sm border border-blue-100 transition-all">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center font-bold">
+                <Users className="w-4 h-4 text-brand-orange" />
+              </div>
+              <div>
+                <span className="text-xs font-black text-brand-blue block">
+                  + Yana bir kishini qo'shish
+                </span>
+                <span className="text-[10px] text-gray-500 font-medium block">
+                  O'g'lingiz yoki do'stingiz bilan ketma-ket 2 ta navbat olish
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsMultiPerson(!isMultiPerson);
+                setSelectedTime(null);
+              }}
+              className={`w-11 h-6 rounded-full transition-colors relative ${
+                isMultiPerson ? 'bg-brand-orange' : 'bg-gray-300'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform absolute top-0.5 ${
+                  isMultiPerson ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* If Multi-person is active */}
+          {isMultiPerson && (
+            <div className="mt-3 pt-3 border-t border-gray-100 space-y-2.5 animate-in fade-in">
+              <span className="text-[11px] font-bold text-gray-700 block">
+                Kim uchun navbat olinmoqda?
+              </span>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCompanionType('child')}
+                  className={`py-2 px-2.5 rounded-xl text-left border transition-all ${
+                    companionType === 'child'
+                      ? 'border-brand-blue bg-blue-50/70 text-brand-blue ring-1 ring-brand-blue'
+                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="text-xs font-extrabold block">👶 O'g'lim (Bola)</span>
+                  <span className="text-[10px] text-gray-500 block">Bolalar sochi (40 000 UZS)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCompanionType('friend')}
+                  className={`py-2 px-2.5 rounded-xl text-left border transition-all ${
+                    companionType === 'friend'
+                      ? 'border-brand-blue bg-blue-50/70 text-brand-blue ring-1 ring-brand-blue'
+                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="text-xs font-extrabold block">🙋‍♂️ Do'stim / Akam</span>
+                  <span className="text-[10px] text-gray-500 block">{service.name}</span>
+                </button>
+              </div>
+
+              {selectedTime && secondSlot && (
+                <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center justify-between">
+                  <div>
+                    <span className="block">1-navbat (Siz): {selectedTime}</span>
+                    <span className="block">2-navbat ({companionTitle}): {secondSlot}</span>
+                  </div>
+                  <span className="text-sm font-black text-brand-blue">
+                    {(service.price + companionPrice).toLocaleString()} UZS
+                  </span>
+                </div>
+              )}
+
+              {multiPersonError && (
+                <div className="p-2.5 bg-red-50 rounded-xl border border-red-200 text-red-700 text-xs font-semibold flex items-center space-x-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                  <span>{multiPersonError}</span>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -245,7 +362,9 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
             {timeSlots.map((slot, idx) => {
               const isBreak = slot.status === 'break';
               const isBooked = slot.status === 'booked';
-              const isSelected = selectedTime === slot.time;
+              const isFirstSelected = selectedTime === slot.time;
+              const isSecondSelected = isMultiPerson && secondSlot === slot.time;
+              const isSelected = isFirstSelected || isSecondSelected;
 
               return (
                 <button
@@ -257,8 +376,10 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                       ? 'bg-amber-50 text-amber-800/80 border border-amber-200 cursor-not-allowed opacity-80'
                       : isBooked
                       ? 'bg-gray-200/60 text-gray-400 line-through cursor-not-allowed border border-transparent'
-                      : isSelected
+                      : isFirstSelected
                       ? 'bg-brand-blue text-white shadow-md shadow-blue-900/25 ring-2 ring-brand-blue/30 scale-[1.02]'
+                      : isSecondSelected
+                      ? 'bg-brand-orange text-brand-blue font-black shadow-md ring-2 ring-brand-orange/40 scale-[1.02]'
                       : 'bg-white text-gray-800 border border-blue-50 shadow-sm hover:border-brand-blue/40'
                   }`}
                 >
@@ -266,6 +387,16 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                   {isBreak && (
                     <span className="block text-[8px] font-extrabold text-amber-700 mt-0.5">
                       ☕ Tushlik
+                    </span>
+                  )}
+                  {isMultiPerson && isFirstSelected && (
+                    <span className="block text-[8px] font-extrabold text-amber-300 mt-0.5">
+                      1-Siz
+                    </span>
+                  )}
+                  {isMultiPerson && isSecondSelected && (
+                    <span className="block text-[8px] font-black text-brand-blue mt-0.5">
+                      2-{companionType === 'child' ? 'Bola' : "Do'st"}
                     </span>
                   )}
                 </button>
@@ -298,20 +429,29 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
       {/* Sticky Bottom Continue Button */}
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 p-4 shadow-lg z-40">
         <button
-          disabled={!selectedTime}
+          disabled={isContinueDisabled}
           onClick={() =>
             onContinue({
               day: selectedDay,
               time: selectedTime,
+              isMultiPerson,
+              companionType,
+              companionTitle,
+              companionService,
+              secondSlot,
+              secondPrice: isMultiPerson ? companionPrice : 0,
+              totalPrice: service.price + (isMultiPerson ? companionPrice : 0)
             })
           }
           className={`w-full py-3.5 rounded-xl font-bold text-center text-sm transition-all ${
-            selectedTime
+            !isContinueDisabled
               ? 'bg-brand-orange hover:bg-brand-orange-hover text-brand-blue shadow-md shadow-amber-500/20 active:scale-[0.98]'
               : 'bg-amber-200/60 text-amber-800/40 cursor-not-allowed'
           }`}
         >
-          {t.continue_btn}
+          {isMultiPerson
+            ? `Davom etish (2 kishi: ${(service.price + companionPrice).toLocaleString()} UZS)`
+            : t.continue_btn}
         </button>
       </div>
     </div>

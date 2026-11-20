@@ -20,6 +20,9 @@ export default function ConfirmScreen({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [confirmedData, setConfirmedData] = useState(null);
 
+  const isMulti = !!dateTime.isMultiPerson;
+  const totalPrice = dateTime.totalPrice || (service.price + (dateTime.secondPrice || 0));
+
   const handleBooking = async () => {
     setIsSubmitting(true);
 
@@ -30,12 +33,21 @@ export default function ConfirmScreen({
       barber_phone: barber.phone || "+998 90 123 45 67",
       service_id: service.id,
       service_name: service.name,
-      price: service.price,
+      price: totalPrice,
       client_name: clientName,
       client_phone: phoneNumber,
       client_telegram_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null,
       date_str: `${dateTime.day.dayName} ${dateTime.day.dateNum}-Noyabr`,
       time_slot: dateTime.time,
+      is_multi_person: isMulti,
+      multi_person_details: isMulti ? {
+        companion_type: dateTime.companionType,
+        companion_title: dateTime.companionTitle,
+        companion_service: dateTime.companionService,
+        second_slot: dateTime.secondSlot,
+        second_price: dateTime.secondPrice
+      } : null,
+      queue_status: 'waiting'
     };
 
     try {
@@ -81,6 +93,23 @@ export default function ConfirmScreen({
               </span>
             </div>
 
+            {/* If Multi-person, show 2nd person row */}
+            {isMulti && (
+              <div className="flex justify-between items-center pt-2 bg-blue-50/60 p-2.5 rounded-xl border border-blue-100">
+                <div>
+                  <span className="text-xs font-black text-brand-blue block">
+                    👨‍👦 2-Mijoz: {dateTime.companionTitle}
+                  </span>
+                  <span className="text-[11px] text-gray-500 block">
+                    {dateTime.companionService} ({dateTime.secondSlot})
+                  </span>
+                </div>
+                <span className="font-extrabold text-xs text-brand-blue">
+                  {dateTime.secondPrice?.toLocaleString()} UZS
+                </span>
+              </div>
+            )}
+
             <div className="flex justify-between items-center pt-2">
               <span className="text-gray-500 text-xs">{t.barber_label}:</span>
               <span className="font-bold text-brand-blue text-right">{barber.name}</span>
@@ -89,14 +118,16 @@ export default function ConfirmScreen({
             <div className="flex justify-between items-center pt-2">
               <span className="text-gray-500 text-xs">{t.datetime_label}:</span>
               <span className="font-bold text-gray-800 text-right">
-                {dateTime.day.full}, {dateTime.time}
+                {dateTime.day.full}, {dateTime.time} {isMulti ? `va ${dateTime.secondSlot}` : ''}
               </span>
             </div>
 
             <div className="flex justify-between items-center pt-3">
-              <span className="text-gray-700 font-bold text-sm">{t.total_label}:</span>
+              <span className="text-gray-700 font-bold text-sm">
+                {isMulti ? "Jami (2 kishi uchun):" : t.total_label}:
+              </span>
               <span className="text-lg font-black text-brand-blue">
-                {service.price.toLocaleString()} UZS
+                {totalPrice.toLocaleString()} UZS
               </span>
             </div>
           </div>

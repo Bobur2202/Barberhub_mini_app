@@ -13,7 +13,13 @@ import {
   X,
   Sparkles,
   ArrowLeft,
-  RefreshCw
+  RefreshCw,
+  Users,
+  Navigation,
+  Gift,
+  Award,
+  Radio,
+  ExternalLink
 } from 'lucide-react';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
 import { submitBarberReview, cancelClientAppointment, rescheduleAppointment } from '../services/api';
@@ -251,6 +257,43 @@ export default function ClientAppointmentsScreen({
         {/* Active Tab */}
         {activeTab === 'active' && (
           <>
+            {/* 🏷️ Virtual Sadoqat Kartalari banner */}
+            <div className="bg-gradient-to-r from-[#003865] via-[#004B86] to-[#0A66C2] rounded-3xl p-3.5 text-white shadow-md border border-blue-400/20 mb-3 relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center text-brand-orange">
+                    <Award className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white flex items-center space-x-1">
+                      <span>Sizning Sadoqat Shtamplaringiz</span>
+                      <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1.5 rounded-full">VIP</span>
+                    </h4>
+                    <p className="text-[10px] text-blue-100 font-medium">
+                      Har 5-tashrifingizda 50% chegirma yoki bepul soqol/maska!
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-1.5 mt-2.5">
+                {[1, 2, 3, 4, 5].map((slot) => (
+                  <div
+                    key={slot}
+                    className={`py-1.5 rounded-xl flex flex-col items-center justify-center text-[10px] font-bold ${
+                      slot <= 3
+                        ? 'bg-amber-400 text-brand-blue shadow-xs'
+                        : slot === 5
+                        ? 'bg-white/15 border border-dashed border-amber-300 text-amber-300'
+                        : 'bg-white/10 text-white/40'
+                    }`}
+                  >
+                    {slot <= 3 ? <Scissors className="w-3.5 h-3.5" /> : slot === 5 ? <Gift className="w-3.5 h-3.5" /> : '○'}
+                    <span className="text-[8px] mt-0.5">{slot === 5 ? '50%' : `#${slot}`}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {activeAppointments.length > 0 ? (
               activeAppointments.map((apt) => {
                 const barberName = apt.barber_name || apt.barberName;
@@ -267,16 +310,40 @@ export default function ClientAppointmentsScreen({
                   >
                     {/* Status Top Strip */}
                     <div className="flex items-center justify-between mb-3">
-                      <span
-                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1 ${
-                          isPending
-                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                            : 'bg-blue-100 text-blue-800 border border-blue-200'
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isPending ? 'bg-amber-500 animate-pulse' : 'bg-blue-500'}`} />
-                        <span>{isPending ? t.status_pending || "Kutilyapti" : t.status_accepted || "Tasdiqlangan"}</span>
-                      </span>
+                      <div className="flex items-center space-x-1.5">
+                        <span
+                          className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1 ${
+                            apt.queue_status === 'ready_call'
+                              ? 'bg-emerald-500 text-white animate-pulse shadow-sm'
+                              : isPending
+                              ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                              : 'bg-blue-100 text-blue-800 border border-blue-200'
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            apt.queue_status === 'ready_call'
+                              ? 'bg-white'
+                              : isPending
+                              ? 'bg-amber-500 animate-pulse'
+                              : 'bg-blue-500'
+                          }`} />
+                          <span>
+                            {apt.queue_status === 'ready_call'
+                              ? "Navbatingiz tayyor! ✂️"
+                              : isPending
+                              ? t.status_pending || "Kutilyapti"
+                              : t.status_accepted || "Tasdiqlangan"}
+                          </span>
+                        </span>
+
+                        {/* 👨‍👦 Multi-person badge */}
+                        {(apt.is_multi_person || apt.multi_person_details) && (
+                          <span className="text-[10px] font-black bg-blue-50 text-brand-blue border border-blue-200 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                            <Users className="w-3 h-3 text-brand-orange" />
+                            <span>2 kishi</span>
+                          </span>
+                        )}
+                      </div>
 
                       <div className="inline-flex items-center space-x-1 text-xs font-black text-brand-orange bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
                         <Clock className="w-3 h-3" />
@@ -298,6 +365,11 @@ export default function ClientAppointmentsScreen({
                         <p className="text-xs text-gray-700 font-semibold truncate mt-0.5">
                           {getTranslatedServiceName(serviceName, lang)}
                         </p>
+                        {apt.is_multi_person && apt.multi_person_details && (
+                          <p className="text-[11px] text-brand-orange font-bold truncate">
+                            + {apt.multi_person_details.companion_title}: {apt.multi_person_details.companion_service} ({apt.multi_person_details.second_slot})
+                          </p>
+                        )}
                         <p className="text-[11px] text-gray-400 mt-0.5 flex items-center space-x-1">
                           <Calendar className="w-3 h-3 text-brand-blue" />
                           <span>{dateStr}</span>
@@ -311,12 +383,82 @@ export default function ClientAppointmentsScreen({
                       </div>
                     </div>
 
-                    {/* Status hint notice */}
-                    <div className="mt-3 p-2 bg-gray-50 rounded-xl text-[11px] text-gray-500 leading-relaxed">
-                      {isPending
-                        ? "Usta navbatingizni tasdiqlashi kutilmoqda. Tasdiqlanganda Telegram orqali xabar olasiz."
-                        : "Navbatingiz usta tomonidan tasdiqlangan. Iltimos, o'z vaqtida kelishingizni so'raymiz."}
-                    </div>
+                    {/* ⏳ JONLI NAVBAT RADARI (Live Queue Radar) */}
+                    {apt.status === 'accepted' && (
+                      <div className={`mt-3 p-3 rounded-2xl border transition-all ${
+                        apt.queue_status === 'ready_call'
+                          ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md border-emerald-400'
+                          : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-brand-blue'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                              apt.queue_status === 'ready_call'
+                                ? 'bg-white text-emerald-600'
+                                : 'bg-brand-blue text-white'
+                            }`}>
+                              <Radio className="w-4 h-4 animate-pulse" />
+                            </div>
+                            <div>
+                              <span className="text-[11px] font-black uppercase tracking-wider block">
+                                {apt.queue_status === 'ready_call'
+                                  ? "🎉 Sizning navbatingiz yetib keldi!"
+                                  : "Jonli Navbat Radari"}
+                              </span>
+                              <span className={`text-xs font-bold block ${
+                                apt.queue_status === 'ready_call' ? 'text-white' : 'text-gray-700'
+                              }`}>
+                                {apt.queue_status === 'ready_call'
+                                  ? "Usta sizni kutmoqda. Sartaroshxonaga kiring ✂️"
+                                  : "Usta hozir sizdan oldingi 1 ta mijozni qabul qilmoqda"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {apt.queue_status !== 'ready_call' && (
+                            <span className="text-[10px] font-black bg-white/90 text-brand-blue px-2 py-1 rounded-xl shadow-xs border border-blue-100">
+                              ~15-20 daq
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Yandex Go & Google Calendar Quick Actions */}
+                        <div className="mt-2.5 pt-2 border-t border-black/10 flex items-center space-x-2">
+                          <a
+                            href={`https://taxi.yandex.uz/`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`flex-1 py-1.5 px-2 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-1 transition-all ${
+                              apt.queue_status === 'ready_call'
+                                ? 'bg-white text-emerald-800 hover:bg-emerald-50'
+                                : 'bg-white text-gray-800 border border-blue-100 hover:bg-blue-50'
+                            }`}
+                          >
+                            <span>🚕 Yandex Go Taksi</span>
+                          </a>
+
+                          <a
+                            href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`BarberHub: ${barberName}`)}&details=${encodeURIComponent(`Xizmat: ${serviceName}`)}&location=${encodeURIComponent(apt.barber_address || "Barbershop")}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`flex-1 py-1.5 px-2 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-1 transition-all ${
+                              apt.queue_status === 'ready_call'
+                                ? 'bg-emerald-600/60 text-white hover:bg-emerald-700'
+                                : 'bg-white text-gray-800 border border-blue-100 hover:bg-blue-50'
+                            }`}
+                          >
+                            <span>📅 Taqvimga</span>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Status hint notice if pending */}
+                    {isPending && (
+                      <div className="mt-3 p-2 bg-gray-50 rounded-xl text-[11px] text-gray-500 leading-relaxed">
+                        Usta navbatingizni tasdiqlashi kutilmoqda. Tasdiqlanganda Telegram orqali xabar olasiz.
+                      </div>
+                    )}
 
                     {/* Action buttons */}
                     <div className="flex items-center space-x-2 mt-3 pt-2 border-t border-gray-100">

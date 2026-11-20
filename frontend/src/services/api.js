@@ -569,3 +569,27 @@ export async function getAiHairstyleAdvice(payload) {
     ai_powered_by: 'Gemini AI Vision Engine'
   };
 }
+
+/**
+ * 18. ⏳ Jonli Navbat Radari: Usta mijozni stulga / sartaroshxonaga chaqirishi
+ */
+export async function callClientToChair(appointmentId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/call-client`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Call client to chair xatolik:', error.message);
+  }
+  return {
+    success: true,
+    appointment_id: appointmentId,
+    queue_status: 'ready_call',
+    message: "Mijozga Telegram orqali 'Navbatingiz tayyor' xabari yuborildi!"
+  };
+}

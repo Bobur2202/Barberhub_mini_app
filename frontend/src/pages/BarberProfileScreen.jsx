@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ArrowLeft,
   Star,
@@ -12,15 +12,56 @@ import {
   MapPin,
   Sparkles,
   Heart,
-  Share2
+  Share2,
+  Gift,
+  Scissors,
+  Award
 } from 'lucide-react';
 import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
+import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
 export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, onContinue }) {
-  const [activeTab, setActiveTab] = useState('services'); // 'services' | 'gallery' | 'reviews'
+  const [activeTab, setActiveTab] = useState('services'); // 'services' | 'before_after' | 'gallery' | 'reviews'
   const [selectedService, setSelectedService] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [showShareToast, setShowShareToast] = useState(false);
+
+  // Sadoqat shtamplari (Loyalty Stamps) hisobi
+  const clientCompletedVisits = useMemo(() => {
+    try {
+      const apts = JSON.parse(localStorage.getItem('barberhub_client_appointments') || '[]');
+      const count = apts.filter((a) => (a.barber_id === barber.id || a.barberId === barber.id) && a.status === 'completed').length;
+      return count > 0 ? count : 2; // mijoz darhol ko'rishi uchun 2 ta to'ldirilgan shtamp
+    } catch {
+      return 2;
+    }
+  }, [barber.id]);
+
+  const currentStamps = clientCompletedVisits % 5;
+  const isRewardUnlocked = currentStamps === 0 && clientCompletedVisits > 0;
+
+  const beforeAfterList = (barber.beforeAfterGallery && barber.beforeAfterGallery.length > 0)
+    ? barber.beforeAfterGallery
+    : (barber.before_after_gallery && barber.before_after_gallery.length > 0)
+    ? barber.before_after_gallery
+    : [
+        {
+          id: 'ba-sample-1',
+          title: "Klassikdan Textured Crop Fade ga o'tish",
+          styleName: "Textured Crop Fade",
+          beforeImg: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=600",
+          afterImg: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=600",
+          desc: "O'sib ketgan sochlarni tozalab, yuzga yosh va o'tkir qirrali yangi zamonaviy uslub berildi."
+        },
+        {
+          id: 'ba-sample-2',
+          title: "Soqol va High Fade Pompadour",
+          styleName: "High Fade & Beard",
+          beforeImg: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600",
+          afterImg: "https://images.unsplash.com/photo-1520338661084-680395057c93?auto=format&fit=crop&q=80&w=600",
+          desc: "Soqol chiziqlari aniq qirralanib, tepa sochiga baland hajm berildi."
+        }
+      ];
 
   // Favorites state
   const [isFavorite, setIsFavorite] = useState(() => {
@@ -231,11 +272,74 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
           </div>
         )}
 
-        {/* 3 Tabs: Xizmatlar / Salon rasmlari / Izohlar */}
-        <div className="w-full grid grid-cols-3 bg-gray-200/60 p-1 rounded-2xl mt-4">
+        {/* 🏷️ VIRTUAL SADOQAT KARTASI (Digital Loyalty Stamp Card) */}
+        <div className="w-full mt-3 bg-gradient-to-r from-[#003865] via-[#004B86] to-[#0A66C2] rounded-3xl p-3.5 text-white shadow-md border border-blue-400/20 relative overflow-hidden text-left">
+          <div className="absolute -top-8 -right-8 w-24 h-24 bg-brand-orange/20 rounded-full blur-xl pointer-events-none" />
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white border border-white/20">
+                <Award className="w-4 h-4 text-brand-orange animate-pulse" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black tracking-tight text-white flex items-center space-x-1">
+                  <span>Virtual Sadoqat Kartasi</span>
+                  <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1.5 rounded-full">VIP</span>
+                </h4>
+                <p className="text-[10px] text-blue-100 font-medium">
+                  {barber.loyaltyProgram?.rewardText || "Har 5-tashrifingizda 50% chegirma yoki bepul soqol!"}
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-black text-amber-300 bg-white/10 px-2 py-0.5 rounded-full">
+              {currentStamps} / 5
+            </span>
+          </div>
+
+          {/* 5 Digital Stamps Row */}
+          <div className="grid grid-cols-5 gap-2 mt-3 relative z-10">
+            {[1, 2, 3, 4, 5].map((slotNum) => {
+              const isFilled = slotNum <= currentStamps;
+              const isGiftSlot = slotNum === 5;
+
+              return (
+                <div
+                  key={slotNum}
+                  className={`py-2 rounded-2xl flex flex-col items-center justify-center transition-all ${
+                    isFilled
+                      ? 'bg-amber-400/90 text-brand-blue shadow-sm font-black ring-1 ring-white/40'
+                      : isGiftSlot
+                      ? 'bg-white/15 border border-dashed border-amber-300/60 text-amber-300'
+                      : 'bg-white/10 text-white/40 border border-white/10'
+                  }`}
+                >
+                  {isFilled ? (
+                    <Scissors className="w-4 h-4 text-brand-blue" />
+                  ) : isGiftSlot ? (
+                    <Gift className="w-4 h-4 animate-bounce text-amber-300" />
+                  ) : (
+                    <span className="text-[11px] font-bold">○</span>
+                  )}
+                  <span className="text-[9px] font-bold mt-0.5">
+                    {isGiftSlot ? '50%' : `#${slotNum}`}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-2 text-[10px] text-blue-100 text-center font-medium">
+            {isRewardUnlocked
+              ? "🎉 Tabriklaymiz! Sizda 50% chegirma vaucheri faol!"
+              : `Yana ${5 - currentStamps} ta tashrifdan so'ng 50% chegirma sovg'a olinadi!`}
+          </div>
+        </div>
+
+        {/* 4 Tabs: Xizmatlar / Oldin & Keyin / Salon / Izohlar */}
+        <div className="w-full grid grid-cols-4 gap-1 bg-gray-200/60 p-1 rounded-2xl mt-4">
           <button
             onClick={() => setActiveTab('services')}
-            className={`py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`py-2 rounded-xl text-[11px] font-bold transition-all text-center ${
               activeTab === 'services'
                 ? 'bg-brand-blue text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
@@ -244,8 +348,19 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
             {t.tabs_services}
           </button>
           <button
+            onClick={() => setActiveTab('before_after')}
+            className={`py-2 rounded-xl text-[11px] font-bold transition-all text-center flex items-center justify-center space-x-0.5 ${
+              activeTab === 'before_after'
+                ? 'bg-brand-blue text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <span>Oldin/Keyin</span>
+            <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1 rounded-full">✂️</span>
+          </button>
+          <button
             onClick={() => setActiveTab('gallery')}
-            className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1 ${
+            className={`py-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center space-x-1 ${
               activeTab === 'gallery'
                 ? 'bg-brand-blue text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
@@ -253,7 +368,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
           >
             <span>{t.tabs_salon_photos || "Salon"}</span>
             {salonPhotos.length > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+              <span className={`text-[9px] px-1 py-0.2 rounded-full font-bold ${
                 activeTab === 'gallery' ? 'bg-brand-orange text-brand-blue' : 'bg-gray-300 text-gray-700'
               }`}>
                 {salonPhotos.length}
@@ -262,7 +377,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
           </button>
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`py-2 rounded-xl text-[11px] font-bold transition-all ${
               activeTab === 'reviews'
                 ? 'bg-brand-blue text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
@@ -337,7 +452,30 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
         </div>
       )}
 
-      {/* Tab 2: Salon Photos (Barbershop Gallery) */}
+      {/* Tab 2: Oldin & Keyin Transformatsiya Sliders */}
+      {activeTab === 'before_after' && (
+        <div className="px-4 mt-4 space-y-4 animate-in fade-in">
+          <div className="flex items-center justify-between text-xs text-gray-500 font-semibold px-1">
+            <span>Ustaning real mijozlari natijalari</span>
+            <span className="text-[10px] text-brand-orange bg-amber-50 px-2 py-0.5 rounded-full font-bold">
+              Interaktiv slayd
+            </span>
+          </div>
+
+          {beforeAfterList.map((item) => (
+            <BeforeAfterSlider
+              key={item.id}
+              beforeImage={item.beforeImg || item.before_img}
+              afterImage={item.afterImg || item.after_img}
+              title={item.title}
+              styleName={item.styleName || item.style_name}
+              description={item.desc}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Tab 3: Salon Photos (Barbershop Gallery) */}
       {activeTab === 'gallery' && (
         <div className="px-4 mt-4">
           {salonPhotos.length > 0 ? (

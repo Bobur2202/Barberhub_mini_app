@@ -26,9 +26,11 @@ import {
   MapPin,
   LogOut,
   Cloud,
-  BellRing
+  BellRing,
+  Radio,
+  Users
 } from 'lucide-react';
-import { getAdminAppointments, updateAppointmentStatus, updateBarberSchedule, sendAppointmentReminder } from '../services/api';
+import { getAdminAppointments, updateAppointmentStatus, updateBarberSchedule, sendAppointmentReminder, callClientToChair } from '../services/api';
 import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
 import { mockBarbers } from '../data/mockBarbers';
 
@@ -345,6 +347,23 @@ export default function AdminDashboardScreen({
 
   const [reminderLoadingId, setReminderLoadingId] = useState(null);
   const [reminderToast, setReminderToast] = useState('');
+  const [callingClientId, setCallingClientId] = useState(null);
+
+  const handleCallClient = async (id) => {
+    setCallingClientId(id);
+    try {
+      await callClientToChair(id);
+      setAppointments((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, queue_status: 'ready_call' } : item))
+      );
+      setReminderToast("Mijozga 'Navbatingiz tayyor, kiring!' xabari yetkazildi! 📢");
+      setTimeout(() => setReminderToast(''), 4000);
+    } catch (err) {
+      console.warn("Mijozni chaqirishda xatolik:", err);
+    } finally {
+      setCallingClientId(null);
+    }
+  };
 
   const handleSendReminder = async (id) => {
     setReminderLoadingId(id);
@@ -810,9 +829,17 @@ export default function AdminDashboardScreen({
 
               <div className="flex items-start justify-between pl-1">
                 <div>
-                  <h3 className="font-extrabold text-sm text-gray-900">
-                    {clientName}
-                  </h3>
+                  <div className="flex items-center space-x-1.5">
+                    <h3 className="font-extrabold text-sm text-gray-900">
+                      {clientName}
+                    </h3>
+                    {(apt.is_multi_person || apt.multi_person_details) && (
+                      <span className="text-[10px] font-black bg-blue-100 text-brand-blue border border-blue-200 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                        <Users className="w-3 h-3 text-brand-orange" />
+                        <span>2 kishi</span>
+                      </span>
+                    )}
+                  </div>
                   <a
                     href={`tel:${phone}`}
                     className="text-xs text-brand-blue font-semibold hover:underline mt-0.5 inline-block"
@@ -833,9 +860,16 @@ export default function AdminDashboardScreen({
               </div>
 
               <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between text-xs pl-1">
-                <span className="text-gray-600 font-medium truncate max-w-[200px]">
-                  {getTranslatedServiceName(serviceName, lang)}
-                </span>
+                <div>
+                  <span className="text-gray-600 font-medium truncate max-w-[200px] block">
+                    {getTranslatedServiceName(serviceName, lang)}
+                  </span>
+                  {(apt.is_multi_person && apt.multi_person_details) && (
+                    <span className="text-[10px] text-brand-orange font-bold block">
+                      + {apt.multi_person_details.companion_title}: {apt.multi_person_details.companion_service} ({apt.multi_person_details.second_slot})
+                    </span>
+                  )}
+                </div>
                 <span className="font-extrabold text-brand-blue">
                   {apt.price?.toLocaleString()} UZS
                 </span>
@@ -907,13 +941,31 @@ export default function AdminDashboardScreen({
                   )}
 
                   {apt.status === 'accepted' && (
-                    <button
-                      onClick={() => handleUpdateStatus(apt.id, 'completed')}
-                      className="px-3 py-1 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center space-x-1 shadow-sm"
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      <span>{t.btn_arrived}</span>
-                    </button>
+                    <>
+                      {/* ⏳ Chaqirish (Call next client) button */}
+                      <button
+                        type="button"
+                        disabled={callingClientId === apt.id || apt.queue_status === 'ready_call'}
+                        onClick={() => handleCallClient(apt.id)}
+                        className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all flex items-center space-x-1 ${
+                          apt.queue_status === 'ready_call'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs hover:opacity-90 active:scale-95'
+                        }`}
+                        title="Mijozga navbati yetganini xabar qilish"
+                      >
+                        <Radio className={`w-3 h-3 ${callingClientId === apt.id ? 'animate-spin' : ''}`} />
+                        <span>{apt.queue_status === 'ready_call' ? "Chaqirildi ✂️" : "Chaqirish 📢"}</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleUpdateStatus(apt.id, 'completed')}
+                        className="px-3 py-1 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center space-x-1 shadow-sm"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>{t.btn_arrived}</span>
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

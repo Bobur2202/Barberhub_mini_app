@@ -80,10 +80,19 @@ async def send_appointment_notification_to_barber(
     time_slot = appointment_data.get("time_slot")
     price = appointment_data.get("price")
 
+    multi_info = ""
+    if appointment_data.get("is_multi_person"):
+        mp = appointment_data.get("multi_person_details") or {}
+        multi_info = (
+            f"👨‍👦 <b>Buyurtma turi:</b> 2 kishi ({mp.get('companion_title', 'Ota-bola')})\n"
+            f"➕ <b>2-xizmat:</b> {mp.get('companion_service', '')} ({mp.get('second_slot', '')})\n"
+        )
+
     text = (
         "🔔 <b>YANGI MIJOZ YOZILDI!</b>\n\n"
         f"👤 <b>Mijoz:</b> {client_name}\n"
         f"📞 <b>Telefon:</b> {phone}\n"
+        f"{multi_info}"
         f"✂️ <b>Xizmat:</b> {service}\n"
         f"📅 <b>Sana:</b> {date_str}\n"
         f"⏰ <b>Vaqt:</b> {time_slot}\n"

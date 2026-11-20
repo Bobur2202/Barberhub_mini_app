@@ -45,6 +45,14 @@ class Barber(BaseModel):
     # Dam olish kunlari va ish holati
     is_working_today: bool = True
     days_off: List[str] = [] # e.g. ["Dush", "Yak"]
+    # Before & After Portfolio Gallery
+    before_after_gallery: List[dict] = []
+    # Virtual Sadoqat Dasturi (Loyalty Stamp)
+    loyalty_program: Optional[dict] = {
+        "enabled": True,
+        "required_visits": 5,
+        "reward": "5-tashrifda 50% chegirma yoki bepul soqol/maska"
+    }
 
 class AppointmentCreate(BaseModel):
     barber_id: str
@@ -55,6 +63,9 @@ class AppointmentCreate(BaseModel):
     date_str: str
     time_slot: str
     notes: Optional[str] = None
+    # 👨‍👦 Multi-person booking
+    is_multi_person: bool = False
+    multi_person_details: Optional[dict] = None # {"companion_type": "child|friend", "companion_title": "...", "companion_service": "...", "second_slot": "15:45", "second_price": 40000}
 
 class Appointment(BaseModel):
     id: str
@@ -75,6 +86,12 @@ class Appointment(BaseModel):
     reminder_sent: bool = False
     sms_sent: bool = False
     created_at: str
+    # 👨‍👦 Multi-person booking
+    is_multi_person: bool = False
+    multi_person_details: Optional[dict] = None
+    # ⏳ Jonli Navbat Radari (Live Queue Status)
+    queue_status: str = "waiting" # waiting | in_progress | ready_call | completed
+    estimated_wait_minutes: Optional[int] = 20
 
 # Persistent JSON Storage Setup
 import os

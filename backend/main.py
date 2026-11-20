@@ -95,6 +95,29 @@ INITIAL_BARBERS = [
             "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
             "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700"
         ],
+        before_after_gallery=[
+            {
+                "id": "ba-1",
+                "title": "Klassikdan Skin Fade Crop ga o'tish",
+                "style_name": "Textured Crop Fade",
+                "before_img": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=600",
+                "after_img": "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=600",
+                "desc": "O'sib ketgan sochlarni tozalab, yuzga yosh va o'tkir qirrali yangi uslub berildi."
+            },
+            {
+                "id": "ba-2",
+                "title": "Soqol va High Fade Pompadour",
+                "style_name": "High Fade & Beard",
+                "before_img": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600",
+                "after_img": "https://images.unsplash.com/photo-1520338661084-680395057c93?auto=format&fit=crop&q=80&w=600",
+                "desc": "Soqol chiziqlari aniq qirralanib, tepa sochiga baland hajm berildi."
+            }
+        ],
+        loyalty_program={
+            "enabled": True,
+            "required_visits": 5,
+            "reward": "5-tashrifda 50% chegirma yoki bepul soqol/maska"
+        },
         services=[
             Service(id="s1", name="Soch kesish va turmaklash", duration="35 daq", price=50000),
             Service(id="s2", name="Soch va soqol kompleks", duration="50 daq", price=80000),
@@ -118,6 +141,21 @@ INITIAL_BARBERS = [
             "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700",
             "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700"
         ],
+        before_after_gallery=[
+            {
+                "id": "ba-21",
+                "title": "Modern Quiff va silliq Fade",
+                "style_name": "Modern Quiff",
+                "before_img": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=600",
+                "after_img": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=600",
+                "desc": "Tepasi yuqoriga va orqaga hajmli ko'tarilgan zamonaviy uslub."
+            }
+        ],
+        loyalty_program={
+            "enabled": True,
+            "required_visits": 5,
+            "reward": "5-tashrifda 50% chegirma yoki bepul soqol/maska"
+        },
         services=[
             Service(id="s201", name="Soch kesish va turmaklash", duration="40 daq", price=60000),
             Service(id="s202", name="Soch va soqol parvarishi", duration="60 daq", price=90000),
@@ -204,6 +242,10 @@ async def create_appointment(data: AppointmentCreate):
     if not service:
         raise HTTPException(status_code=404, detail="Xizmat topilmadi")
 
+    total_price = service.price
+    if data.is_multi_person and data.multi_person_details:
+        total_price += data.multi_person_details.get("second_price", 0)
+
     apt_id = f"apt-{uuid.uuid4().hex[:8]}"
     appointment = Appointment(
         id=apt_id,
@@ -211,7 +253,7 @@ async def create_appointment(data: AppointmentCreate):
         barber_name=barber.name,
         barber_avatar=barber.avatar,
         service_name=service.name,
-        price=service.price,
+        price=total_price,
         client_name=data.client_name,
         client_phone=data.client_phone,
         client_telegram_id=data.client_telegram_id,
@@ -219,6 +261,9 @@ async def create_appointment(data: AppointmentCreate):
         time_slot=data.time_slot,
         status="pending",
         reviewed=False,
+        is_multi_person=data.is_multi_person,
+        multi_person_details=data.multi_person_details,
+        queue_status="waiting",
         created_at=datetime.now().strftime("%Y-%m-%d %H:%M")
     )
     
@@ -237,6 +282,39 @@ async def create_appointment(data: AppointmentCreate):
             print(f"Telegram notification xatolik: {err}")
 
     return appointment
+
+@app.post("/api/appointments/{appointment_id}/call-client")
+async def call_client_to_chair(appointment_id: str):
+    """
+    ⏳ Jonli Navbat Radari: Usta navbati yetgan mijozni chaqiradi
+    Mijozga 'Navbatingiz tayyor, kiring!' xabari boradi va queue_status 'ready_call' ga o'tadi
+    """
+    for a in APPOINTMENTS_DB:
+        if a.id == appointment_id:
+            a.queue_status = "ready_call"
+            save_appointments_to_disk(APPOINTMENTS_DB)
+            
+            # Send Telegram notification if client_telegram_id exists
+            if bot and a.client_telegram_id:
+                try:
+                    await bot.send_message(
+                        chat_id=a.client_telegram_id,
+                        text=(
+                            f"🎉 <b>NAVBATINGIZ TAYYOR!</b>\n\n"
+                            f"Hurmatli {a.client_name}, usta <b>{a.barber_name}</b> sizni kutmoqda ✂️\n"
+                            f"Iltimos, sartaroshxonaga kiring!\n"
+                        ),
+                        parse_mode="HTML"
+                    )
+                except Exception as e:
+                    print(f"Call client notification error: {e}")
+            return {
+                "success": True,
+                "appointment_id": appointment_id,
+                "queue_status": "ready_call",
+                "message": f"{a.client_name} ga 'Navbatingiz yetib keldi' xabari yuborildi!"
+            }
+    raise HTTPException(status_code=404, detail="Navbat topilmadi")
 
 @app.get("/api/admin/appointments", response_model=List[Appointment])
 def get_admin_appointments(barber_id: Optional[str] = None):

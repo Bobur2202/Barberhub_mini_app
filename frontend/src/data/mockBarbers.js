@@ -32,6 +32,29 @@ export const mockBarbers = [
       "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=700",
       "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=700"
     ],
+    beforeAfterGallery: [
+      {
+        id: "ba-1",
+        title: "Klassikdan Skin Fade Crop ga o'tish",
+        styleName: "Textured Crop Fade",
+        beforeImg: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=600",
+        afterImg: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=600",
+        desc: "O'sib ketgan sochlarni tozalab, yuzga yosh va o'tkir qirrali yangi zamonaviy uslub berildi."
+      },
+      {
+        id: "ba-2",
+        title: "Soqol va High Fade Pompadour",
+        styleName: "High Fade & Beard",
+        beforeImg: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600",
+        afterImg: "https://images.unsplash.com/photo-1520338661084-680395057c93?auto=format&fit=crop&q=80&w=600",
+        desc: "Soqol chiziqlari aniq qirralanib, tepa sochiga baland hajm berildi."
+      }
+    ],
+    loyaltyProgram: {
+      enabled: true,
+      requiredVisits: 5,
+      rewardText: "5-tashrifda 50% chegirma yoki bepul soqol/maska"
+    },
     services: [
       { id: "s1", name: "Soch kesish va turmaklash", duration: "35 daq", price: 50000, isDiscount: false },
       { id: "s2", name: "Soch va soqol kompleks", duration: "50 daq", price: 80000, isDiscount: false },
@@ -65,6 +88,21 @@ export const mockBarbers = [
       "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
       "https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&q=80&w=700"
     ],
+    beforeAfterGallery: [
+      {
+        id: "ba-21",
+        title: "Modern Quiff va silliq Fade",
+        styleName: "Modern Quiff",
+        beforeImg: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=600",
+        afterImg: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=600",
+        desc: "Tepasi yuqoriga va orqaga hajmli ko'tarilgan, yonlari chiroyli tozalangan yangi uslub."
+      }
+    ],
+    loyaltyProgram: {
+      enabled: true,
+      requiredVisits: 5,
+      rewardText: "5-tashrifda 50% chegirma yoki bepul soqol/maska"
+    },
     services: [
       { id: "s201", name: "Soch kesish va turmaklash", duration: "40 daq", price: 60000, isDiscount: false },
       { id: "s202", name: "Soch va soqol parvarishi", duration: "60 daq", price: 90000, isDiscount: false },
