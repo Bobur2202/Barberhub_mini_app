@@ -28,11 +28,106 @@ import {
   Cloud,
   BellRing,
   Radio,
-  Users
+  Users,
+  Coffee,
+  CalendarDays,
+  Layers,
+  ChevronRight
 } from 'lucide-react';
 import { getAdminAppointments, updateAppointmentStatus, updateBarberSchedule, sendAppointmentReminder, callClientToChair } from '../services/api';
 import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
 import { mockBarbers } from '../data/mockBarbers';
+
+// 00 dan 23 gacha hamma 24 ta soat
+const HOURS_24 = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+// 00 dan 59 gacha hamma 60 ta minut
+const MINUTES_60 = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+// Maxsus aniq vaqt tanlash komponenti (Soat 00-23 va Minut 00-59)
+function TimePickerField({ label, value, onChange, icon }) {
+  const parts = (value || "09:00").split(':');
+  const h = parts[0] || "09";
+  const m = parts[1] || "00";
+
+  const handleHour = (newH) => {
+    onChange(`${newH}:${m}`);
+  };
+
+  const handleMinute = (newM) => {
+    onChange(`${h}:${newM}`);
+  };
+
+  return (
+    <div className="bg-gray-50/90 rounded-2xl p-3 border border-gray-200/80">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-extrabold text-gray-700 flex items-center space-x-1.5">
+          {icon}
+          <span>{label}</span>
+        </span>
+        <span className="font-mono text-xs font-black text-brand-blue bg-white px-2.5 py-0.5 rounded-lg border border-blue-100 shadow-2xs">
+          {h}:{m}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        {/* Soat (00 - 23) */}
+        <div>
+          <label className="text-[10px] font-bold text-gray-400 block mb-1">
+            Soat (00 - 23)
+          </label>
+          <select
+            value={h}
+            onChange={(e) => handleHour(e.target.value)}
+            className="w-full bg-white border border-gray-200 rounded-xl py-2 px-2 text-xs font-black text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
+          >
+            {HOURS_24.map((hour) => (
+              <option key={hour} value={hour}>
+                {hour}:00
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Minut (00 - 59) */}
+        <div>
+          <label className="text-[10px] font-bold text-gray-400 block mb-1">
+            Minut (00 - 59)
+          </label>
+          <select
+            value={m}
+            onChange={(e) => handleMinute(e.target.value)}
+            className="w-full bg-white border border-gray-200 rounded-xl py-2 px-2 text-xs font-black text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
+          >
+            {MINUTES_60.map((min) => (
+              <option key={min} value={min}>
+                :{min} daqiqa
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Tezkor minut knopkalari */}
+      <div className="flex items-center space-x-1.5 mt-2.5 pt-2 border-t border-gray-200/60">
+        <span className="text-[9px] font-bold text-gray-400">Tezkor:</span>
+        {['00', '15', '30', '45'].map((quickM) => (
+          <button
+            key={quickM}
+            type="button"
+            onClick={() => handleMinute(quickM)}
+            className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
+              m === quickM
+                ? 'bg-brand-blue text-white shadow-2xs'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+            }`}
+          >
+            :{quickM}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Curated stylish avatar presets for quick selection
 const AVATAR_PRESETS = [
@@ -63,6 +158,8 @@ export default function AdminDashboardScreen({
   onDeleteAccount
 }) {
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'pending' | 'accepted' | 'completed'
+  const [mainTab, setMainTab] = useState('appointments'); // 'appointments' | 'schedule' | 'services' | 'finance'
+  const [scheduleSaveToast, setScheduleSaveToast] = useState('');
 
   // Modal for Logout & Delete Account
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -134,7 +231,7 @@ export default function AdminDashboardScreen({
   };
 
   const handleSaveWorkHours = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const breakData = {
       enabled: tempBreakEnabled,
       start: tempBreakStart,
@@ -147,6 +244,9 @@ export default function AdminDashboardScreen({
       daysOff: tempDaysOff,
     });
     setShowWorkHoursModal(false);
+    setScheduleSaveToast("Ish grafigi va vaqtlar muvaffaqiyatli saqlandi! ✅");
+    setTimeout(() => setScheduleSaveToast(''), 3500);
+
     if (barberProfile.id) {
       await updateBarberSchedule(barberProfile.id, {
         isWorkingToday: tempIsWorkingToday,
@@ -485,10 +585,22 @@ export default function AdminDashboardScreen({
     return true;
   });
 
+  const pendingCount = appointments.filter((a) => a.status === 'pending').length;
+  const todayRevenue = appointments
+    .filter((a) => a.status === 'completed' || a.status === 'accepted')
+    .reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+
   return (
-    <div className="min-h-screen bg-[#E6EDF9] pb-28 max-w-md mx-auto">
-      {/* 1. Usta Profil Kartasi (Avatar, Ish vaqti, Manzil) */}
-      <div className="pt-4 px-4 pb-2">
+    <div className="min-h-screen bg-[#E6EDF9] pb-32 max-w-md mx-auto">
+      {/* Toast bildirishnoma */}
+      {scheduleSaveToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white py-2.5 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in max-w-xs text-center border border-white/20">
+          <span>{scheduleSaveToast}</span>
+        </div>
+      )}
+
+      {/* 1. Usta Profil Kartasi (Avatar, Ish vaqti, Holat) */}
+      <div className="pt-4 px-4 pb-1">
         <div className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50">
           <div className="flex items-center space-x-3.5">
             {/* Avatar with change button */}
@@ -527,198 +639,100 @@ export default function AdminDashboardScreen({
                 {barberProfile.role || "Erkaklar sartaroshi"}
               </p>
 
-              {/* Ish vaqti va Dam olish kunlari tugmasi */}
-              <div className="mt-2 flex items-center justify-between flex-wrap gap-1.5">
+              {/* Ish vaqti va Tushlik xulosasi */}
+              <div className="mt-2 flex items-center space-x-1.5 flex-wrap gap-y-1">
                 <button
-                  onClick={() => setShowWorkHoursModal(true)}
-                  className="inline-flex items-center space-x-1.5 bg-blue-50/80 hover:bg-blue-100 text-brand-blue px-2.5 py-1 rounded-xl text-xs font-bold transition-colors border border-blue-200/60"
+                  type="button"
+                  onClick={() => setMainTab('schedule')}
+                  className="inline-flex items-center space-x-1 bg-blue-50/80 hover:bg-blue-100 text-brand-blue px-2.5 py-0.5 rounded-xl text-[11px] font-bold transition-colors border border-blue-200/60"
                 >
-                  <Clock className="w-3.5 h-3.5 text-brand-orange" />
+                  <Clock className="w-3 h-3 text-brand-orange" />
                   <span>{barberProfile.workHours?.start || "09:00"} — {barberProfile.workHours?.end || "22:00"}</span>
-                  <Edit2 className="w-2.5 h-2.5 text-gray-400 ml-1" />
                 </button>
 
                 {barberProfile.breakTime?.enabled !== false && (
-                  <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-1 rounded-xl border border-amber-200">
+                  <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-xl border border-amber-200">
                     <span>☕</span>
                     <span>{barberProfile.breakTime?.start || "13:00"}-{barberProfile.breakTime?.end || "14:00"}</span>
                   </span>
                 )}
-
-                <button
-                  onClick={() => setShowAvatarModal(true)}
-                  className="text-[11px] font-bold text-gray-500 hover:text-brand-blue transition-colors ml-auto"
-                >
-                  {t.change_avatar_btn || "Rasmni almashtirish"}
-                </button>
               </div>
+            </div>
+          </div>
+        </div>
 
-              {/* Dam olish holati xabarnomasi */}
-              {barberProfile.isWorkingToday === false && (
-                <div className="mt-2.5 p-2 bg-red-50 border border-red-200 rounded-xl flex items-center space-x-1.5 text-[11px] font-bold text-red-700">
-                  <AlertCircle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
-                  <span>Bugun dam olish kuni belgilangan (Mijozlar bugunga yozila olmaydi)</span>
-                </div>
-              )}
-
-              {barberProfile.daysOff && barberProfile.daysOff.length > 0 && barberProfile.isWorkingToday !== false && (
-                <div className="mt-2 text-[10px] text-gray-500 flex items-center space-x-1">
-                  <span>Haftalik dam olish:</span>
-                  <span className="font-bold text-brand-orange bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
-                    {barberProfile.daysOff.join(", ")}
-                  </span>
-                </div>
+        {/* 4 Asosiy Bo'limlar Navigatsiyasi (Segmented Tabs) */}
+        <div className="grid grid-cols-4 gap-1.5 bg-white p-1.5 rounded-2xl shadow-sm border border-blue-50 mt-2.5">
+          <button
+            type="button"
+            onClick={() => setMainTab('appointments')}
+            className={`py-2 px-1 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center space-y-0.5 relative ${
+              mainTab === 'appointments'
+                ? 'bg-brand-blue text-white shadow-sm'
+                : 'text-gray-500 hover:text-brand-blue hover:bg-blue-50/50'
+            }`}
+          >
+            <div className="relative">
+              <Calendar className="w-4 h-4" />
+              {pendingCount > 0 && (
+                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                  {pendingCount}
+                </span>
               )}
             </div>
-          </div>
+            <span className="text-[10px] leading-none mt-0.5">Navbatlar</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMainTab('schedule')}
+            className={`py-2 px-1 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center space-y-0.5 ${
+              mainTab === 'schedule'
+                ? 'bg-brand-blue text-white shadow-sm'
+                : 'text-gray-500 hover:text-brand-blue hover:bg-blue-50/50'
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            <span className="text-[10px] leading-none mt-0.5">Grafik</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMainTab('services')}
+            className={`py-2 px-1 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center space-y-0.5 ${
+              mainTab === 'services'
+                ? 'bg-brand-blue text-white shadow-sm'
+                : 'text-gray-500 hover:text-brand-blue hover:bg-blue-50/50'
+            }`}
+          >
+            <Scissors className="w-4 h-4" />
+            <span className="text-[10px] leading-none mt-0.5">Xizmatlar</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMainTab('finance')}
+            className={`py-2 px-1 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center space-y-0.5 ${
+              mainTab === 'finance'
+                ? 'bg-brand-blue text-white shadow-sm'
+                : 'text-gray-500 hover:text-brand-blue hover:bg-blue-50/50'
+            }`}
+          >
+            <DollarSign className="w-4 h-4" />
+            <span className="text-[10px] leading-none mt-0.5">Kassa</span>
+          </button>
         </div>
       </div>
 
-      {/* Kassa & Statistika (Analytics & Revenue) */}
-      <div className="px-4 mt-2">
-        <div className="bg-gradient-to-br from-brand-blue via-brand-blue to-[#002f57] text-white rounded-3xl p-4 shadow-md border border-white/10">
-          <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-            <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 rounded-xl bg-amber-400/20 text-brand-orange flex items-center justify-center font-bold">
-                <DollarSign className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-blue-100">
-                  {t.analytics_title || "Kassa va Statistika"}
-                </h3>
-                <span className="text-[10px] text-blue-200 block">Real vaqt hisob-kitobi</span>
-              </div>
-            </div>
-            <span className="text-[9px] font-extrabold bg-white/20 text-blue-100 px-2 py-0.5 rounded-full">
-              Bugun
-            </span>
-          </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
-            {/* Bugungi Kassa */}
-            <div className="bg-white/10 backdrop-blur-xs rounded-2xl p-3 border border-white/10 flex flex-col justify-between">
-              <div>
-                <span className="text-[10px] text-blue-200 block font-medium">
-                  {t.today_revenue || "Bugungi kassa"}
-                </span>
-                <span className="text-lg font-black text-amber-300 block mt-0.5">
-                  {(appointments
-                    .filter(a => a.status === 'completed' || a.status === 'accepted')
-                    .reduce((sum, a) => sum + (Number(a.price) || 0), 0)
-                  ).toLocaleString()} <span className="text-[10px] font-bold text-white/90">UZS</span>
-                </span>
-              </div>
-              <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px]">
-                <span className="text-emerald-300 font-bold flex items-center space-x-1">
-                  <span>✓</span>
-                  <span>{appointments.filter(a => a.status === 'completed' || a.status === 'accepted').length} ta mijoz</span>
-                </span>
-              </div>
-            </div>
 
-            {/* Bu oylik tushum */}
-            <div className="bg-white/10 backdrop-blur-xs rounded-2xl p-3 border border-white/10 flex flex-col justify-between">
-              <div>
-                <span className="text-[10px] text-blue-200 block font-medium">
-                  {t.month_revenue || "Bu oylik tushum"}
-                </span>
-                <span className="text-lg font-black text-white block mt-0.5">
-                  {(appointments
-                    .filter(a => a.status === 'completed' || a.status === 'accepted')
-                    .reduce((sum, a) => sum + (Number(a.price) || 0), 0) + 4800000
-                  ).toLocaleString()} <span className="text-[10px] font-bold text-white/80">UZS</span>
-                </span>
-              </div>
-              <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px]">
-                <span className="text-blue-200 font-medium">
-                  {appointments.length + 42} jami qabul
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* 2. TAB CONTENT BO'LIMLARI */}
 
-      {/* 2. Sartaroshxona rasmlari (Salon Photos Gallery) */}
-      <div className="px-4 mt-2">
-        <div className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50">
-          <div className="flex items-center justify-between mb-2.5">
-            <div className="flex items-center space-x-1.5">
-              <ImageIcon className="w-4 h-4 text-brand-blue" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
-                {t.salon_photos_title || "Sartaroshxona rasmlari"}
-              </h3>
-              <span className="text-[11px] font-bold text-gray-400">
-                ({barberProfile.salonPhotos?.length || 0})
-              </span>
-            </div>
-
-            <button
-              onClick={() => {
-                setTempSalonPhotoUrl('');
-                setShowSalonPhotoModal(true);
-              }}
-              className="text-xs font-extrabold text-brand-blue bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-xl flex items-center space-x-1 transition-colors border border-amber-200/60"
-            >
-              <Plus className="w-3.5 h-3.5 text-brand-orange" />
-              <span>{t.add_salon_photo || "+ Rasm qo'shish"}</span>
-            </button>
-          </div>
-
-          <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">
-            {t.salon_photos_desc || "Mijozlar profilingizga kirganida ushbu rasmlarni ko'rishadi"}
-          </p>
-
-          {barberProfile.salonPhotos && barberProfile.salonPhotos.length > 0 ? (
-            <div className="grid grid-cols-3 gap-2 overflow-x-auto pb-1">
-              {barberProfile.salonPhotos.map((photo, idx) => (
-                <div
-                  key={idx}
-                  className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 group border border-blue-50"
-                >
-                  <img
-                    src={photo}
-                    alt={`Salon ${idx + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
-                    <button
-                      onClick={() => setPreviewPhoto(photo)}
-                      className="w-7 h-7 rounded-full bg-white/90 text-gray-800 flex items-center justify-center shadow-md hover:bg-white"
-                      title="Kattalashtirish"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSalonPhoto(idx)}
-                      className="w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center shadow-md hover:bg-red-600"
-                      title="O'chirish"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-              <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-1" />
-              <p className="text-xs text-gray-500 max-w-xs mx-auto mb-2">
-                {t.no_salon_photos_admin || "Hozircha birorta ham rasm yuklanmagan"}
-              </p>
-              <button
-                onClick={() => setShowSalonPhotoModal(true)}
-                className="px-3 py-1.5 bg-brand-blue text-white rounded-xl text-xs font-bold hover:bg-brand-blue-dark transition-colors"
-              >
-                {t.add_salon_photo || "+ Rasm qo'shish"}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 3. Header & Appointments Title */}
-      <div className="pt-3 px-4 pb-2">
+      {/* TAB 1: NAVBATLAR (Appointments Queue) */}
+      {mainTab === 'appointments' && (
+        <div className="animate-in fade-in space-y-3">
+          {/* 3. Header & Appointments Title */}
+          <div className="pt-2 px-4 pb-1">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-black text-brand-blue">
@@ -977,23 +991,223 @@ export default function AdminDashboardScreen({
           <div className="text-center py-10 bg-white rounded-3xl p-6 shadow-sm border border-blue-50">
             <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
             <p className="text-xs text-gray-500 font-medium">
-              {t.no_appointments}
+              {t.no_appointments || "Hozircha navbatlar mavjud emas"}
             </p>
           </div>
         )}
       </div>
+    </div>
+  )}
 
-      {/* 4. Xizmatlar boshqaruvi (CRUD & Aksiya/Talabalar) */}
-      <div className="px-4 mt-6">
-        <div className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-1.5">
-              <Scissors className="w-4 h-4 text-brand-blue" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
-                {t.my_services_title}
-              </h3>
+      {/* TAB 2: ISH GRAFIGI VA VAQT (Schedule Management) */}
+      {mainTab === 'schedule' && (
+        <div className="px-4 mt-3 space-y-4 animate-in fade-in">
+          {/* Bugun ish holati switch */}
+          <div className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-gray-700">
+                  Bugungi ish holati
+                </h3>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  Agar bugun ishga chiqolmasangiz, bitta tugma bilan dam olishni yoqing
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleWorkingToday}
+                className={`px-3 py-1.5 rounded-full text-xs font-extrabold flex items-center space-x-1.5 transition-all shadow-xs ${
+                  barberProfile.isWorkingToday !== false
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    : 'bg-rose-100 text-rose-800 border border-rose-300'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${barberProfile.isWorkingToday !== false ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                <span>{barberProfile.isWorkingToday !== false ? "Ishdaman 🟢" : "Dam olish 🔴"}</span>
+              </button>
             </div>
-            <button
+          </div>
+
+          {/* Haftalik Ish Vaqti */}
+          <div className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50 space-y-3">
+            <div className="flex items-center space-x-2 border-b border-gray-100 pb-2.5">
+              <Clock className="w-4 h-4 text-brand-orange" />
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-brand-blue">
+                  Kunlik ish vaqti
+                </h3>
+                <span className="text-[10px] text-gray-400 block">00:00 dan 23:59 gacha istalgan soat va minutni tanlang</span>
+              </div>
+            </div>
+
+            <TimePickerField
+              label="Ish boshlanish vaqti"
+              value={tempWorkStart}
+              onChange={setTempWorkStart}
+              icon={<Clock className="w-3.5 h-3.5 text-brand-blue" />}
+            />
+
+            <TimePickerField
+              label="Ish tugash vaqti"
+              value={tempWorkEnd}
+              onChange={setTempWorkEnd}
+              icon={<Clock className="w-3.5 h-3.5 text-brand-blue" />}
+            />
+
+            {/* Tezkor ish vaqti shablonlari */}
+            <div className="pt-1">
+              <span className="text-[10px] font-bold text-gray-400 block mb-1.5">Tezkor shablonlar:</span>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { label: "09:00 - 22:00", s: "09:00", e: "22:00" },
+                  { label: "08:00 - 20:00", s: "08:00", e: "20:00" },
+                  { label: "10:00 - 23:00", s: "10:00", e: "23:00" },
+                  { label: "07:00 - 19:00", s: "07:00", e: "19:00" },
+                  { label: "12:00 - 00:00", s: "12:00", e: "00:00" },
+                  { label: "00:00 - 23:59 (24/7)", s: "00:00", e: "23:59" },
+                ].map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setTempWorkStart(preset.s);
+                      setTempWorkEnd(preset.e);
+                    }}
+                    className="py-1.5 px-1 bg-gray-100 hover:bg-gray-200 rounded-xl text-[10px] font-bold text-gray-700 transition-colors text-center"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Tushlik / Tanaffus vaqti */}
+          <div className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50 space-y-3">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
+              <div className="flex items-center space-x-2">
+                <Coffee className="w-4 h-4 text-amber-600" />
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-brand-blue">
+                    Tushlik / Tanaffus vaqti
+                  </h3>
+                  <span className="text-[10px] text-gray-400 block">Bu vaqtda mijozlar navbat ololmaydi</span>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={tempBreakEnabled}
+                  onChange={(e) => setTempBreakEnabled(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-orange"></div>
+              </label>
+            </div>
+
+            {tempBreakEnabled && (
+              <div className="space-y-3 animate-in fade-in">
+                <TimePickerField
+                  label="Tushlik boshlanishi"
+                  value={tempBreakStart}
+                  onChange={setTempBreakStart}
+                  icon={<Coffee className="w-3.5 h-3.5 text-amber-600" />}
+                />
+
+                <TimePickerField
+                  label="Tushlik tugashi"
+                  value={tempBreakEnd}
+                  onChange={setTempBreakEnd}
+                  icon={<Coffee className="w-3.5 h-3.5 text-amber-600" />}
+                />
+
+                <div className="pt-1">
+                  <span className="text-[10px] font-bold text-gray-400 block mb-1">Tezkor tushlik:</span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { label: "13:00 - 14:00", s: "13:00", e: "14:00" },
+                      { label: "12:30 - 13:30", s: "12:30", e: "13:30" },
+                      { label: "14:00 - 15:00", s: "14:00", e: "15:00" },
+                    ].map((bp, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setTempBreakStart(bp.s);
+                          setTempBreakEnd(bp.e);
+                        }}
+                        className="py-1 px-1 bg-amber-50 hover:bg-amber-100 rounded-lg text-[10px] font-bold text-amber-900 border border-amber-200 text-center"
+                      >
+                        {bp.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Haftalik Dam Olish Kunlari */}
+          <div className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50 space-y-3">
+            <div className="flex items-center space-x-2 border-b border-gray-100 pb-2.5">
+              <CalendarDays className="w-4 h-4 text-brand-blue" />
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-brand-blue">
+                  Haftalik dam olish kunlari
+                </h3>
+                <span className="text-[10px] text-gray-400 block">Qaysi kunlarda ishlamasligingizni belgilang</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-1.5">
+              {['Dush', 'Sesh', 'Chor', 'Pay', 'Juma', 'Shan', 'Yak'].map((day) => {
+                const isOff = tempDaysOff.includes(day);
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => handleToggleDayOff(day)}
+                    className={`py-2 px-1 rounded-xl text-xs font-extrabold transition-all border ${
+                      isOff
+                        ? 'bg-rose-500 text-white border-rose-600 shadow-2xs'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200'
+                    }`}
+                  >
+                    <span>{day}</span>
+                    <span className="block text-[8px] font-bold mt-0.5">
+                      {isOff ? "Dam olish" : "Ish kuni"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Saqlash tugmasi */}
+          <button
+            type="button"
+            onClick={handleSaveWorkHours}
+            className="w-full py-3.5 bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-black text-sm rounded-2xl shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all flex items-center justify-center space-x-2"
+          >
+            <Check className="w-4 h-4 stroke-[3]" />
+            <span>Grafik va Vaqtlarni Saqlash</span>
+          </button>
+        </div>
+      )}
+
+      {/* TAB 3: XIZMATLAR VA GALEREYA (Services & Salon Photos) */}
+      {mainTab === 'services' && (
+        <div className="px-4 mt-3 space-y-4 animate-in fade-in">
+          {/* 4. Xizmatlar boshqaruvi (CRUD & Aksiya/Talabalar) */}
+          <div className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-1.5">
+                <Scissors className="w-4 h-4 text-brand-blue" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                  {t.my_services_title}
+                </h3>
+              </div>
+              <button
               onClick={handleOpenAddService}
               className="text-xs font-extrabold text-brand-blue bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-xl flex items-center space-x-1 transition-colors border border-amber-200/60"
             >
@@ -1069,168 +1283,344 @@ export default function AdminDashboardScreen({
             <span>{t.add_new_service}</span>
           </button>
         </div>
-      </div>
 
-      {/* 5. SaaS Obuna & 14 kunlik Sinov Davri */}
-      <div className="px-4 mt-6 space-y-4">
-        <div className="bg-gradient-to-br from-brand-blue to-brand-blue-dark rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
+        {/* Sartaroshxona va Ishlar Galereyasi (Portfolio) */}
+        <div className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-extrabold bg-brand-orange text-brand-blue px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1 shadow-sm">
-              <Sparkles className="w-3 h-3" />
-              <span>{t.trial_badge}</span>
-            </span>
-            <span className="text-xs font-bold text-amber-300">
-              {t.trial_days_left}
-            </span>
+            <div className="flex items-center space-x-1.5">
+              <Camera className="w-4 h-4 text-brand-blue" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                {t.salon_photos_title || "Sartaroshxona & Ishlar galereyasi"}
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSalonPhotoModal(true)}
+              className="text-xs font-extrabold text-brand-blue bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-xl flex items-center space-x-1 transition-colors border border-amber-200/60"
+            >
+              <Plus className="w-3.5 h-3.5 text-brand-orange" />
+              <span>Rasm qo'shish</span>
+            </button>
           </div>
 
-          <h3 className="text-base font-extrabold">
-            {t.pro_plan}
-          </h3>
-          <p className="text-xs text-blue-100/80 mt-1 leading-relaxed">
-            {t.pro_features}
+          <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">
+            Mijozlar profilingizga kirganda sizning ishlaringiz va sartaroshxona qulayliklarini ko'rishadi:
           </p>
 
-          <div className="w-full bg-white/10 rounded-full h-1.5 mt-4 overflow-hidden">
-            <div className="bg-brand-orange h-full rounded-full" style={{ width: '78%' }}></div>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-            <div>
-              <span className="text-xs text-blue-200 block text-[10px]">Oylik to'lov:</span>
-              <span className="text-sm font-black text-brand-orange">
-                50,000 UZS / {t.per_month}
-              </span>
-            </div>
+          <div className="grid grid-cols-3 gap-2">
+            {(barberProfile.salonPhotos || []).map((photoUrl, idx) => (
+              <div key={idx} className="relative group rounded-2xl overflow-hidden aspect-square border border-gray-100 shadow-2xs">
+                <img
+                  src={photoUrl}
+                  alt={`Portfolio ${idx + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleDeleteSalonPhoto(idx)}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center transition-colors shadow-sm"
+                  title="O'chirish"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
 
             <button
-              onClick={() => setShowPaymentModal(true)}
-              className="px-4 py-2 bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-95"
+              type="button"
+              onClick={() => setShowSalonPhotoModal(true)}
+              className="border-2 border-dashed border-gray-200 hover:border-brand-blue/50 rounded-2xl aspect-square flex flex-col items-center justify-center text-gray-400 hover:text-brand-blue bg-gray-50/50 hover:bg-blue-50/30 transition-all"
             >
-              {t.renew_subscription}
+              <Plus className="w-5 h-5 text-brand-orange mb-1" />
+              <span className="text-[10px] font-bold">Rasm qo'shish</span>
             </button>
           </div>
         </div>
+      </div>
+      )}
 
-        {/* 6. Ulangan Bank Kartasi (Avtomatik to'lov) */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center space-x-1.5">
-              <CreditCard className="w-4 h-4 text-brand-blue" />
-              <span>{t.linked_card_title}</span>
-            </h3>
-            {linkedCard && (
-              <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full flex items-center space-x-1">
-                <CheckCircle2 className="w-3 h-3" />
-                <span>{t.auto_debit_active}</span>
+      {/* TAB 4: MOLIYA VA KASSA (Revenue, SaaS, Card, Account) */}
+      {mainTab === 'finance' && (
+        <div className="px-4 mt-3 space-y-4 animate-in fade-in">
+          {/* Kunlik Kassa & Statistika */}
+          <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
+            <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2.5">
+              <div className="flex items-center space-x-1.5">
+                <DollarSign className="w-4 h-4 text-emerald-600" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                  Kunlik Kassa & Statistika
+                </h3>
+              </div>
+              <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                Bugun
               </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="p-3.5 bg-emerald-50/70 border border-emerald-100 rounded-2xl">
+                <span className="text-[10px] font-bold text-gray-500 block">Bugungi kassa</span>
+                <span className="text-lg font-black text-emerald-700 block mt-0.5">
+                  {todayRevenue.toLocaleString()} UZS
+                </span>
+                <span className="text-[9px] text-emerald-600 font-medium">Qabul qilingan + Tugatilgan</span>
+              </div>
+
+              <div className="p-3.5 bg-blue-50/70 border border-blue-100 rounded-2xl">
+                <span className="text-[10px] font-bold text-gray-500 block">Jami mijozlar</span>
+                <span className="text-lg font-black text-brand-blue block mt-0.5">
+                  {appointments.length} ta
+                </span>
+                <span className="text-[9px] text-gray-500 font-medium">Bugungi barcha navbatlar</span>
+              </div>
+            </div>
+
+            <div className="mt-3 p-3 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span className="text-gray-600 font-medium">Tugatilgan xizmatlar:</span>
+              </div>
+              <span className="font-extrabold text-gray-900">
+                {appointments.filter(a => a.status === 'completed').length} ta
+              </span>
+            </div>
+          </div>
+
+          {/* 5. SaaS Obuna & 14 kunlik Sinov Davri */}
+          <div className="bg-gradient-to-br from-brand-blue to-brand-blue-dark rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-extrabold bg-brand-orange text-brand-blue px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1 shadow-sm">
+                <Sparkles className="w-3 h-3" />
+                <span>{t.trial_badge}</span>
+              </span>
+              <span className="text-xs font-bold text-amber-300">
+                {t.trial_days_left}
+              </span>
+            </div>
+
+            <h3 className="text-base font-extrabold">
+              {t.pro_plan}
+            </h3>
+            <p className="text-xs text-blue-100/80 mt-1 leading-relaxed">
+              {t.pro_features}
+            </p>
+
+            <div className="w-full bg-white/10 rounded-full h-1.5 mt-4 overflow-hidden">
+              <div className="bg-brand-orange h-full rounded-full" style={{ width: '78%' }}></div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+              <div>
+                <span className="text-xs text-blue-200 block text-[10px]">Oylik to'lov:</span>
+                <span className="text-sm font-black text-brand-orange">
+                  50,000 UZS / {t.per_month}
+                </span>
+              </div>
+
+              <button
+                onClick={() => setShowPaymentModal(true)}
+                className="px-4 py-2 bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-95"
+              >
+                {t.renew_subscription}
+              </button>
+            </div>
+          </div>
+
+          {/* 6. Ulangan Bank Kartasi (Avtomatik to'lov) */}
+          <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center space-x-1.5">
+                <CreditCard className="w-4 h-4 text-brand-blue" />
+                <span>{t.linked_card_title}</span>
+              </h3>
+              {linkedCard && (
+                <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>{t.auto_debit_active}</span>
+                </span>
+              )}
+            </div>
+
+            {linkedCard ? (
+              <div>
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-md relative overflow-hidden">
+                  <div className="flex justify-between items-start">
+                    <div className="w-8 h-6 bg-amber-400 rounded-md opacity-80 shadow-inner"></div>
+                    <span className="font-extrabold text-xs tracking-wider text-amber-400 uppercase">
+                      {linkedCard.type}
+                    </span>
+                  </div>
+                  <p className="font-mono text-base font-bold tracking-widest mt-4">
+                    {linkedCard.number}
+                  </p>
+                  <div className="flex justify-between items-center mt-2 text-[10px] text-gray-400">
+                    <span>EXPIRES: {linkedCard.expiry}</span>
+                    <span className="text-white font-semibold">AUTO-BILLING ON</span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-gray-500 mt-2.5 leading-relaxed">
+                  {t.auto_debit_desc}
+                </p>
+
+                <div className="flex space-x-2 mt-3 pt-2 border-t border-gray-100">
+                  <button
+                    onClick={() => setShowCardModal(true)}
+                    className="flex-1 py-2 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all"
+                  >
+                    {t.btn_change_card}
+                  </button>
+                  <button
+                    onClick={handleRemoveCard}
+                    className="px-3 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all"
+                  >
+                    {t.btn_remove_card}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                <CreditCard className="w-8 h-8 text-gray-300 mx-auto mb-1.5" />
+                <p className="text-xs text-gray-500 max-w-xs mx-auto mb-3">
+                  {t.no_card_linked}
+                </p>
+                <button
+                  onClick={() => setShowCardModal(true)}
+                  className="px-4 py-2 bg-brand-blue text-white rounded-xl text-xs font-bold hover:bg-brand-blue-dark transition-all"
+                >
+                  {t.btn_link_card}
+                </button>
+              </div>
             )}
           </div>
 
-          {linkedCard ? (
-            <div>
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-md relative overflow-hidden">
-                <div className="flex justify-between items-start">
-                  <div className="w-8 h-6 bg-amber-400 rounded-md opacity-80 shadow-inner"></div>
-                  <span className="font-extrabold text-xs tracking-wider text-amber-400 uppercase">
-                    {linkedCard.type}
+          {/* 7. Akkaunt va Xavfsizlik (Cloud Persistence, Logout, Delete Account) */}
+          <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center space-x-1.5">
+                <ShieldCheck className="w-4 h-4 text-brand-blue" />
+                <span>{t.account_settings_title || "Akkaunt va Xavfsizlik"}</span>
+              </h3>
+              <span className="text-[10px] text-brand-blue font-extrabold bg-blue-50 px-2.5 py-0.5 rounded-full flex items-center space-x-1 border border-blue-100">
+                <Cloud className="w-3 h-3 text-brand-orange" />
+                <span>{t.cloud_saved_badge || "Bulutda saqlangan"}</span>
+              </span>
+            </div>
+
+            {/* Telegram ID Protection Card */}
+            <div className="p-3.5 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-start space-x-3">
+              <div className="w-8 h-8 rounded-xl bg-brand-blue text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-2xs">
+                <Smartphone className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-brand-blue">
+                    Telegram ID: <code>{barberProfile.telegram_id || "87654321"}</code>
+                  </span>
+                  <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    Avto-tiklash ON
                   </span>
                 </div>
-                <p className="font-mono text-base font-bold tracking-widest mt-4">
-                  {linkedCard.number}
+                <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
+                  {t.cloud_saved_desc || "Tarix tozalansa yoki botdan chiqib ketilsa ham sizning barcha ma'lumotlaringiz, izohlar va reyting saqlanib qoladi."}
                 </p>
-                <div className="flex justify-between items-center mt-2 text-[10px] text-gray-400">
-                  <span>EXPIRES: {linkedCard.expiry}</span>
-                  <span className="text-white font-semibold">AUTO-BILLING ON</span>
-                </div>
-              </div>
-
-              <p className="text-[11px] text-gray-500 mt-2.5 leading-relaxed">
-                {t.auto_debit_desc}
-              </p>
-
-              <div className="flex space-x-2 mt-3 pt-2 border-t border-gray-100">
-                <button
-                  onClick={() => setShowCardModal(true)}
-                  className="flex-1 py-2 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all"
-                >
-                  {t.btn_change_card}
-                </button>
-                <button
-                  onClick={handleRemoveCard}
-                  className="px-3 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all"
-                >
-                  {t.btn_remove_card}
-                </button>
               </div>
             </div>
-          ) : (
-            <div className="text-center py-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-              <CreditCard className="w-8 h-8 text-gray-300 mx-auto mb-1.5" />
-              <p className="text-xs text-gray-500 max-w-xs mx-auto mb-3">
-                {t.no_card_linked}
-              </p>
+
+            {/* Actions: Logout & Delete Account */}
+            <div className="space-y-2 mt-4 pt-3 border-t border-gray-100">
               <button
-                onClick={() => setShowCardModal(true)}
-                className="px-4 py-2 bg-brand-blue text-white rounded-xl text-xs font-bold hover:bg-brand-blue-dark transition-all"
+                onClick={() => setShowLogoutModal(true)}
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
               >
-                {t.btn_link_card}
+                <LogOut className="w-3.5 h-3.5" />
+                <span>{t.btn_logout || "Hisobdan chiqish (Log Out)"}</span>
+              </button>
+
+              <button
+                onClick={() => setShowDeleteAccountModal(true)}
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors flex items-center justify-center space-x-2"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{t.btn_delete_account || "Akkauntni butunlay o'chirish"}</span>
               </button>
             </div>
-          )}
+          </div>
         </div>
+      )}
 
-        {/* 7. Akkaunt va Xavfsizlik (Cloud Persistence, Logout, Delete Account) */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50 mt-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center space-x-1.5">
-              <ShieldCheck className="w-4 h-4 text-brand-blue" />
-              <span>{t.account_settings_title || "Akkaunt va Xavfsizlik"}</span>
-            </h3>
-            <span className="text-[10px] text-brand-blue font-extrabold bg-blue-50 px-2.5 py-0.5 rounded-full flex items-center space-x-1 border border-blue-100">
-              <Cloud className="w-3 h-3 text-brand-orange" />
-              <span>{t.cloud_saved_badge || "Bulutda saqlangan"}</span>
-            </span>
-          </div>
-
-          {/* Telegram ID Protection Card */}
-          <div className="p-3.5 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-start space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-brand-blue text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-2xs">
-              <Smartphone className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-brand-blue">
-                  Telegram ID: <code>{barberProfile.telegram_id || "87654321"}</code>
+      {/* 8. Fixed Bottom Navigation Bar (Usta uchun bir barmoq bilan qulay navigatsiya) */}
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 px-3 py-2 z-40 shadow-2xl">
+        <div className="grid grid-cols-4 gap-1 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setMainTab('appointments');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`py-1 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center relative ${
+              mainTab === 'appointments'
+                ? 'text-brand-blue font-black'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <div className="relative">
+              <Calendar className="w-5 h-5" />
+              {pendingCount > 0 && (
+                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-pulse">
+                  {pendingCount}
                 </span>
-                <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                  Avto-tiklash ON
-                </span>
-              </div>
-              <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
-                {t.cloud_saved_desc || "Tarix tozalansa yoki botdan chiqib ketilsa ham sizning barcha ma'lumotlaringiz, izohlar va reyting saqlanib qoladi."}
-              </p>
+              )}
             </div>
-          </div>
+            <span className="text-[10px] mt-0.5">Navbat</span>
+          </button>
 
-          {/* Actions: Logout & Delete Account */}
-          <div className="space-y-2 mt-4 pt-3 border-t border-gray-100">
-            <button
-              onClick={() => setShowLogoutModal(true)}
-              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>{t.btn_logout || "Hisobdan chiqish (Log Out)"}</span>
-            </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMainTab('schedule');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`py-1 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center ${
+              mainTab === 'schedule'
+                ? 'text-brand-blue font-black'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <Clock className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5">Grafik</span>
+          </button>
 
-            <button
-              onClick={() => setShowDeleteAccountModal(true)}
-              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors flex items-center justify-center space-x-2"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>{t.btn_delete_account || "Akkauntni butunlay o'chirish"}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setMainTab('services');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`py-1 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center ${
+              mainTab === 'services'
+                ? 'text-brand-blue font-black'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <Scissors className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5">Xizmatlar</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMainTab('finance');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`py-1 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center ${
+              mainTab === 'finance'
+                ? 'text-brand-blue font-black'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <DollarSign className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5">Kassa</span>
+          </button>
         </div>
       </div>
 
@@ -1333,43 +1723,27 @@ export default function AdminDashboardScreen({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    {t.work_start_label || "Boshlanish vaqti"}
-                  </label>
-                  <select
-                    value={tempWorkStart}
-                    onChange={(e) => setTempWorkStart(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-xs font-bold text-brand-blue focus:outline-none focus:border-brand-blue"
-                  >
-                    {["07:00", "08:00", "08:30", "09:00", "09:30", "10:00", "11:00"].map((tStr) => (
-                      <option key={tStr} value={tStr}>{tStr}</option>
-                    ))}
-                  </select>
-                </div>
+              <div className="space-y-2.5 pt-1">
+                <TimePickerField
+                  label={t.work_start_label || "Boshlanish vaqti"}
+                  value={tempWorkStart}
+                  onChange={setTempWorkStart}
+                  icon={<Clock className="w-3.5 h-3.5 text-brand-blue" />}
+                />
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    {t.work_end_label || "Tugash vaqti"}
-                  </label>
-                  <select
-                    value={tempWorkEnd}
-                    onChange={(e) => setTempWorkEnd(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-xs font-bold text-brand-blue focus:outline-none focus:border-brand-blue"
-                  >
-                    {["18:00", "19:00", "20:00", "21:00", "22:00", "23:00", "00:00"].map((tStr) => (
-                      <option key={tStr} value={tStr}>{tStr}</option>
-                    ))}
-                  </select>
-                </div>
+                <TimePickerField
+                  label={t.work_end_label || "Tugash vaqti"}
+                  value={tempWorkEnd}
+                  onChange={setTempWorkEnd}
+                  icon={<Clock className="w-3.5 h-3.5 text-brand-blue" />}
+                />
               </div>
 
               {/* Tushlik / Tanaffus vaqti */}
-              <div className="pt-2 border-t border-gray-100">
-                <div className="flex items-center justify-between mb-2">
+              <div className="pt-2 border-t border-gray-100 space-y-2">
+                <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-sm">☕</span>
+                    <Coffee className="w-4 h-4 text-amber-600" />
                     <label className="text-xs font-semibold text-gray-700">
                       {t.break_time_title || "Tushlik / Tanaffus vaqti"}
                     </label>
@@ -1386,36 +1760,20 @@ export default function AdminDashboardScreen({
                 </div>
 
                 {tempBreakEnabled && (
-                  <div className="grid grid-cols-2 gap-2.5 bg-amber-50/70 p-2.5 rounded-2xl border border-amber-200/70 animate-in fade-in">
-                    <div>
-                      <span className="block text-[10px] font-semibold text-gray-600 mb-1">
-                        {t.break_start_label || "Boshlanishi"}
-                      </span>
-                      <select
-                        value={tempBreakStart}
-                        onChange={(e) => setTempBreakStart(e.target.value)}
-                        className="w-full bg-white border border-gray-200 rounded-xl p-2 text-xs font-bold text-brand-blue"
-                      >
-                        {["12:00", "12:30", "13:00", "13:30", "14:00", "15:00"].map(tStr => (
-                          <option key={tStr} value={tStr}>{tStr}</option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="space-y-2 bg-amber-50/60 p-2.5 rounded-2xl border border-amber-200/70 animate-in fade-in">
+                    <TimePickerField
+                      label={t.break_start_label || "Tushlik boshlanishi"}
+                      value={tempBreakStart}
+                      onChange={setTempBreakStart}
+                      icon={<Coffee className="w-3.5 h-3.5 text-amber-600" />}
+                    />
 
-                    <div>
-                      <span className="block text-[10px] font-semibold text-gray-600 mb-1">
-                        {t.break_end_label || "Tugashi"}
-                      </span>
-                      <select
-                        value={tempBreakEnd}
-                        onChange={(e) => setTempBreakEnd(e.target.value)}
-                        className="w-full bg-white border border-gray-200 rounded-xl p-2 text-xs font-bold text-brand-blue"
-                      >
-                        {["13:00", "13:30", "14:00", "14:30", "15:00", "16:00"].map(tStr => (
-                          <option key={tStr} value={tStr}>{tStr}</option>
-                        ))}
-                      </select>
-                    </div>
+                    <TimePickerField
+                      label={t.break_end_label || "Tushlik tugashi"}
+                      value={tempBreakEnd}
+                      onChange={setTempBreakEnd}
+                      icon={<Coffee className="w-3.5 h-3.5 text-amber-600" />}
+                    />
                   </div>
                 )}
               </div>
