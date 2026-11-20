@@ -32,11 +32,20 @@ import {
   Coffee,
   CalendarDays,
   Layers,
-  ChevronRight
+  ChevronRight,
+  Receipt,
+  FileText,
+  Printer,
+  Download,
+  UserCheck,
+  UserPlus,
+  Send,
+  PhoneCall
 } from 'lucide-react';
 import { getAdminAppointments, updateAppointmentStatus, updateBarberSchedule, sendAppointmentReminder, callClientToChair } from '../services/api';
 import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
 import { mockBarbers } from '../data/mockBarbers';
+import { hapticFeedback } from '../utils/haptics';
 
 // 00 dan 23 gacha hamma 24 ta soat
 const HOURS_24 = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
@@ -164,6 +173,35 @@ export default function AdminDashboardScreen({
   // Modal for Logout & Delete Account
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+
+  // ☕ Tezkor Tanaffus (Quick Break) State
+  const [quickBreakUntil, setQuickBreakUntil] = useState(() => {
+    const saved = localStorage.getItem('barberhub_quick_break');
+    if (saved) {
+      const ts = parseInt(saved, 10);
+      if (ts > Date.now()) return ts;
+    }
+    return null;
+  });
+
+  // 📋 vs 📅 Jadval (Timeline / List View Switch)
+  const [appointmentsViewMode, setAppointmentsViewMode] = useState('list'); // 'list' | 'timeline'
+
+  // 🚶‍♂️ Jonli Mijoz (Walk-in / Offline Client) Modal State
+  const [showWalkInModal, setShowWalkInModal] = useState(false);
+  const [walkInName, setWalkInName] = useState('');
+  const [walkInPhone, setWalkInPhone] = useState('+998 ');
+  const [walkInServiceId, setWalkInServiceId] = useState('');
+  const [walkInPrice, setWalkInPrice] = useState(50000);
+  const [walkInPaymentType, setWalkInPaymentType] = useState('cash'); // 'cash' | 'card'
+  const [walkInTime, setWalkInTime] = useState('');
+
+  // 🧾 Kun Yakuni Kassa Cheki Modal State
+  const [showDailyReceiptModal, setShowDailyReceiptModal] = useState(false);
+  const [receiptSentToTg, setReceiptSentToTg] = useState(false);
+
+  // 📢 1-Bosishda Mijozni Chaqirish Pop-up Alert
+  const [calledClientAlert, setCalledClientAlert] = useState(null);
 
   // Usta profili (Avatar, Ish vaqti, Salon rasmlari)
   const [barberProfile, setBarberProfile] = useState(() => {
@@ -451,11 +489,19 @@ export default function AdminDashboardScreen({
 
   const handleCallClient = async (id) => {
     setCallingClientId(id);
+    const targetApt = appointments.find(a => a.id === id);
     try {
+      hapticFeedback.impact('medium');
       await callClientToChair(id);
       setAppointments((prev) =>
         prev.map((item) => (item.id === id ? { ...item, queue_status: 'ready_call' } : item))
       );
+      hapticFeedback.notification('success');
+      setCalledClientAlert({
+        name: targetApt?.clientName || targetApt?.client_name || "Mijoz",
+        time: targetApt?.time || targetApt?.time_slot || "Hozir",
+        service: targetApt?.serviceName || targetApt?.service_name || "Soch olish"
+      });
       setReminderToast("Mijozga 'Navbatingiz tayyor, kiring!' xabari yetkazildi! 📢");
       setTimeout(() => setReminderToast(''), 4000);
     } catch (err) {
@@ -463,6 +509,107 @@ export default function AdminDashboardScreen({
     } finally {
       setCallingClientId(null);
     }
+  };
+
+  // ☕ Tezkor Tanaffus Boshqaruvi
+  const handleStartQuickBreak = (minutes) => {
+    const until = Date.now() + minutes * 60 * 1000;
+    setQuickBreakUntil(until);
+    localStorage.setItem('barberhub_quick_break', String(until));
+    hapticFeedback.notification('success');
+    setScheduleSaveToast(`☕ ${minutes} daqiqalik tezkor tanaffus yoqildi!`);
+    setTimeout(() => setScheduleSaveToast(''), 3500);
+  };
+
+  const handleEndQuickBreak = () => {
+    setQuickBreakUntil(null);
+    localStorage.removeItem('barberhub_quick_break');
+    hapticFeedback.impact('medium');
+    setScheduleSaveToast("🟢 Tezkor tanaffus yakunlandi, ish davom etmoqda!");
+    setTimeout(() => setScheduleSaveToast(''), 3500);
+  };
+
+  // 🚶‍♂️ Jonli Mijoz (Walk-in) Boshqaruvi
+  const handleOpenWalkInModal = (defaultTime = null) => {
+    hapticFeedback.impact('light');
+    setWalkInName('');
+    setWalkInPhone('+998 ');
+    const firstSrv = servicesList[0];
+    setWalkInServiceId(firstSrv?.id || 's-1');
+    setWalkInPrice(firstSrv?.price || 50000);
+    setWalkInPaymentType('cash');
+    if (defaultTime) {
+      setWalkInTime(defaultTime);
+    } else {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      setWalkInTime(`${h}:${m}`);
+    }
+    setShowWalkInModal(true);
+  };
+
+  const handleSubmitWalkIn = (e) => {
+    e.preventDefault();
+    hapticFeedback.notification('success');
+    const selectedSrv = servicesList.find(s => s.id === walkInServiceId);
+    const newApt = {
+      id: `walkin-${Date.now()}`,
+      clientName: walkInName.trim() || "Ko'chadan mijoz",
+      client_name: walkInName.trim() || "Ko'chadan mijoz",
+      phone: walkInPhone.trim() || "+998 -- --- -- --",
+      client_phone: walkInPhone.trim() || "+998 -- --- -- --",
+      serviceName: selectedSrv?.name || "Klassik soch kesish",
+      service_name: selectedSrv?.name || "Klassik soch kesish",
+      price: Number(walkInPrice) || 50000,
+      time: walkInTime || "Hozir",
+      time_slot: walkInTime || "Hozir",
+      date_str: "Bugun",
+      status: 'completed',
+      paymentType: walkInPaymentType,
+      is_walk_in: true,
+      created_at: new Date().toISOString()
+    };
+
+    setAppointments(prev => [newApt, ...prev]);
+    setShowWalkInModal(false);
+    setReminderToast("🚶‍♂️ Jonli mijoz kassa va navbatga muvaffaqiyatli qo'shildi! 💰");
+    setTimeout(() => setReminderToast(''), 4000);
+  };
+
+  // 📅 Kunlik Vaqt Jadvali (Timeline Slots)
+  const generateTimelineSlots = () => {
+    const startStr = barberProfile.workHours?.start || "09:00";
+    const endStr = barberProfile.workHours?.end || "22:00";
+    const [startH, startM] = startStr.split(':').map(Number);
+    const [endH, endM] = endStr.split(':').map(Number);
+    const startMinutes = (startH || 9) * 60 + (startM || 0);
+    const endMinutes = (endH || 22) * 60 + (endM || 0);
+
+    const bStart = barberProfile.breakTime?.start ? barberProfile.breakTime.start.split(':').map(Number) : [13, 0];
+    const bEnd = barberProfile.breakTime?.end ? barberProfile.breakTime.end.split(':').map(Number) : [14, 0];
+    const breakStartMin = bStart[0] * 60 + bStart[1];
+    const breakEndMin = bEnd[0] * 60 + bEnd[1];
+
+    const slots = [];
+    let cur = startMinutes;
+    while (cur < endMinutes) {
+      const h = Math.floor(cur / 60);
+      const m = cur % 60;
+      const timeFmt = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      
+      const isLunch = barberProfile.breakTime?.enabled !== false && cur >= breakStartMin && cur < breakEndMin;
+      const matchingApt = appointments.find(a => (a.time === timeFmt || a.time_slot === timeFmt));
+
+      slots.push({
+        time: timeFmt,
+        isLunch,
+        appointment: matchingApt || null
+      });
+
+      cur += 45; // 45 daqiqalik qulay oraliq
+    }
+    return slots;
   };
 
   const handleSendReminder = async (id) => {
@@ -742,60 +889,157 @@ export default function AdminDashboardScreen({
               {t.today_badge} — {appointments.length} ta navbat
             </p>
           </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handleOpenWalkInModal()}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-brand-orange text-brand-blue font-black text-xs shadow-sm hover:brightness-105 active:scale-95 transition-all"
+              title="Ko'chadan kelgan yoki telefon qilgan mijozni kiritish"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>+ Jonli mijoz</span>
+            </button>
+            <button
+              onClick={loadAppointments}
+              className={`p-2 rounded-xl bg-white shadow-sm text-brand-blue hover:bg-gray-100 ${
+                isRefreshing ? 'animate-spin' : ''
+              }`}
+              title={t.refresh_tooltip}
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* ☕ Tezkor Tanaffus (Quick Break) Banner */}
+        {quickBreakUntil && quickBreakUntil > Date.now() ? (
+          <div className="mt-3 p-3 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border-2 border-amber-400 rounded-2xl flex items-center justify-between shadow-sm animate-pulse">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                <Coffee className="w-5 h-5 animate-bounce" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-xs font-black text-amber-950">☕ Tezkor tanaffusdasiz</span>
+                  <span className="text-[10px] font-extrabold bg-amber-500 text-white px-2 py-0.5 rounded-full">
+                    {Math.max(1, Math.ceil((quickBreakUntil - Date.now()) / 60000))} daq qoldi
+                  </span>
+                </div>
+                <p className="text-[10px] text-amber-900/80 mt-0.5">
+                  Bu vaqtda mijozlar yangi navbat yozila olmaydi
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleEndQuickBreak}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-sm active:scale-95 transition-all flex items-center space-x-1"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Ishga qaytish</span>
+            </button>
+          </div>
+        ) : (
+          <div className="mt-3 p-2.5 bg-white border border-blue-100/80 rounded-2xl flex items-center justify-between shadow-xs">
+            <div className="flex items-center space-x-1.5 text-xs font-bold text-gray-700">
+              <Coffee className="w-4 h-4 text-brand-orange" />
+              <span>Tezkor tanaffus:</span>
+            </div>
+            <div className="flex items-center space-x-1.5">
+              <button
+                onClick={() => handleStartQuickBreak(15)}
+                className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-lg text-xs font-bold active:scale-95 transition-all"
+                title="15 daqiqa tanaffus"
+              >
+                ☕ 15 daq
+              </button>
+              <button
+                onClick={() => handleStartQuickBreak(30)}
+                className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-lg text-xs font-bold active:scale-95 transition-all"
+                title="30 daqiqa tanaffus"
+              >
+                ☕ 30 daq
+              </button>
+              <button
+                onClick={() => handleStartQuickBreak(45)}
+                className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-lg text-xs font-bold active:scale-95 transition-all"
+                title="45 daqiqa tanaffus"
+              >
+                ☕ 45 daq
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 📋 vs 📅 Jadval (Timeline / List View Switch) */}
+        <div className="grid grid-cols-2 gap-1.5 bg-white p-1 rounded-2xl border border-blue-50 shadow-xs mt-3">
           <button
-            onClick={loadAppointments}
-            className={`p-2 rounded-full bg-white shadow-sm text-brand-blue hover:bg-gray-100 ${
-              isRefreshing ? 'animate-spin' : ''
+            onClick={() => { hapticFeedback.selection(); setAppointmentsViewMode('list'); }}
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+              appointmentsViewMode === 'list'
+                ? 'bg-brand-blue text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-900'
             }`}
-            title={t.refresh_tooltip}
           >
-            <RefreshCw className="w-4 h-4" />
+            <FileText className="w-3.5 h-3.5" />
+            <span>📋 Ro'yxat ({filteredAppointments.length})</span>
+          </button>
+          <button
+            onClick={() => { hapticFeedback.selection(); setAppointmentsViewMode('timeline'); }}
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+              appointmentsViewMode === 'timeline'
+                ? 'bg-brand-blue text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>📅 Vaqt Jadvali (Timeline)</span>
           </button>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="grid grid-cols-4 gap-1.5 bg-gray-200/60 p-1 rounded-xl mt-3">
-          <button
-            onClick={() => setFilterTab('all')}
-            className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
-              filterTab === 'all'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            {t.tab_all}
-          </button>
-          <button
-            onClick={() => setFilterTab('pending')}
-            className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
-              filterTab === 'pending'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            {t.tab_pending}
-          </button>
-          <button
-            onClick={() => setFilterTab('accepted')}
-            className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
-              filterTab === 'accepted'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            {t.tab_accepted}
-          </button>
-          <button
-            onClick={() => setFilterTab('completed')}
-            className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
-              filterTab === 'completed'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            {t.tab_completed}
-          </button>
-        </div>
+        {/* Filter Tabs (Faqat Ro'yxat ko'rinishida) */}
+        {appointmentsViewMode === 'list' && (
+          <div className="grid grid-cols-4 gap-1.5 bg-gray-200/60 p-1 rounded-xl mt-3 animate-in fade-in">
+            <button
+              onClick={() => setFilterTab('all')}
+              className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
+                filterTab === 'all'
+                  ? 'bg-brand-blue text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {t.tab_all}
+            </button>
+            <button
+              onClick={() => setFilterTab('pending')}
+              className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
+                filterTab === 'pending'
+                  ? 'bg-brand-blue text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {t.tab_pending}
+            </button>
+            <button
+              onClick={() => setFilterTab('accepted')}
+              className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
+                filterTab === 'accepted'
+                  ? 'bg-brand-blue text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {t.tab_accepted}
+            </button>
+            <button
+              onClick={() => setFilterTab('completed')}
+              className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
+                filterTab === 'completed'
+                  ? 'bg-brand-blue text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {t.tab_completed}
+            </button>
+          </div>
+        )}
         {/* Appointments List */}
         {reminderToast && (
           <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-blue text-white py-2.5 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in max-w-xs text-center border border-white/20">
@@ -816,9 +1060,151 @@ export default function AdminDashboardScreen({
         </div>
       </div>
 
-      {/* Appointments List */}
-      <div className="px-4 mt-2 space-y-3">
-        {filteredAppointments.map((apt) => {
+      {/* Appointments Content (Timeline vs List) */}
+      {appointmentsViewMode === 'timeline' ? (
+        <div className="px-4 mt-2 space-y-2.5 animate-in fade-in">
+          <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-100/80 flex items-center justify-between text-xs font-bold text-brand-blue mb-1">
+            <span className="flex items-center space-x-1.5">
+              <Calendar className="w-4 h-4 text-brand-orange" />
+              <span>Kunlik soatma-soat grafik</span>
+            </span>
+            <span className="text-[11px] font-medium text-gray-500">
+              {barberProfile.workHours?.start || "09:00"} - {barberProfile.workHours?.end || "22:00"}
+            </span>
+          </div>
+
+          {generateTimelineSlots().map((slot, sIdx) => {
+            if (slot.isLunch) {
+              return (
+                <div
+                  key={`timeline-${sIdx}`}
+                  className="flex items-stretch space-x-3 p-3 bg-amber-50/60 rounded-2xl border border-dashed border-amber-200"
+                >
+                  <div className="w-14 flex flex-col items-center justify-center border-r border-amber-200/60 pr-2">
+                    <span className="text-xs font-black text-amber-900">{slot.time}</span>
+                    <span className="text-[9px] font-bold text-amber-600">45 daq</span>
+                  </div>
+                  <div className="flex-1 flex items-center space-x-2 text-xs font-bold text-amber-800">
+                    <Coffee className="w-4 h-4 text-amber-600" />
+                    <span>🍽️ Tushlik / Tanaffus vaqti</span>
+                  </div>
+                </div>
+              );
+            }
+
+            if (slot.appointment) {
+              const apt = slot.appointment;
+              const clientName = apt.clientName || apt.client_name;
+              const phone = apt.phone || apt.client_phone;
+              const serviceName = apt.serviceName || apt.service_name;
+
+              return (
+                <div
+                  key={`timeline-${sIdx}`}
+                  className="flex items-stretch space-x-3 p-3 bg-white rounded-2xl border border-blue-100 shadow-xs relative overflow-hidden"
+                >
+                  <div className="w-14 flex flex-col items-center justify-center border-r border-gray-100 pr-2">
+                    <span className="text-xs font-black text-brand-blue">{slot.time}</span>
+                    <span className="text-[9px] font-bold text-gray-400">Band</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-extrabold text-gray-900 truncate">
+                        {clientName}
+                      </h4>
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                        apt.status === 'completed'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : apt.status === 'accepted'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {apt.status === 'completed' ? 'Tugatildi' : apt.status === 'accepted' ? 'Qabul qilingan' : 'Kutilmoqda'}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-gray-600 truncate mt-0.5 font-medium">
+                      {serviceName}
+                    </div>
+                    <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-100">
+                      <span className="text-xs font-black text-brand-blue">
+                        {(apt.price || 0).toLocaleString()} UZS
+                      </span>
+                      <div className="flex items-center space-x-1.5">
+                        {apt.status === 'accepted' && (
+                          <button
+                            type="button"
+                            disabled={callingClientId === apt.id || apt.queue_status === 'ready_call'}
+                            onClick={() => handleCallClient(apt.id)}
+                            className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-600 text-white flex items-center space-x-1 active:scale-95"
+                          >
+                            <Radio className={`w-2.5 h-2.5 ${callingClientId === apt.id ? 'animate-spin' : ''}`} />
+                            <span>{apt.queue_status === 'ready_call' ? "Chaqirildi" : "Chaqirish 📢"}</span>
+                          </button>
+                        )}
+                        {apt.status !== 'completed' && (
+                          <button
+                            onClick={() => handleUpdateStatus(apt.id, 'completed')}
+                            className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-600 text-white active:scale-95"
+                          >
+                            Keldi ✓
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // Empty Slot (Bo'sh vaqt)
+            return (
+              <div
+                key={`timeline-${sIdx}`}
+                className="flex items-center justify-between p-3 bg-white/70 rounded-2xl border border-dashed border-gray-200 hover:border-brand-blue/40 transition-all"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-14 text-center border-r border-gray-200 pr-2">
+                    <span className="text-xs font-black text-gray-500">{slot.time}</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Bo'sh vaqt</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleOpenWalkInModal(slot.time)}
+                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-brand-blue rounded-xl text-[11px] font-extrabold flex items-center space-x-1 transition-all active:scale-95 border border-blue-100"
+                >
+                  <Plus className="w-3 h-3 text-brand-orange" />
+                  <span>Mijoz yozish</span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* Ro'yxat ko'rinishi */
+        <div className="px-4 mt-2 space-y-3">
+          {/* Skeleton Loaders if refreshing */}
+          {isRefreshing && (
+            <div className="space-y-3">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="bg-white rounded-2xl p-4 shadow-sm border border-blue-50 animate-pulse space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                    <div className="h-4 bg-gray-200 rounded w-16" />
+                  </div>
+                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                  <div className="flex justify-between pt-2">
+                    <div className="h-4 bg-gray-200 rounded w-20" />
+                    <div className="h-6 bg-gray-200 rounded w-24" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isRefreshing && filteredAppointments.map((apt) => {
           const clientName = apt.clientName || apt.client_name;
           const phone = apt.phone || apt.client_phone;
           const serviceName = apt.serviceName || apt.service_name;
@@ -987,7 +1373,7 @@ export default function AdminDashboardScreen({
           );
         })}
 
-        {filteredAppointments.length === 0 && (
+        {filteredAppointments.length === 0 && !isRefreshing && (
           <div className="text-center py-10 bg-white rounded-3xl p-6 shadow-sm border border-blue-50">
             <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
             <p className="text-xs text-gray-500 font-medium">
@@ -996,6 +1382,7 @@ export default function AdminDashboardScreen({
           </div>
         )}
       </div>
+      )}
     </div>
   )}
 
@@ -1383,6 +1770,19 @@ export default function AdminDashboardScreen({
                 {appointments.filter(a => a.status === 'completed').length} ta
               </span>
             </div>
+
+            {/* Kunni yakunlash & Kassa Cheki tugmasi */}
+            <button
+              onClick={() => {
+                hapticFeedback.impact('medium');
+                setReceiptSentToTg(false);
+                setShowDailyReceiptModal(true);
+              }}
+              className="mt-3.5 w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 active:scale-98 text-white rounded-2xl font-black text-xs shadow-md flex items-center justify-center space-x-2 transition-all"
+            >
+              <Receipt className="w-4 h-4 text-emerald-200" />
+              <span>Kunni yakunlash & Kassa Cheki 🧾</span>
+            </button>
           </div>
 
           {/* 5. SaaS Obuna & 14 kunlik Sinov Davri */}
@@ -2417,6 +2817,333 @@ export default function AdminDashboardScreen({
                 {t.confirm_delete_btn || "Ha, o'chirish"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* MODAL 1: 🚶‍♂️ Jonli Mijoz (Walk-in / Offline Client) */}
+      {showWalkInModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-9 h-9 rounded-xl bg-orange-100 text-brand-orange flex items-center justify-center font-black">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gray-900">
+                    Jonli mijoz kiritish 🚶‍♂️
+                  </h3>
+                  <p className="text-[10px] text-gray-500">
+                    Ko'chadan kirgan yoki telefon qilgan mijoz
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowWalkInModal(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitWalkIn} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                  Mijoz ismi
+                </label>
+                <input
+                  type="text"
+                  placeholder="Masalan: Rustam"
+                  value={walkInName}
+                  onChange={(e) => setWalkInName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:border-brand-blue"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                  Telefon raqami (ixtiyoriy)
+                </label>
+                <input
+                  type="tel"
+                  placeholder="+998 90 123 45 67"
+                  value={walkInPhone}
+                  onChange={(e) => setWalkInPhone(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:border-brand-blue"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                  Xizmat turi
+                </label>
+                <select
+                  value={walkInServiceId}
+                  onChange={(e) => {
+                    setWalkInServiceId(e.target.value);
+                    const s = servicesList.find(item => item.id === e.target.value);
+                    if (s) setWalkInPrice(s.price);
+                  }}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:border-brand-blue bg-white"
+                >
+                  {servicesList.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} — {s.price.toLocaleString()} UZS
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                    Narxi (UZS)
+                  </label>
+                  <input
+                    type="number"
+                    step="1000"
+                    value={walkInPrice}
+                    onChange={(e) => setWalkInPrice(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:outline-none focus:border-brand-blue"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                    Vaqt
+                  </label>
+                  <input
+                    type="text"
+                    value={walkInTime}
+                    onChange={(e) => setWalkInTime(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:outline-none focus:border-brand-blue"
+                    placeholder="14:30"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                  To'lov usuli
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setWalkInPaymentType('cash')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 border transition-all ${
+                      walkInPaymentType === 'cash'
+                        ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-xs'
+                        : 'bg-white border-gray-200 text-gray-600'
+                    }`}
+                  >
+                    <span>💵 Naqd pul</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWalkInPaymentType('card')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 border transition-all ${
+                      walkInPaymentType === 'card'
+                        ? 'bg-blue-50 border-blue-500 text-brand-blue shadow-xs'
+                        : 'bg-white border-gray-200 text-gray-600'
+                    }`}
+                  >
+                    <span>💳 Karta / Click</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowWalkInModal(false)}
+                  className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 text-xs font-black rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white shadow-md active:scale-95 transition-all"
+                >
+                  Kassaga qo'shish ✓
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: 🧾 Kun Yakunida "Kassa Cheki" (Daily Revenue Receipt) */}
+      {showDailyReceiptModal && (() => {
+        const completedApts = appointments.filter(a => a.status === 'completed');
+        const pendingApts = appointments.filter(a => a.status === 'pending');
+        const cancelledApts = appointments.filter(a => a.status === 'cancelled');
+        const cashTotal = completedApts
+          .filter(a => a.paymentType === 'cash' || !a.paymentType)
+          .reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+        const cardTotal = completedApts
+          .filter(a => a.paymentType === 'card')
+          .reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+        const netTotal = cashTotal + cardTotal;
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' });
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        return (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+            <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[92vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                <div className="flex items-center space-x-1.5 text-xs font-black text-gray-800">
+                  <Receipt className="w-4 h-4 text-emerald-600" />
+                  <span>KUN YAKUNI KASSA CHEKI</span>
+                </div>
+                <button
+                  onClick={() => setShowDailyReceiptModal(false)}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Thermal POS Receipt Design */}
+              <div className="mt-3 p-4 bg-gray-50/90 rounded-2xl border-2 border-dashed border-gray-300 font-mono text-[11px] space-y-2.5">
+                <div className="text-center pb-2 border-b border-dashed border-gray-300">
+                  <div className="font-extrabold text-sm tracking-wider text-gray-900">
+                    BARBERHUB POS
+                  </div>
+                  <div className="text-[10px] text-gray-500 font-sans mt-0.5">
+                    {barberProfile.name || "Sardor Karimov"}
+                  </div>
+                  <div className="text-[9px] text-gray-400 mt-0.5">
+                    {dateStr} | {timeStr}
+                  </div>
+                </div>
+
+                {/* Operations Summary */}
+                <div className="space-y-1 py-1 border-b border-dashed border-gray-300">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Jami mijozlar:</span>
+                    <span className="font-bold text-gray-800">{appointments.length} ta</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Xizmat ko'rsatilgan:</span>
+                    <span className="font-bold text-emerald-700">{completedApts.length} ta</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Kutilmoqda:</span>
+                    <span className="font-bold text-amber-700">{pendingApts.length} ta</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Bekor qilingan:</span>
+                    <span className="font-bold text-red-600">{cancelledApts.length} ta</span>
+                  </div>
+                </div>
+
+                {/* Financial Breakdown */}
+                <div className="space-y-1.5 py-1 border-b border-dashed border-gray-300">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Naqd pul tushumi:</span>
+                    <span className="font-bold text-gray-900">{cashTotal.toLocaleString()} UZS</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Karta / Click tushumi:</span>
+                    <span className="font-bold text-gray-900">{cardTotal.toLocaleString()} UZS</span>
+                  </div>
+                </div>
+
+                {/* Grand Total */}
+                <div className="pt-1 flex justify-between items-baseline text-xs font-black">
+                  <span className="text-gray-900">JAMI KASSA:</span>
+                  <span className="text-emerald-700 text-sm">{netTotal.toLocaleString()} UZS</span>
+                </div>
+
+                <div className="text-center pt-2 text-[9px] text-gray-400">
+                  *** KUN MUVAFFAQIYATLI YAKUNLANDI ***
+                </div>
+              </div>
+
+              {receiptSentToTg && (
+                <div className="mt-3 p-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-center text-xs font-bold flex items-center justify-center space-x-1.5 animate-in fade-in">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>Kassa cheki Telegramingizga yuborildi! ✓</span>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="space-y-2 mt-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      hapticFeedback.selection();
+                      window.print();
+                    }}
+                    className="py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-gray-600" />
+                    <span>Chop etish</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      hapticFeedback.notification('success');
+                      setReceiptSentToTg(true);
+                    }}
+                    className="py-2.5 px-3 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow-sm transition-all"
+                  >
+                    <Send className="w-3.5 h-3.5 text-blue-200" />
+                    <span>Telegramga 📲</span>
+                  </button>
+                </div>
+                <button
+                  onClick={() => setShowDailyReceiptModal(false)}
+                  className="w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl text-xs font-bold"
+                >
+                  Yopish
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* MODAL 3: 📢 1-Bosishda Mijozni Chaqirish Pop-up Alert */}
+      {calledClientAlert && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl text-center">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center mx-auto mb-3 shadow-lg animate-bounce">
+              <Radio className="w-7 h-7" />
+            </div>
+            <h3 className="text-base font-black text-brand-blue mb-1">
+              Mijozga Tezkor Xabar Yuborildi! 📢
+            </h3>
+            <p className="text-xs text-gray-500 mb-4 font-medium">
+              Telegram bot orqali mijozga navbati yetgani haqida ovozli va matnli bildirishnoma yetkazildi.
+            </p>
+
+            <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-100 text-left text-xs space-y-1 mb-4">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Mijoz:</span>
+                <span className="font-extrabold text-gray-900">{calledClientAlert.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Vaqt:</span>
+                <span className="font-bold text-brand-orange">{calledClientAlert.time}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Xizmat:</span>
+                <span className="font-medium text-gray-700">{calledClientAlert.service}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                hapticFeedback.impact('light');
+                setCalledClientAlert(null);
+              }}
+              className="w-full py-2.5 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl text-xs font-black shadow-md active:scale-95 transition-all"
+            >
+              Tushunarli ✓
+            </button>
           </div>
         </div>
       )}
