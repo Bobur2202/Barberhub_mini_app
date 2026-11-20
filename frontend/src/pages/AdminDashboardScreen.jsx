@@ -100,7 +100,7 @@ function TimePickerField({ label, value, onChange, icon }) {
           >
             {MINUTES_60.map((min) => (
               <option key={min} value={min}>
-                :{min} daqiqa
+                {min}
               </option>
             ))}
           </select>

@@ -95,8 +95,10 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t }) {
       role: shopName ? `${shopName} (Sartarosh)` : "Erkaklar sartaroshi",
       rating: 5.0,
       reviewsCount: 1,
+      reviews_count: 1,
       startingPrice: 50000,
       starting_price: 50000,
+      distance: "0.5 km",
       regionName: currentRegion.name,
       districtName: selectedDistrict?.name || '',
       address: address 
@@ -110,7 +112,18 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t }) {
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
       bio: "Tajribali erkaklar sartaroshi. Zamonaviy soch turmaklari va soqol parvarishi.",
       workHours: { start: "09:00", end: "22:00" },
+      work_hours: { start: "09:00", end: "22:00" },
+      breakTime: { enabled: true, start: "13:00", end: "14:00" },
+      break_time: { enabled: true, start: "13:00", end: "14:00" },
+      isWorkingToday: true,
+      is_working_today: true,
+      daysOff: [],
+      days_off: [],
       salonPhotos: [
+        "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
+        "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700"
+      ],
+      salon_photos: [
         "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
         "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700"
       ],
@@ -123,6 +136,16 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t }) {
         { id: `r-${Date.now()}`, author: "Yangi mijoz", rating: 5, date: "Hozirgina", comment: "A'lo darajada xizmat ko'rsatildi!" }
       ]
     };
+
+    // Doimiy mahalliy xotiraga ham darhol yozib qo'yamiz (Katalog darhol ko'rishi uchun)
+    try {
+      const existing = JSON.parse(localStorage.getItem('barberhub_registered_barbers') || '[]');
+      const updated = [newBarber, ...existing.filter(b => b.id !== newBarber.id)];
+      localStorage.setItem('barberhub_registered_barbers', JSON.stringify(updated));
+      localStorage.setItem('barberhub_barber_profile', JSON.stringify(newBarber));
+    } catch (err) {
+      console.warn("Lokal saqlashda xato:", err);
+    }
 
     // Backendga doimiy saqlash
     await registerBarberBackend(newBarber);

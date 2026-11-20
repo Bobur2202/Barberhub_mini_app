@@ -21,14 +21,14 @@ class Review(BaseModel):
 class Barber(BaseModel):
     id: str
     name: str
-    role: str
-    rating: float
-    reviews_count: int
-    distance: str
-    starting_price: int
-    address: str
-    avatar: str
-    bio: str
+    role: str = "Erkaklar sartaroshi"
+    rating: float = 5.0
+    reviews_count: int = 1
+    distance: str = "0.8 km"
+    starting_price: int = 50000
+    address: str = "Toshkent shahri"
+    avatar: str = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250"
+    bio: str = "Tajribali erkaklar sartaroshi. Zamonaviy soch turmaklari va soqol parvarishi."
     telegram_id: Optional[int] = None # Barbershop usta telegram id
     services: List[Service] = []
     reviews: List[Review] = []

@@ -121,6 +121,16 @@ export default function App() {
       if (tg.setBackgroundColor) tg.setBackgroundColor('#E6EDF9');
     }
 
+    // Avval ro'yxatdan o'tgan ustalar bo'lsa, xotiradagi mockBarbers'ga qo'shib qo'yish
+    try {
+      const savedRegistered = JSON.parse(localStorage.getItem('barberhub_registered_barbers') || '[]');
+      for (const b of savedRegistered) {
+        if (!mockBarbers.some(mb => mb.id === b.id)) {
+          mockBarbers.unshift(b);
+        }
+      }
+    } catch (e) {}
+
     // Agar usta botdan chiqib ketgan yoki tarix tozalangan bo'lsa ham,
     // uning doimiy Telegram ID si orqali profilini bazadan tiklash
     async function restoreBarberByTelegramId() {
@@ -185,7 +195,17 @@ export default function App() {
   // 3. Usta muvaffaqiyatli ro'yxatdan o'tganda (Katalogga qo'shiladi!)
   const handleBarberRegisterSuccess = (newBarber) => {
     // Yangi ustani umumiy katalogga qo'shamiz
-    mockBarbers.unshift(newBarber);
+    const idx = mockBarbers.findIndex(b => b.id === newBarber.id);
+    if (idx !== -1) {
+      mockBarbers[idx] = newBarber;
+    } else {
+      mockBarbers.unshift(newBarber);
+    }
+    try {
+      const registered = JSON.parse(localStorage.getItem('barberhub_registered_barbers') || '[]');
+      localStorage.setItem('barberhub_registered_barbers', JSON.stringify([newBarber, ...registered.filter(b => b.id !== newBarber.id)]));
+    } catch (e) {}
+
     setUserRole('barber');
     setCurrentBarberProfile(newBarber);
     localStorage.setItem('barberhub_user_role', 'barber');

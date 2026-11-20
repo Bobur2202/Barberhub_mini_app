@@ -566,7 +566,11 @@ def add_barber_review(barber_id: str, data: ReviewCreate):
 @app.post("/api/barbers", response_model=Barber)
 def register_barber(barber: Barber):
     """Yangi usta ro'yxatdan o'tganda katalogga va doimiy faylga qo'shish"""
-    BARBERS_DB.append(barber)
+    idx = next((i for i, b in enumerate(BARBERS_DB) if b.id == barber.id or (b.telegram_id and barber.telegram_id and b.telegram_id == barber.telegram_id)), None)
+    if idx is not None:
+        BARBERS_DB[idx] = barber
+    else:
+        BARBERS_DB.insert(0, barber)
     save_barbers_to_disk(BARBERS_DB)
     return barber
 

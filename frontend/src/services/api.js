@@ -7,6 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
  * 1. Katalog uchun sartaroshlar ro'yxatini olish
  */
 export async function getBarbers(query = '') {
+  let list = [];
   try {
     const url = query 
       ? `${API_BASE_URL}/barbers?query=${encodeURIComponent(query)}`
@@ -19,21 +20,48 @@ export async function getBarbers(query = '') {
       signal: AbortSignal.timeout(3000),
     });
 
-    if (!response.ok) {
+    if (response.ok) {
+      list = await response.json();
+      console.log('[API] Ustalar backenddan yuklandi:', list.length);
+    } else {
       throw new Error(`Server xatosi: ${response.status}`);
     }
-
-    const data = await response.json();
-    console.log('[API] Ustalar backenddan yuklandi:', data.length);
-    return data;
   } catch (error) {
     console.warn('[API Fallback] Backend ulanmadi, mahalliy ma\'lumotlar ishlatilmoqda:', error.message);
-    if (!query) return mockBarbers;
-    const q = query.toLowerCase();
-    return mockBarbers.filter(
-      (b) => b.name.toLowerCase().includes(q) || b.role.toLowerCase().includes(q)
-    );
+    list = [...mockBarbers];
   }
+
+  // Doimiy saqlangan ustalar (localStorage) ni ro'yxatga qo'shish
+  try {
+    const localRegistered = JSON.parse(localStorage.getItem('barberhub_registered_barbers') || '[]');
+    const myProfile = JSON.parse(localStorage.getItem('barberhub_barber_profile') || 'null');
+    const toMerge = [...localRegistered];
+    if (myProfile && !toMerge.some(b => b.id === myProfile.id)) {
+      toMerge.unshift(myProfile);
+    }
+
+    for (const lb of toMerge) {
+      const idx = list.findIndex(b => b.id === lb.id || (lb.telegram_id && b.telegram_id && String(b.telegram_id) === String(lb.telegram_id)));
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...lb };
+      } else {
+        list.unshift(lb);
+      }
+    }
+  } catch (e) {
+    console.warn('LocalStorage ustalarini birlashtirishda xato:', e);
+  }
+
+  // Qidiruv so'rovi bo'yicha filtrlash (Ism, Mutaxassislik, Sartaroshxona, Manzil)
+  if (!query) return list;
+  const q = query.toLowerCase().trim();
+  return list.filter((b) => 
+    (b.name && b.name.toLowerCase().includes(q)) ||
+    (b.role && b.role.toLowerCase().includes(q)) ||
+    (b.address && b.address.toLowerCase().includes(q)) ||
+    (b.districtName && b.districtName.toLowerCase().includes(q)) ||
+    (b.regionName && b.regionName.toLowerCase().includes(q))
+  );
 }
 
 /**
@@ -155,7 +183,12 @@ export async function registerBarberBackend(barberData) {
     });
 
     if (response.ok) {
-      return await response.json();
+      const saved = await response.json();
+      console.log('[API] Yangi usta backendga saqlandi:', saved.name);
+      return saved;
+    } else {
+      const errText = await response.text();
+      console.warn('[API] Backend usta saqlashda xato status:', response.status, errText);
     }
   } catch (error) {
     console.warn('[API] Backendga usta qo\'shishda xatolik:', error.message);
