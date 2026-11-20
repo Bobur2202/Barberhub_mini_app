@@ -17,16 +17,35 @@ import SuperAdminScreen from './pages/SuperAdminScreen';
 import AiHairstyleAdvisorScreen from './pages/AiHairstyleAdvisorScreen';
 
 export default function App() {
-  // Application State
-  const [lang, setLang] = useState('uz');
+  // Application State - Tilni eslab qolish (faqat birinchi kirganda so'raladi)
+  const [lang, setLang] = useState(() => {
+    return localStorage.getItem('barberhub_lang') || 'uz';
+  });
   
   // Rolni saqlash: 'client' | 'barber' | null
   const [userRole, setUserRole] = useState(() => {
     return localStorage.getItem('barberhub_user_role') || null;
   });
 
-  // Ekran qadamlari: 'splash' | 'role_select' | 'barber_register' | 'catalog' | 'profile' | 'datetime' | 'confirm' | 'admin'
-  const [currentStep, setCurrentStep] = useState('splash');
+  // Ekran qadamlari: agar til avval tanlangan bo'lsa, splashni o'tkazib yuboramiz!
+  const [currentStep, setCurrentStep] = useState(() => {
+    const savedLang = localStorage.getItem('barberhub_lang');
+    const savedRole = localStorage.getItem('barberhub_user_role');
+
+    // Agar til hali biror marta ham tanlanmagan bo'lsa (birinchi marta kirish)
+    if (!savedLang) {
+      return 'splash';
+    }
+
+    // Agar til tanlangan bo'lsa:
+    if (savedRole === 'barber') {
+      return 'admin';
+    } else if (savedRole === 'client') {
+      return 'catalog';
+    } else {
+      return 'role_select';
+    }
+  });
   
   const [selectedBarber, setSelectedBarber] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
@@ -128,9 +147,10 @@ export default function App() {
     restoreBarberByTelegramId();
   }, []);
 
-  // 1. Splash ekranda til tanlanganda
+  // 1. Splash ekranda til tanlanganda (faqat 1-marta saqlanadi)
   const handleSelectLanguage = (selectedLang) => {
     setLang(selectedLang);
+    localStorage.setItem('barberhub_lang', selectedLang);
     // Agar foydalanuvchi roli avval tanlangan bo'lsa
     if (userRole === 'barber') {
       setCurrentStep('admin');
@@ -140,6 +160,12 @@ export default function App() {
       // Birinchi marta kirayotgan bo'lsa - rolni tanlash ekraniga o'tadi
       setCurrentStep('role_select');
     }
+  };
+
+  // HeaderBar'dan til o'zgartirilganda ham xotiraga saqlab boriladi
+  const handleSetLang = (newLang) => {
+    setLang(newLang);
+    localStorage.setItem('barberhub_lang', newLang);
   };
 
   // 2. Rol tanlanganda
@@ -279,7 +305,7 @@ export default function App() {
       {!['splash', 'role_select', 'barber_register', 'super_admin', 'ai_advisor'].includes(currentStep) && (
         <HeaderBar
           lang={lang}
-          setLang={setLang}
+          setLang={handleSetLang}
           t={t}
           userRole={userRole}
           onOpenSuperAdmin={() => {

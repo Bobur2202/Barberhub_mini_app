@@ -1,0 +1,234 @@
+[
+  {
+    "id": "barber-1",
+    "name": "Azizbek Rustamov",
+    "role": "Erkaklar sartaroshi",
+    "rating": 4.9,
+    "reviews_count": 142,
+    "distance": "1.2 km",
+    "starting_price": 50000,
+    "address": "Toshkent, Yunusobod 14-mavze, 23-uy",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250",
+    "bio": "Klassik va zamonaviy soch turmaklash bo'yicha 7 yillik tajribaga ega usta.",
+    "telegram_id": 12345678,
+    "services": [
+      {
+        "id": "s1",
+        "name": "Soch kesish va turmaklash",
+        "duration": "35 daq",
+        "price": 50000,
+        "old_price": null,
+        "is_discount": false,
+        "note": null
+      },
+      {
+        "id": "s2",
+        "name": "Soch va soqol kompleks",
+        "duration": "50 daq",
+        "price": 80000,
+        "old_price": null,
+        "is_discount": false,
+        "note": null
+      },
+      {
+        "id": "s3",
+        "name": "Talabalar uchun",
+        "duration": "35 daq",
+        "price": 40000,
+        "old_price": 50000,
+        "is_discount": true,
+        "note": "Talabalik guvohnomasi bilan"
+      }
+    ],
+    "reviews": [],
+    "trial_days_left": 14,
+    "is_trial": true,
+    "subscription_status": "trial",
+    "linked_card": null,
+    "payment_method": null,
+    "work_hours": {
+      "start": "09:00",
+      "end": "22:00"
+    },
+    "break_time": {
+      "enabled": true,
+      "start": "13:00",
+      "end": "14:00"
+    },
+    "salon_photos": [
+      "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700",
+      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700"
+    ],
+    "is_working_today": true,
+    "days_off": [],
+    "before_after_gallery": [
+      {
+        "id": "ba-1",
+        "title": "Klassikdan Skin Fade Crop ga o'tish",
+        "style_name": "Textured Crop Fade",
+        "before_img": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=600",
+        "after_img": "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=600",
+        "desc": "O'sib ketgan sochlarni tozalab, yuzga yosh va o'tkir qirrali yangi uslub berildi."
+      },
+      {
+        "id": "ba-2",
+        "title": "Soqol va High Fade Pompadour",
+        "style_name": "High Fade & Beard",
+        "before_img": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600",
+        "after_img": "https://images.unsplash.com/photo-1520338661084-680395057c93?auto=format&fit=crop&q=80&w=600",
+        "desc": "Soqol chiziqlari aniq qirralanib, tepa sochiga baland hajm berildi."
+      }
+    ],
+    "loyalty_program": {
+      "enabled": true,
+      "required_visits": 5,
+      "reward": "5-tashrifda 50% chegirma yoki bepul soqol/maska"
+    }
+  },
+  {
+    "id": "barber-2",
+    "name": "Sardor Karimov",
+    "role": "Erkaklar sartaroshi",
+    "rating": 4.8,
+    "reviews_count": 218,
+    "distance": "1.8 km",
+    "starting_price": 60000,
+    "address": "Toshkent, Yunusobod, Amir Temur shoh ko'chasi 107",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
+    "bio": "Zamonaviy soch turmaklari va soqol parvarishi. Har bir mijozga alohida e'tibor.",
+    "telegram_id": 87654321,
+    "services": [
+      {
+        "id": "s201",
+        "name": "Soch kesish va turmaklash",
+        "duration": "40 daq",
+        "price": 60000,
+        "old_price": null,
+        "is_discount": false,
+        "note": null
+      },
+      {
+        "id": "s202",
+        "name": "Soch va soqol parvarishi",
+        "duration": "60 daq",
+        "price": 90000,
+        "old_price": null,
+        "is_discount": false,
+        "note": null
+      },
+      {
+        "id": "s203",
+        "name": "Talabalar uchun",
+        "duration": "40 daq",
+        "price": 50000,
+        "old_price": 60000,
+        "is_discount": true,
+        "note": "Talabalik guvohnomasi bilan"
+      }
+    ],
+    "reviews": [],
+    "trial_days_left": 14,
+    "is_trial": true,
+    "subscription_status": "trial",
+    "linked_card": null,
+    "payment_method": null,
+    "work_hours": {
+      "start": "09:00",
+      "end": "22:00"
+    },
+    "break_time": {
+      "enabled": true,
+      "start": "13:00",
+      "end": "14:00"
+    },
+    "salon_photos": [
+      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=700",
+      "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=700"
+    ],
+    "is_working_today": true,
+    "days_off": [],
+    "before_after_gallery": [
+      {
+        "id": "ba-21",
+        "title": "Modern Quiff va silliq Fade",
+        "style_name": "Modern Quiff",
+        "before_img": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=600",
+        "after_img": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=600",
+        "desc": "Tepasi yuqoriga va orqaga hajmli ko'tarilgan zamonaviy uslub."
+      }
+    ],
+    "loyalty_program": {
+      "enabled": true,
+      "required_visits": 5,
+      "reward": "5-tashrifda 50% chegirma yoki bepul soqol/maska"
+    }
+  },
+  {
+    "id": "barber-3",
+    "name": "Jasur Alimov",
+    "role": "Erkaklar sartaroshi",
+    "rating": 4.9,
+    "reviews_count": 89,
+    "distance": "2.4 km",
+    "starting_price": 55000,
+    "address": "Toshkent, Shahriston metrosi yaqinida",
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250",
+    "bio": "Fade, Crop va Pompadour uslubidagi sochlarni mukammal darajada kesish bo'yicha mutaxassis.",
+    "telegram_id": 99988877,
+    "services": [
+      {
+        "id": "s301",
+        "name": "Fade & Crop soch kesish",
+        "duration": "45 daq",
+        "price": 55000,
+        "old_price": null,
+        "is_discount": false,
+        "note": null
+      },
+      {
+        "id": "s302",
+        "name": "Premium soch + soqol + maska",
+        "duration": "70 daq",
+        "price": 110000,
+        "old_price": null,
+        "is_discount": false,
+        "note": null
+      },
+      {
+        "id": "s303",
+        "name": "Talabalar uchun",
+        "duration": "40 daq",
+        "price": 45000,
+        "old_price": 55000,
+        "is_discount": true,
+        "note": "Talabalik guvohnomasi bilan"
+      }
+    ],
+    "reviews": [],
+    "trial_days_left": 14,
+    "is_trial": true,
+    "subscription_status": "trial",
+    "linked_card": null,
+    "payment_method": null,
+    "work_hours": {
+      "start": "10:00",
+      "end": "21:00"
+    },
+    "break_time": {
+      "enabled": true,
+      "start": "13:00",
+      "end": "14:00"
+    },
+    "salon_photos": [
+      "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=700"
+    ],
+    "is_working_today": true,
+    "days_off": [],
+    "before_after_gallery": [],
+    "loyalty_program": {
+      "enabled": true,
+      "required_visits": 5,
+      "reward": "5-tashrifda 50% chegirma yoki bepul soqol/maska"
+    }
+  }
+]

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, User, Phone, CheckCircle, BellRing, Send, Loader2, Calendar } from 'lucide-react';
+import { ArrowLeft, User, Phone, CheckCircle, BellRing, Send, Loader2, Calendar, AlertCircle, Check } from 'lucide-react';
 import { createAppointment } from '../services/api';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
 import { downloadIcsFile, getGoogleCalendarUrl } from '../utils/calendarHelper';
@@ -14,18 +14,84 @@ export default function ConfirmScreen({
   onBookingSuccess,
 }) {
   const [clientName, setClientName] = useState(() => {
-    return window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Sardorbek';
+    const tgFirst = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name;
+    const tgLast = window.Telegram?.WebApp?.initDataUnsafe?.user?.last_name;
+    const tgFull = [tgFirst, tgLast].filter(Boolean).join(' ');
+    if (tgFull) return tgFull;
+    return localStorage.getItem('barberhub_client_name') || '';
   });
-  const [phoneNumber, setPhoneNumber] = useState('+998 90 123 45 67');
+
+  const [phoneNumber, setPhoneNumber] = useState(() => {
+    return localStorage.getItem('barberhub_client_phone') || '+998 ';
+  });
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [confirmedData, setConfirmedData] = useState(null);
+
+  // Telefon raqamni O'zbekiston formati bo'yicha avtomatik formatlash: +998 90 123 45 67
+  const handlePhoneChange = (e) => {
+    setPhoneTouched(true);
+    let val = e.target.value;
+    
+    // Bo'shatish yoki boshlang'ich prefix
+    if (!val || val.trim() === '+' || val.trim() === '+9' || val.trim() === '+99') {
+      setPhoneNumber('+998 ');
+      return;
+    }
+    
+    // Faqat raqamlarni ajratish
+    let digits = val.replace(/\D/g, '');
+    
+    // Agar to'g'ridan-to'g'ri operator kodi bilan yozilsa (masalan 90...)
+    if (!digits.startsWith('998')) {
+      digits = '998' + digits;
+    }
+    
+    // Maksimal 12 ta raqam
+    digits = digits.slice(0, 12);
+    
+    // Chiroyli probellar bilan formatlash
+    let formatted = '+998';
+    if (digits.length > 3) {
+      formatted += ' ' + digits.slice(3, 5);
+    }
+    if (digits.length > 5) {
+      formatted += ' ' + digits.slice(5, 8);
+    }
+    if (digits.length > 8) {
+      formatted += ' ' + digits.slice(8, 10);
+    }
+    if (digits.length > 10) {
+      formatted += ' ' + digits.slice(10, 12);
+    }
+    setPhoneNumber(formatted);
+  };
+
+  const digitsOnly = phoneNumber.replace(/\D/g, '');
+  const isPhoneValid = digitsOnly.length === 12 && digitsOnly.startsWith('998');
+  const isNameValid = clientName.trim().length >= 2;
+  const canSubmit = isPhoneValid && isNameValid && !isSubmitting;
 
   const isMulti = !!dateTime.isMultiPerson;
   const totalPrice = dateTime.totalPrice || (service.price + (dateTime.secondPrice || 0));
 
   const handleBooking = async () => {
+    if (!canSubmit) {
+      setPhoneTouched(true);
+      setNameTouched(true);
+      return;
+    }
+
     setIsSubmitting(true);
+
+    // Telefon va ismni keyingi safar qayta yozmaslik uchun saqlab qo'yamiz
+    try {
+      localStorage.setItem('barberhub_client_phone', phoneNumber);
+      localStorage.setItem('barberhub_client_name', clientName);
+    } catch (e) {}
 
     const payload = {
       barber_id: barber.id,
@@ -35,7 +101,7 @@ export default function ConfirmScreen({
       service_id: service.id,
       service_name: service.name,
       price: totalPrice,
-      client_name: clientName,
+      client_name: clientName.trim(),
       client_phone: phoneNumber,
       client_telegram_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null,
       date_str: `${dateTime.day.dayName} ${dateTime.day.dateNum}-Noyabr`,
@@ -136,40 +202,86 @@ export default function ConfirmScreen({
 
         {/* Input Details */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-50 space-y-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-            Mijoz ma'lumotlari
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Mijoz ma'lumotlari
+            </h3>
+            <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+              Majburiy maydonlar *
+            </span>
+          </div>
 
+          {/* Ism kiritish */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              {t.your_name}
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+              <span>{t.your_name} <span className="text-red-500">*</span></span>
+              {nameTouched && !isNameValid && (
+                <span className="text-[10px] text-red-500 font-bold">Ismni kiriting</span>
+              )}
             </label>
             <div className="relative">
               <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                placeholder={t.your_name_placeholder}
-                className="w-full bg-gray-50/50 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue focus:bg-white"
+                onFocus={() => setNameTouched(true)}
+                onChange={(e) => {
+                  setNameTouched(true);
+                  setClientName(e.target.value);
+                }}
+                placeholder={t.your_name_placeholder || "Ismingizni kiriting"}
+                className={`w-full bg-gray-50/50 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-800 border transition-all focus:outline-none focus:bg-white ${
+                  nameTouched && !isNameValid
+                    ? 'border-red-400 bg-red-50/30'
+                    : isNameValid
+                    ? 'border-emerald-400 focus:border-emerald-500'
+                    : 'border-gray-200 focus:border-brand-blue'
+                }`}
               />
             </div>
           </div>
 
+          {/* Telefon raqam kiritish */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              {t.phone_label}
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+              <span>{t.phone_label} <span className="text-red-500">*</span></span>
+              {isPhoneValid ? (
+                <span className="text-[10px] text-emerald-600 font-bold flex items-center space-x-0.5">
+                  <Check className="w-3 h-3 inline" />
+                  <span>To'g'ri raqam</span>
+                </span>
+              ) : phoneTouched ? (
+                <span className="text-[10px] text-red-500 font-bold">9 ta raqam to'liq kiritilishi kerak</span>
+              ) : null}
             </label>
             <div className="relative">
-              <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Phone className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${
+                isPhoneValid ? 'text-emerald-500' : 'text-gray-400'
+              }`} />
               <input
-                type="text"
+                type="tel"
+                inputMode="numeric"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder={t.phone_placeholder}
-                className="w-full bg-gray-50/50 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-800 border-2 border-brand-blue/70 focus:outline-none focus:border-brand-blue focus:bg-white font-medium"
+                onFocus={() => setPhoneTouched(true)}
+                onChange={handlePhoneChange}
+                placeholder="+998 90 123 45 67"
+                maxLength={17}
+                className={`w-full rounded-xl pl-10 pr-4 py-3 text-sm font-semibold tracking-wide transition-all focus:outline-none ${
+                  phoneTouched && !isPhoneValid
+                    ? 'border-2 border-red-400 bg-red-50/30 text-gray-900 focus:border-red-500'
+                    : isPhoneValid
+                    ? 'border-2 border-emerald-500 bg-emerald-50/20 text-gray-900'
+                    : 'border-2 border-brand-blue/50 bg-gray-50/50 text-gray-800 focus:border-brand-blue focus:bg-white'
+                }`}
               />
             </div>
+            <p className="text-[11px] text-gray-400 mt-1.5 leading-tight">
+              {isPhoneValid ? (
+                <span className="text-emerald-600 font-medium">Usta ushbu raqamga bog'lanishi mumkin.</span>
+              ) : (
+                <span>Namuna: <b>+998 90 123 45 67</b> (Operator kodi va 7 ta raqam)</span>
+              )}
+            </p>
           </div>
         </div>
 
@@ -189,10 +301,27 @@ export default function ConfirmScreen({
 
       {/* Sticky Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 p-4 shadow-lg z-40">
+        {!canSubmit && (
+          <div className="mb-2 text-center text-[11px] font-bold text-amber-600 flex items-center justify-center space-x-1">
+            <AlertCircle className="w-3.5 h-3.5" />
+            <span>
+              {!isNameValid
+                ? "Davom etish uchun ismingizni kiriting"
+                : !isPhoneValid
+                ? "Telefon raqamingizni to'liq kiriting (+998 XX XXX XX XX)"
+                : ""}
+            </span>
+          </div>
+        )}
+
         <button
-          disabled={isSubmitting || !clientName || !phoneNumber}
+          disabled={!canSubmit}
           onClick={handleBooking}
-          className="w-full py-4 rounded-xl font-extrabold text-brand-blue bg-brand-orange hover:bg-brand-orange-hover shadow-lg shadow-amber-500/25 active:scale-[0.98] transition-all text-center text-sm flex items-center justify-center space-x-2"
+          className={`w-full py-4 rounded-xl font-extrabold text-sm flex items-center justify-center space-x-2 transition-all ${
+            canSubmit
+              ? 'text-brand-blue bg-brand-orange hover:bg-brand-orange-hover shadow-lg shadow-amber-500/25 active:scale-[0.98] cursor-pointer'
+              : 'text-gray-400 bg-gray-200 cursor-not-allowed opacity-80'
+          }`}
         >
           {isSubmitting ? (
             <span className="flex items-center space-x-2">
