@@ -15,16 +15,19 @@ import {
   Share2,
   Gift,
   Scissors,
-  Award
+  Award,
+  Navigation
 } from 'lucide-react';
 import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
+import MapNavigationModal from '../components/MapNavigationModal';
 
 export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, onContinue }) {
   const [activeTab, setActiveTab] = useState('services'); // 'services' | 'before_after' | 'gallery' | 'reviews'
   const [selectedService, setSelectedService] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [showShareToast, setShowShareToast] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
 
   // Sadoqat shtamplari (Loyalty Stamps) hisobi
   const clientCompletedVisits = useMemo(() => {
@@ -232,12 +235,19 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
           </div>
         )}
 
-        {/* Address */}
+        {/* Address & Navigation Link */}
         {barber.address && (
-          <p className="text-[11px] text-gray-500 mt-2 flex items-center justify-center space-x-1 max-w-xs">
-            <MapPin className="w-3 h-3 text-brand-orange flex-shrink-0" />
-            <span className="truncate">{barber.address}</span>
-          </p>
+          <div
+            onClick={() => setShowMapModal(true)}
+            className="mt-2 inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200/70 text-brand-blue cursor-pointer transition-all active:scale-95 group shadow-2xs"
+            title="Xaritada ochish yoki taksi chaqirish"
+          >
+            <MapPin className="w-3.5 h-3.5 text-brand-orange flex-shrink-0" />
+            <span className="text-[11px] font-bold truncate max-w-[200px]">{barber.address}</span>
+            <span className="text-[10px] font-extrabold text-brand-orange underline">
+              Xarita &rarr;
+            </span>
+          </div>
         )}
 
         {/* Short Bio */}
@@ -627,6 +637,16 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
           </p>
         )}
       </div>
+
+      {/* Map & Taxi Navigation Modal */}
+      <MapNavigationModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        address={barber.address}
+        barberName={barber.name}
+        lat={barber.lat}
+        lng={barber.lng}
+      />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowLeft, User, Phone, CheckCircle, BellRing, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Phone, CheckCircle, BellRing, Send, Loader2, Calendar } from 'lucide-react';
 import { createAppointment } from '../services/api';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
+import { downloadIcsFile, getGoogleCalendarUrl } from '../utils/calendarHelper';
 
 export default function ConfirmScreen({
   barber,
@@ -242,6 +243,42 @@ export default function ConfirmScreen({
                 <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-[10px] font-bold">
                   ❌ Bekor qilish
                 </span>
+              </div>
+            </div>
+
+            {/* 📅 Taqvimga qo'shish tugmalari */}
+            <div className="mt-3.5 p-3 bg-blue-50/70 rounded-2xl border border-blue-100/70 text-left">
+              <span className="text-[10px] font-black uppercase text-brand-blue tracking-wider block mb-2">
+                📅 Telefoningiz taqvimiga saqlang:
+              </span>
+              <div className="flex space-x-2">
+                <button
+                  type="button"
+                  onClick={() => downloadIcsFile({
+                    title: `BarberHub: ${barber.name} (${service.name})`,
+                    details: `BarberHub navbati: ${clientName}. Narxi: ${totalPrice.toLocaleString()} UZS`,
+                    location: barber.address || "Toshkent",
+                    timeSlot: dateTime.time,
+                    dateStr: dateTime.day?.full
+                  })}
+                  className="flex-1 py-2 px-1 rounded-xl bg-white text-gray-800 text-[11px] font-extrabold shadow-2xs border border-gray-200 hover:bg-gray-50 flex items-center justify-center space-x-1"
+                >
+                  <span>🍎 Apple / .ics</span>
+                </button>
+                <a
+                  href={getGoogleCalendarUrl({
+                    title: `BarberHub: ${barber.name} (${service.name})`,
+                    details: `BarberHub navbati: ${clientName}. Narxi: ${totalPrice.toLocaleString()} UZS`,
+                    location: barber.address || "Toshkent",
+                    timeSlot: dateTime.time,
+                    dateStr: dateTime.day?.full
+                  })}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 py-2 px-1 rounded-xl bg-white text-brand-blue text-[11px] font-extrabold shadow-2xs border border-blue-200 hover:bg-blue-50 flex items-center justify-center space-x-1"
+                >
+                  <span>Google Taqvim</span>
+                </a>
               </div>
             </div>
 

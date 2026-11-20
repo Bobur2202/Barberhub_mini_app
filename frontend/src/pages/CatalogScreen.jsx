@@ -12,7 +12,9 @@ import {
   Calendar,
   Heart,
   Sparkles,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  BellRing,
+  Zap
 } from 'lucide-react';
 import { getBarbers } from '../services/api';
 import { calculateDistanceKm, formatDistance } from '../data/mockBarbers';
@@ -23,7 +25,10 @@ export default function CatalogScreen({
   onSelectBarber,
   onGoToAppointments,
   activeAppointmentsCount = 0,
-  onOpenAiAdvisor
+  onOpenAiAdvisor,
+  upcomingTodayApt = null,
+  lastAppointment = null,
+  onQuickRebook
 }) {
   const [selectedFilter, setSelectedFilter] = useState('nearest'); // 'nearest' | 'top_rated' | 'available_today' | 'favorites'
   const [searchQuery, setSearchQuery] = useState('');
@@ -182,6 +187,39 @@ export default function CatalogScreen({
           </button>
         </div>
 
+        {/* 🔔 BUGUNGI NAVBAT BILDIRISHNOMASI (Today's upcoming appointment pill) */}
+        {upcomingTodayApt && (
+          <div
+            onClick={onGoToAppointments}
+            className="mb-2.5 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 text-white p-3 rounded-2xl shadow-md flex items-center justify-between cursor-pointer active:scale-98 transition-all border border-blue-400/30 animate-in fade-in"
+          >
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <BellRing className="w-4 h-4 text-brand-orange animate-bounce" />
+              </div>
+              <div className="text-left">
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-[10px] font-black uppercase text-amber-300">
+                    Kutilayotgan navbat ({upcomingTodayApt.time_slot || upcomingTodayApt.time})
+                  </span>
+                  <span className={`text-[9px] font-bold px-1.5 rounded-full ${
+                    upcomingTodayApt.status === 'accepted' ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-gray-900'
+                  }`}>
+                    {upcomingTodayApt.status === 'accepted' ? 'Qabul qilindi' : 'Kutilmoqda'}
+                  </span>
+                </div>
+                <span className="text-xs font-black text-white block mt-0.5 truncate max-w-[220px]">
+                  {upcomingTodayApt.barber_name || upcomingTodayApt.barberName} • {upcomingTodayApt.service_name || upcomingTodayApt.serviceName}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-1 text-[11px] font-extrabold text-amber-300 shrink-0">
+              <span>Ko'rish</span>
+              <span>&rarr;</span>
+            </div>
+          </div>
+        )}
+
         <span className="text-[11px] text-gray-400 font-medium block">
           {t.location_label}
         </span>
@@ -249,6 +287,32 @@ export default function CatalogScreen({
                 <ChevronRightIcon className="w-4 h-4" />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ⚡ 1-BOSISHDA QAYTA YOZILISH (Quick Re-book) */}
+        {lastAppointment && onQuickRebook && (
+          <div className="mt-2.5 bg-gradient-to-r from-amber-500/10 via-amber-50 to-orange-50/50 rounded-2xl p-2.5 border border-amber-300/70 shadow-2xs flex items-center justify-between transition-all">
+            <div className="flex items-center space-x-2.5 truncate pr-2">
+              <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-600 flex items-center justify-center shrink-0">
+                <Zap className="w-4 h-4 text-amber-600 fill-amber-500" />
+              </div>
+              <div className="truncate">
+                <span className="text-[10px] font-black uppercase text-amber-900 tracking-wide block">
+                  1-Bosishda Qayta Yozilish ⚡
+                </span>
+                <span className="text-xs font-extrabold text-brand-blue block truncate">
+                  {lastAppointment.barber_name} — {lastAppointment.service_name}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => onQuickRebook(lastAppointment)}
+              className="py-1.5 px-3 rounded-xl bg-brand-orange hover:bg-amber-400 active:scale-95 text-brand-blue font-extrabold text-xs shadow-xs transition-all shrink-0"
+            >
+              Yozilish
+            </button>
           </div>
         )}
 

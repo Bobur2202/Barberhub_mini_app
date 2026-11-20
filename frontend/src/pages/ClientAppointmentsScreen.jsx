@@ -19,11 +19,13 @@ import {
   Gift,
   Award,
   Radio,
-  ExternalLink
+  ExternalLink,
+  MapPin
 } from 'lucide-react';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
 import { submitBarberReview, cancelClientAppointment, rescheduleAppointment } from '../services/api';
 import { mockBarbers } from '../data/mockBarbers';
+import MapNavigationModal from '../components/MapNavigationModal';
 
 export default function ClientAppointmentsScreen({
   appointments = [],
@@ -33,6 +35,7 @@ export default function ClientAppointmentsScreen({
   onUpdateAppointments,
 }) {
   const [activeTab, setActiveTab] = useState('active'); // 'active' | 'history'
+  const [selectedAptForMap, setSelectedAptForMap] = useState(null);
 
   // Review Modal State
   const [selectedAptForReview, setSelectedAptForReview] = useState(null);
@@ -312,27 +315,27 @@ export default function ClientAppointmentsScreen({
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-1.5">
                         <span
-                          className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1 ${
+                          className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1.5 ${
                             apt.queue_status === 'ready_call'
                               ? 'bg-emerald-500 text-white animate-pulse shadow-sm'
                               : isPending
-                              ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                              : 'bg-blue-100 text-blue-800 border border-blue-200'
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                              : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                           }`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${
+                          <span className={`w-2 h-2 rounded-full ${
                             apt.queue_status === 'ready_call'
                               ? 'bg-white'
                               : isPending
                               ? 'bg-amber-500 animate-pulse'
-                              : 'bg-blue-500'
+                              : 'bg-emerald-500'
                           }`} />
                           <span>
                             {apt.queue_status === 'ready_call'
                               ? "Navbatingiz tayyor! ✂️"
                               : isPending
-                              ? t.status_pending || "Kutilyapti"
-                              : t.status_accepted || "Tasdiqlangan"}
+                              ? "Kutilmoqda"
+                              : "Qabul qilindi"}
                           </span>
                         </span>
 
@@ -424,18 +427,17 @@ export default function ClientAppointmentsScreen({
 
                         {/* Yandex Go & Google Calendar Quick Actions */}
                         <div className="mt-2.5 pt-2 border-t border-black/10 flex items-center space-x-2">
-                          <a
-                            href={`https://taxi.yandex.uz/`}
-                            target="_blank"
-                            rel="noreferrer"
+                          <button
+                            type="button"
+                            onClick={() => setSelectedAptForMap(apt)}
                             className={`flex-1 py-1.5 px-2 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-1 transition-all ${
                               apt.queue_status === 'ready_call'
                                 ? 'bg-white text-emerald-800 hover:bg-emerald-50'
                                 : 'bg-white text-gray-800 border border-blue-100 hover:bg-blue-50'
                             }`}
                           >
-                            <span>🚕 Yandex Go Taksi</span>
-                          </a>
+                            <span>🗺️ Marshrut / Taksi</span>
+                          </button>
 
                           <a
                             href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`BarberHub: ${barberName}`)}&details=${encodeURIComponent(`Xizmat: ${serviceName}`)}&location=${encodeURIComponent(apt.barber_address || "Barbershop")}`}
@@ -527,14 +529,14 @@ export default function ClientAppointmentsScreen({
                   >
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1 ${
+                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1.5 ${
                           isCompleted
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-blue-100 text-blue-900 border border-blue-300'
+                            : 'bg-rose-100 text-rose-900 border border-rose-300'
                         }`}
                       >
-                        {isCompleted ? <CheckCircle className="w-3 h-3 text-emerald-600" /> : <XCircle className="w-3 h-3 text-red-600" />}
-                        <span>{isCompleted ? t.status_completed || "Keldi / Yakunlandi" : t.status_cancelled || "Bekor qilingan"}</span>
+                        {isCompleted ? <CheckCircle className="w-3.5 h-3.5 text-blue-600" /> : <XCircle className="w-3.5 h-3.5 text-rose-600" />}
+                        <span>{isCompleted ? "Yakunlandi" : "Bekor qilindi"}</span>
                       </span>
 
                       <span className="text-xs font-bold text-gray-500">
@@ -826,6 +828,19 @@ export default function ClientAppointmentsScreen({
             </div>
           </div>
         </div>
+      )}
+
+      {/* 🗺️ Salonga Yo'nalish Olish Modali */}
+      {selectedAptForMap && (
+        <MapNavigationModal
+          barber={{
+            name: selectedAptForMap.barber_name || selectedAptForMap.barberName,
+            address: selectedAptForMap.barber_address || selectedAptForMap.barberAddress || "Toshkent shahri",
+            lat: selectedAptForMap.lat || 41.311081,
+            lng: selectedAptForMap.lng || 69.240562,
+          }}
+          onClose={() => setSelectedAptForMap(null)}
+        />
       )}
     </div>
   );

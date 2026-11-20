@@ -79,6 +79,9 @@ export default function App() {
     (a) => a.status === 'pending' || a.status === 'accepted'
   ).length;
 
+  const upcomingTodayApt = clientAppointments.find((a) => a.status === 'accepted' || a.status === 'pending') || null;
+  const lastAppointment = clientAppointments.find((a) => a.status === 'completed') || clientAppointments[0] || null;
+
   const [currentBarberProfile, setCurrentBarberProfile] = useState(() => {
     const saved = localStorage.getItem('barberhub_barber_profile');
     if (saved) {
@@ -233,6 +236,23 @@ export default function App() {
     setCurrentStep('confirm');
   };
 
+  // 1-Bosishda Qayta Yozilish (Quick Re-book)
+  const handleQuickRebook = (apt) => {
+    if (!apt) return;
+    const bId = apt.barber_id || apt.barberId;
+    const foundBarber = mockBarbers.find((b) => String(b.id) === String(bId)) || mockBarbers[0];
+    const sName = apt.service_name || apt.serviceName;
+    const foundService = foundBarber.services?.find((s) => s.name === sName) || foundBarber.services?.[0] || {
+      id: 's-rebook',
+      name: sName || 'Soch kesish va turmaklash',
+      price: apt.price || foundBarber.starting_price || foundBarber.startingPrice || 50000,
+      duration: '40 daq'
+    };
+    setSelectedBarber(foundBarber);
+    setSelectedService(foundService);
+    setCurrentStep('datetime');
+  };
+
   const handleBookingSuccess = (newAppointment, nextDestination = 'catalog') => {
     if (newAppointment) {
       const updated = [newAppointment, ...clientAppointments];
@@ -316,6 +336,9 @@ export default function App() {
           onGoToAppointments={() => setCurrentStep('my_appointments')}
           onOpenAiAdvisor={() => setCurrentStep('ai_advisor')}
           activeAppointmentsCount={activeAppointmentsCount}
+          upcomingTodayApt={upcomingTodayApt}
+          lastAppointment={lastAppointment}
+          onQuickRebook={handleQuickRebook}
         />
       )}
 
