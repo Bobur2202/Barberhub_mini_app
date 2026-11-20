@@ -19,6 +19,7 @@ import {
 import { getBarbers } from '../services/api';
 import { calculateDistanceKm, formatDistance } from '../data/mockBarbers';
 import { UZBEKISTAN_REGIONS } from '../data/regionsData';
+import { hapticFeedback } from '../utils/haptics';
 
 export default function CatalogScreen({
   t,
@@ -118,7 +119,7 @@ export default function CatalogScreen({
     setIsLocationModalOpen(false);
   };
 
-  // Har bir usta uchun masofani hisoblash va filtrlash
+  // Har bir usta uchun masofani va piyoda vaqtni hisoblash
   const processedBarbers = barbersList.map((barber) => {
     let distanceKm = null;
     if (userCoords && barber.lat && barber.lng) {
@@ -128,16 +129,52 @@ export default function CatalogScreen({
         barber.lat,
         barber.lng
       );
+    } else if (barber.distance) {
+      const match = String(barber.distance).match(/([\d.]+)/);
+      if (match) distanceKm = parseFloat(match[1]);
     }
+
+    const distString = distanceKm !== null ? formatDistance(distanceKm) : (barber.distance || '1.2 km');
+    const walkMins = distanceKm !== null ? Math.max(2, Math.round(distanceKm * 12.5)) : 10;
+    const walkTimeText = walkMins < 60 ? `${walkMins} daq piyoda` : `${Math.round(walkMins / 60)} soat piyoda`;
+
     return {
       ...barber,
       calculatedDistance: distanceKm,
-      displayDistance: distanceKm !== null ? formatDistance(distanceKm) : (barber.distance || '1.2 km')
+      displayDistance: distString,
+      walkTimeText
     };
   });
 
-  // Saralash (Eng yaqin, Top reyting, Bugun bo'sh)
-  const sortedBarbers = [...processedBarbers].sort((a, b) => {
+  // Tezkor Filtrlar bo'yicha saralash va saralash
+  const filteredBarbers = processedBarbers.filter((barber) => {
+    if (selectedFilter === 'favorites') {
+      return favorites.includes(barber.id);
+    }
+    if (selectedFilter === 'beard') {
+      const srvNames = (barber.services || []).map(s => s.name.toLowerCase()).join(' ');
+      const roleStr = (barber.role || '').toLowerCase();
+      return srvNames.includes('soqol') || srvNames.includes('beard') || roleStr.includes('soqol');
+    }
+    if (selectedFilter === 'kids') {
+      const srvNames = (barber.services || []).map(s => s.name.toLowerCase()).join(' ');
+      const roleStr = (barber.role || '').toLowerCase();
+      return srvNames.includes('bola') || srvNames.includes('yosh') || roleStr.includes('bola');
+    }
+    if (selectedFilter === 'available_today') {
+      return barber.is_working_today !== false && barber.isWorkingToday !== false;
+    }
+    if (selectedFilter === 'top_rated') {
+      return (barber.rating || 0) >= 4.8;
+    }
+    if (selectedFilter === 'budget') {
+      const price = barber.starting_price || barber.startingPrice || 50000;
+      return price <= 50000;
+    }
+    return true;
+  });
+
+  const displayedBarbers = [...filteredBarbers].sort((a, b) => {
     if (selectedFilter === 'nearest') {
       if (a.calculatedDistance === null) return 1;
       if (b.calculatedDistance === null) return -1;
@@ -146,18 +183,10 @@ export default function CatalogScreen({
     if (selectedFilter === 'top_rated') {
       return (b.rating || 0) - (a.rating || 0);
     }
-    if (selectedFilter === 'available_today') {
+    if (selectedFilter === 'budget') {
       return (a.startingPrice || 50000) - (b.startingPrice || 50000);
     }
     return 0;
-  });
-
-  // Sevimlilar yoki barcha ustalarni filtrlash
-  const displayedBarbers = sortedBarbers.filter(barber => {
-    if (selectedFilter === 'favorites') {
-      return favorites.includes(barber.id);
-    }
-    return true;
   });
 
   return (
@@ -328,57 +357,33 @@ export default function CatalogScreen({
           />
         </div>
 
-        {/* Filter Chips */}
+        {/* Quick Filter Chips (Tezkor Filtrlar) */}
         <div className="flex items-center space-x-2 mt-3 overflow-x-auto no-scrollbar py-1">
-          <button
-            onClick={() => setSelectedFilter('nearest')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm flex items-center space-x-1 ${
-              selectedFilter === 'nearest'
-                ? 'bg-brand-blue text-white shadow-blue-900/20'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <Navigation className="w-3 h-3" />
-            <span>{t.filter_nearest}</span>
-          </button>
-          <button
-            onClick={() => setSelectedFilter('top_rated')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm ${
-              selectedFilter === 'top_rated'
-                ? 'bg-brand-blue text-white shadow-blue-900/20'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            {t.filter_top_rated}
-          </button>
-          <button
-            onClick={() => setSelectedFilter('available_today')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm ${
-              selectedFilter === 'available_today'
-                ? 'bg-brand-blue text-white shadow-blue-900/20'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            {t.filter_available_today}
-          </button>
-          <button
-            onClick={() => setSelectedFilter('favorites')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm flex items-center space-x-1 ${
-              selectedFilter === 'favorites'
-                ? 'bg-red-500 text-white shadow-red-900/20'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <span>❤️</span>
-            <span>{t.tab_favorites || "Sevimlilar"}</span>
-            {favorites.length > 0 && (
-              <span className={`text-[10px] px-1.5 rounded-full font-bold ${
-                selectedFilter === 'favorites' ? 'bg-white text-red-600' : 'bg-red-100 text-red-600'
-              }`}>
-                {favorites.length}
-              </span>
-            )}
-          </button>
+          {[
+            { id: 'all', label: 'Barchasi' },
+            { id: 'nearest', label: '📍 Eng yaqin' },
+            { id: 'beard', label: '✂️ Faqat soqol' },
+            { id: 'kids', label: '👶 Bolalar ustasi' },
+            { id: 'available_today', label: '⚡ Bugun ochiq' },
+            { id: 'top_rated', label: '⭐ Top reyting (4.8+)' },
+            { id: 'budget', label: '💰 Hamyonbop (<= 50K)' },
+            { id: 'favorites', label: `❤️ Sevimlilar ${favorites.length ? `(${favorites.length})` : ''}` },
+          ].map((chip) => (
+            <button
+              key={chip.id}
+              onClick={() => {
+                hapticFeedback.selection();
+                setSelectedFilter(chip.id);
+              }}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-sm ${
+                selectedFilter === chip.id
+                  ? 'bg-brand-blue text-white shadow-blue-900/20 scale-[1.02]'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-blue-50'
+              }`}
+            >
+              {chip.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -403,7 +408,10 @@ export default function CatalogScreen({
           displayedBarbers.map((barber) => (
             <div
               key={barber.id}
-              onClick={() => onSelectBarber(barber)}
+              onClick={() => {
+                hapticFeedback.impact('light');
+                onSelectBarber(barber);
+              }}
               className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer border border-blue-50/60 active:scale-[0.99] relative"
             >
               {/* Top row: Avatar & Info */}
@@ -420,7 +428,11 @@ export default function CatalogScreen({
                     </h3>
                     <button
                       type="button"
-                      onClick={(e) => handleToggleFavorite(e, barber.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        hapticFeedback.impact('medium');
+                        handleToggleFavorite(e, barber.id);
+                      }}
                       className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                       title="Sevimli usta"
                     >
@@ -434,16 +446,17 @@ export default function CatalogScreen({
                     </button>
                   </div>
 
-                  <div className="flex items-center space-x-2 mt-0.5">
+                  <div className="flex items-center space-x-1.5 mt-1 flex-wrap gap-y-1">
                     <div className="flex items-center text-amber-500 text-xs font-bold">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 mr-0.5" />
                       <span>{barber.rating}</span>
                     </div>
 
-                    {/* Dynamic GPS Distance Badge */}
-                    <div className="flex items-center text-xs font-bold text-brand-blue bg-blue-50 px-2 py-0.5 rounded-full">
-                      <Navigation className="w-2.5 h-2.5 mr-1 text-brand-orange" />
+                    {/* Dynamic GPS Distance & Walking Time Badge */}
+                    <div className="flex items-center text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse" />
                       <span>{barber.displayDistance}</span>
+                      <span className="text-emerald-600 font-medium ml-1">({barber.walkTimeText})</span>
                     </div>
 
                     {/* Working Status Badge */}
@@ -457,33 +470,67 @@ export default function CatalogScreen({
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] text-gray-400 block mt-0.5 truncate">
+                  <span className="text-[11px] text-gray-400 block mt-1 truncate">
                     {barber.address || t.barber_role}
                   </span>
                 </div>
               </div>
 
-              {/* Bottom row: Pricing & Book button */}
-              <div className="mt-3.5 pt-3 border-t border-gray-100 flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] text-gray-400 block">
+              {/* Direct Navigation Links (Yandex Go & Google Maps) & Pricing */}
+              <div className="mt-2.5 pt-2 border-t border-gray-100/70 flex items-center justify-between">
+                <div className="flex items-center space-x-1.5">
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${barber.lat || 41.311081},${barber.lng || 69.240562}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      hapticFeedback.impact('light');
+                    }}
+                    className="inline-flex items-center space-x-1 text-[10px] font-bold text-brand-blue bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-xl transition-colors border border-blue-200/60"
+                    title="Google Maps marshruti"
+                  >
+                    <Navigation className="w-3 h-3 text-brand-orange" />
+                    <span>Xarita</span>
+                  </a>
+
+                  <a
+                    href={`https://3.redirect.app.link/launch?end-lat=${barber.lat || 41.311081}&end-lon=${barber.lng || 69.240562}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      hapticFeedback.impact('light');
+                    }}
+                    className="inline-flex items-center space-x-1 text-[10px] font-extrabold text-amber-900 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-xl transition-colors border border-amber-300/70"
+                    title="Yandex Go orqali taksi chaqirish"
+                  >
+                    <span>🚕 Yandex Go</span>
+                  </a>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-[10px] text-gray-400 block leading-tight">
                     {t.from_price}:
                   </span>
-                  <span className="font-bold text-brand-blue text-sm">
+                  <span className="font-black text-brand-blue text-xs">
                     {(barber.starting_price || barber.startingPrice || 50000).toLocaleString()} UZS
                   </span>
                 </div>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectBarber(barber);
-                  }}
-                  className="bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-bold text-xs px-4 py-2 rounded-xl shadow-sm transition-all active:scale-95"
-                >
-                  {t.book_now}
-                </button>
               </div>
+
+              {/* Book button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  hapticFeedback.impact('medium');
+                  onSelectBarber(barber);
+                }}
+                className="w-full mt-2.5 py-2 rounded-xl font-bold text-xs text-brand-blue bg-brand-orange hover:bg-brand-orange-hover shadow-xs transition-all active:scale-[0.98] flex items-center justify-center space-x-1"
+              >
+                <span>{t.book_now}</span>
+                <span>&rarr;</span>
+              </button>
             </div>
           ))
         )}

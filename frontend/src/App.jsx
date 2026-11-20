@@ -111,14 +111,68 @@ export default function App() {
 
   const t = translations[lang] || translations.uz;
 
+  // 🌙 Telegram Avtomatik Tungi / Kunduzgi Rejim (Auto Dark/Light Theme)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const tgScheme = window.Telegram?.WebApp?.colorScheme;
+      if (tgScheme) return tgScheme === 'dark';
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  const applyThemeMode = (dark) => {
+    setIsDarkMode(dark);
+    if (dark) {
+      document.documentElement.classList.add('dark');
+      if (window.Telegram?.WebApp) {
+        if (window.Telegram.WebApp.setHeaderColor) window.Telegram.WebApp.setHeaderColor('#0F172A');
+        if (window.Telegram.WebApp.setBackgroundColor) window.Telegram.WebApp.setBackgroundColor('#0B132B');
+      }
+    } else {
+      document.documentElement.classList.remove('dark');
+      if (window.Telegram?.WebApp) {
+        if (window.Telegram.WebApp.setHeaderColor) window.Telegram.WebApp.setHeaderColor('#004B86');
+        if (window.Telegram.WebApp.setBackgroundColor) window.Telegram.WebApp.setBackgroundColor('#E6EDF9');
+      }
+    }
+  };
+
+  const handleToggleTheme = () => {
+    applyThemeMode(!isDarkMode);
+  };
+
   // Telegram WebApp Initialization va Telegram ID orqali ustani tiklash
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
       tg.expand();
-      if (tg.setHeaderColor) tg.setHeaderColor('#004B86');
-      if (tg.setBackgroundColor) tg.setBackgroundColor('#E6EDF9');
+    }
+
+    // Initial theme check & apply
+    const currentIsDark = window.Telegram?.WebApp?.colorScheme === 'dark' || 
+      (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    applyThemeMode(currentIsDark);
+
+    // Telegram mavzu o'zgarganda avtomatik moslashish
+    const handleTgThemeChange = () => {
+      const dark = window.Telegram?.WebApp?.colorScheme === 'dark';
+      applyThemeMode(dark);
+    };
+
+    if (window.Telegram?.WebApp?.onEvent) {
+      window.Telegram.WebApp.onEvent('themeChanged', handleTgThemeChange);
+    }
+
+    const mediaQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+    const handleMediaChange = (e) => {
+      if (!window.Telegram?.WebApp?.colorScheme) {
+        applyThemeMode(e.matches);
+      }
+    };
+    if (mediaQuery?.addEventListener) {
+      mediaQuery.addEventListener('change', handleMediaChange);
     }
 
     // Avval ro'yxatdan o'tgan ustalar bo'lsa, xotiradagi mockBarbers'ga qo'shib qo'yish
@@ -328,6 +382,8 @@ export default function App() {
           setLang={handleSetLang}
           t={t}
           userRole={userRole}
+          isDarkMode={isDarkMode}
+          onToggleTheme={handleToggleTheme}
           onOpenSuperAdmin={() => {
             setHeaderPinInput('');
             setHeaderPinError(false);

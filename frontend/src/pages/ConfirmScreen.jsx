@@ -3,6 +3,7 @@ import { ArrowLeft, User, Phone, CheckCircle, BellRing, Send, Loader2, Calendar,
 import { createAppointment } from '../services/api';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
 import { downloadIcsFile, getGoogleCalendarUrl } from '../utils/calendarHelper';
+import { hapticFeedback } from '../utils/haptics';
 
 export default function ConfirmScreen({
   barber,
@@ -125,6 +126,7 @@ export default function ConfirmScreen({
       setConfirmedData(payload);
     } finally {
       setIsSubmitting(false);
+      hapticFeedback.notification('success');
       setShowSuccessModal(true);
     }
   };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Calendar, Clock, Check, Users, UserPlus, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Check, Users, UserPlus, AlertCircle, Sparkles, Sun, Sunrise, Moon } from 'lucide-react';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
+import { hapticFeedback } from '../utils/haptics';
 
 export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack, onContinue }) {
   // Generate next 7 days dynamically
@@ -113,6 +114,29 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
 
   const timeSlots = generateTimeSlots();
   const [selectedTime, setSelectedTime] = useState(null);
+  const [timePeriodFilter, setTimePeriodFilter] = useState('all'); // 'all' | 'morning' | 'afternoon' | 'evening'
+
+  // Smart Slot Grouping (🌅 Ertalab, ☀️ Kunduz, 🌙 Kechqurun)
+  const morningSlots = timeSlots.filter((s) => {
+    const h = parseInt(s.time.split(':')[0], 10);
+    return h < 12;
+  });
+  const afternoonSlots = timeSlots.filter((s) => {
+    const h = parseInt(s.time.split(':')[0], 10);
+    return h >= 12 && h < 17;
+  });
+  const eveningSlots = timeSlots.filter((s) => {
+    const h = parseInt(s.time.split(':')[0], 10);
+    return h >= 17;
+  });
+
+  const displayedSlots = timePeriodFilter === 'morning'
+    ? morningSlots
+    : timePeriodFilter === 'afternoon'
+    ? afternoonSlots
+    : timePeriodFilter === 'evening'
+    ? eveningSlots
+    : timeSlots;
 
   // 👨‍👦 Multi-person Booking State
   const [isMultiPerson, setIsMultiPerson] = useState(false);
@@ -300,6 +324,7 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
               <button
                 key={day.key}
                 onClick={() => {
+                  hapticFeedback.selection();
                   setSelectedDay(day);
                   setSelectedTime(null);
                 }}
@@ -334,7 +359,7 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
 
       {/* Time Slots Grid or Day Off Notice */}
       <div className="px-4 mt-6">
-        <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-3">
+        <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-2.5">
           <div className="flex items-center space-x-1.5">
             <Clock className="w-4 h-4 text-brand-blue" />
             <span>{t.choose_time}</span>
@@ -357,51 +382,94 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
             </p>
           </div>
         ) : (
-          /* 3-Column Grid */
-          <div className="grid grid-cols-3 gap-2.5">
-            {timeSlots.map((slot, idx) => {
-              const isBreak = slot.status === 'break';
-              const isBooked = slot.status === 'booked';
-              const isFirstSelected = selectedTime === slot.time;
-              const isSecondSelected = isMultiPerson && secondSlot === slot.time;
-              const isSelected = isFirstSelected || isSecondSelected;
-
-              return (
+          <div>
+            {/* 🌅 Smart Time Period Filter Chips */}
+            <div className="grid grid-cols-4 gap-1.5 bg-gray-200/60 p-1 rounded-2xl mb-3 text-center">
+              {[
+                { key: 'all', label: 'Barchasi', count: timeSlots.filter(s => s.status === 'available').length },
+                { key: 'morning', label: '🌅 Ertalab', count: morningSlots.filter(s => s.status === 'available').length },
+                { key: 'afternoon', label: '☀️ Kunduz', count: afternoonSlots.filter(s => s.status === 'available').length },
+                { key: 'evening', label: '🌙 Oqshom', count: eveningSlots.filter(s => s.status === 'available').length },
+              ].map((period) => (
                 <button
-                  key={idx}
-                  disabled={isBooked || isBreak}
-                  onClick={() => setSelectedTime(slot.time)}
-                  className={`py-3 rounded-xl text-center text-xs font-bold transition-all relative ${
-                    isBreak
-                      ? 'bg-amber-50 text-amber-800/80 border border-amber-200 cursor-not-allowed opacity-80'
-                      : isBooked
-                      ? 'bg-gray-200/60 text-gray-400 line-through cursor-not-allowed border border-transparent'
-                      : isFirstSelected
-                      ? 'bg-brand-blue text-white shadow-md shadow-blue-900/25 ring-2 ring-brand-blue/30 scale-[1.02]'
-                      : isSecondSelected
-                      ? 'bg-brand-orange text-brand-blue font-black shadow-md ring-2 ring-brand-orange/40 scale-[1.02]'
-                      : 'bg-white text-gray-800 border border-blue-50 shadow-sm hover:border-brand-blue/40'
+                  key={period.key}
+                  type="button"
+                  onClick={() => {
+                    hapticFeedback.selection();
+                    setTimePeriodFilter(period.key);
+                  }}
+                  className={`py-1.5 px-1 rounded-xl text-[10px] font-bold transition-all ${
+                    timePeriodFilter === period.key
+                      ? 'bg-brand-blue text-white shadow-xs'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <span>{slot.time}</span>
-                  {isBreak && (
-                    <span className="block text-[8px] font-extrabold text-amber-700 mt-0.5">
-                      ☕ Tushlik
-                    </span>
-                  )}
-                  {isMultiPerson && isFirstSelected && (
-                    <span className="block text-[8px] font-extrabold text-amber-300 mt-0.5">
-                      1-Siz
-                    </span>
-                  )}
-                  {isMultiPerson && isSecondSelected && (
-                    <span className="block text-[8px] font-black text-brand-blue mt-0.5">
-                      2-{companionType === 'child' ? 'Bola' : "Do'st"}
-                    </span>
-                  )}
+                  <span className="block truncate">{period.label}</span>
+                  <span className={`text-[8px] font-extrabold block ${timePeriodFilter === period.key ? 'text-amber-300' : 'text-gray-400'}`}>
+                    {period.count} bo'sh
+                  </span>
                 </button>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* 3-Column Grid */}
+            <div className="grid grid-cols-3 gap-2.5">
+              {displayedSlots.map((slot, idx) => {
+                const isBreak = slot.status === 'break';
+                const isBooked = slot.status === 'booked';
+                const isFirstSelected = selectedTime === slot.time;
+                const isSecondSelected = isMultiPerson && secondSlot === slot.time;
+                const isSelected = isFirstSelected || isSecondSelected;
+
+                // Prime hours check (17:00 - 20:30)
+                const hourNum = parseInt(slot.time.split(':')[0], 10);
+                const isPrime = hourNum >= 17 && hourNum <= 20 && slot.status === 'available';
+
+                return (
+                  <button
+                    key={idx}
+                    disabled={isBooked || isBreak}
+                    onClick={() => {
+                      hapticFeedback.selection();
+                      setSelectedTime(slot.time);
+                    }}
+                    className={`py-3 rounded-xl text-center text-xs font-bold transition-all relative ${
+                      isBreak
+                        ? 'bg-amber-50 text-amber-800/80 border border-amber-200 cursor-not-allowed opacity-80'
+                        : isBooked
+                        ? 'bg-gray-200/60 text-gray-400 line-through cursor-not-allowed border border-transparent'
+                        : isFirstSelected
+                        ? 'bg-brand-blue text-white shadow-md shadow-blue-900/25 ring-2 ring-brand-blue/30 scale-[1.02]'
+                        : isSecondSelected
+                        ? 'bg-brand-orange text-brand-blue font-black shadow-md ring-2 ring-brand-orange/40 scale-[1.02]'
+                        : 'bg-white text-gray-800 border border-blue-50 shadow-sm hover:border-brand-blue/40'
+                    }`}
+                  >
+                    <span>{slot.time}</span>
+                    {isPrime && !isSelected && (
+                      <span className="block text-[8px] font-extrabold text-amber-600 mt-0.5">
+                        🔥 Ommabop
+                      </span>
+                    )}
+                    {isBreak && (
+                      <span className="block text-[8px] font-extrabold text-amber-700 mt-0.5">
+                        ☕ Tushlik
+                      </span>
+                    )}
+                    {isMultiPerson && isFirstSelected && (
+                      <span className="block text-[8px] font-extrabold text-amber-300 mt-0.5">
+                        1-Siz
+                      </span>
+                    )}
+                    {isMultiPerson && isSecondSelected && (
+                      <span className="block text-[8px] font-black text-brand-blue mt-0.5">
+                        2-{companionType === 'child' ? 'Bola' : "Do'st"}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -430,7 +498,8 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 p-4 shadow-lg z-40">
         <button
           disabled={isContinueDisabled}
-          onClick={() =>
+          onClick={() => {
+            hapticFeedback.notification('success');
             onContinue({
               day: selectedDay,
               time: selectedTime,
@@ -441,8 +510,8 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
               secondSlot,
               secondPrice: isMultiPerson ? companionPrice : 0,
               totalPrice: service.price + (isMultiPerson ? companionPrice : 0)
-            })
-          }
+            });
+          }}
           className={`w-full py-3.5 rounded-xl font-bold text-center text-sm transition-all ${
             !isContinueDisabled
               ? 'bg-brand-orange hover:bg-brand-orange-hover text-brand-blue shadow-md shadow-amber-500/20 active:scale-[0.98]'
