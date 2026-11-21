@@ -252,7 +252,70 @@ export const translations = {
     // Ulashish (Share Profile)
     btn_share_profile: "Ulashish",
     share_copied_toast: "Profil havolasi nusxalandi! 📋",
-    share_text: "Ushbu mohir erkaklar sartaroshini tavsiya qilaman! BarberHub orqali navbat oling:"
+    share_text: "Ushbu mohir erkaklar sartaroshini tavsiya qilaman! BarberHub orqali navbat oling:",
+
+    // Yangi UX/UI qismlari & Bannerlar
+    upcoming_queue_title: "Kutilayotgan navbat",
+    btn_view: "Ko'rish",
+    ai_advisor_title: "AI Sartarosh Maslahatchisi",
+    ai_advisor_subtitle: "Yuzingizga mos 3 xil zamonaviy turmakni AI orqali aniqlang",
+    quick_rebook_title: "1-Bosishda Qayta Yozilish ⚡",
+    quick_rebook_btn: "Yozilish",
+    filter_all: "Barchasi",
+    filter_nearest_chip: "📍 Eng yaqin",
+    filter_beard_chip: "✂️ Faqat soqol",
+    filter_kids_chip: "👶 Bolalar ustasi",
+    filter_today_chip: "⚡ Bugun ochiq",
+    filter_top_rated_chip: "⭐ Top reyting (4.8+)",
+    filter_budget_chip: "💰 Hamyonbop (<= 50K)",
+    filter_favorites_chip: "❤️ Sevimlilar",
+    map_btn: "Xarita",
+    loading_barbers: "Ustalar yuklanmoqda...",
+    no_barbers_found: "Hech qanday usta topilmadi.",
+    status_accepted: "Qabul qilindi",
+    status_pending: "Kutilmoqda",
+
+    // Smart Time Slots
+    period_all: "Barchasi",
+    period_morning: "🌅 Ertalab",
+    period_afternoon: "☀️ Kunduz",
+    period_evening: "🌙 Oqshom",
+    prime_time_badge: "🔥 Ommabop",
+
+    // Multi-person Booking
+    add_companion_btn: "+ Yana bir kishini qo'shish",
+    add_companion_hint: "O'g'lingiz yoki do'stingiz uchun ketma-ket 2 ta vaqt",
+    companion_son: "👶 O'g'lim (Bola)",
+    companion_son_service: "Bolalar sochi (40 000 UZS)",
+    companion_friend: "🙋‍♂️ Do'stim / Akam",
+    second_client_label: "👨‍👦 2-Mijoz:",
+    total_multi_label: "Jami (2 kishi uchun):",
+
+    // Form & Calendar
+    client_details_title: "Mijoz ma'lumotlari",
+    required_fields_badge: "Majburiy maydonlar *",
+    name_required_error: "Ismni kiriting",
+    phone_required_error: "Telefon raqamni to'liq kiriting",
+    save_to_calendar: "📅 Telefoningiz taqvimiga saqlang:",
+    apple_calendar: "Apple / Telefon Taqvim (.ics)",
+    google_calendar: "Google Taqvim",
+
+    // Loyalty & Before/After
+    loyalty_card_title: "Virtual Sadoqat Kartasi",
+    loyalty_card_reward: "Har 5-tashrifingizda 50% chegirma yoki bepul soqol!",
+    loyalty_reward_unlocked: "🎉 Tabriklaymiz! Sizda 50% chegirma vaucheri faol!",
+    loyalty_reward_progress: "Yana {count} ta tashrifdan so'ng 50% chegirma sovg'a olinadi!",
+    tab_before_after: "Oldin/Keyin",
+    slider_before: "OLDIN ✂️",
+    slider_after: "KEYIN ✨",
+    slider_drag_hint: "Surib ko'ring",
+
+    // Jonli Radar
+    live_queue_radar_title: "Jonli Navbat Radari",
+    radar_turn_arrived: "🎉 Sizning navbatingiz yetib keldi!",
+    radar_waiting_desc: "Usta hozir sizdan oldingi 1 ta mijozni qabul qilmoqda",
+    radar_ready_desc: "Usta sizni kutmoqda. Sartaroshxonaga kiring ✂️",
+    radar_pending_notice: "Usta navbatingizni tasdiqlashi kutilmoqda. Tasdiqlanganda Telegram orqali xabar olasiz."
   },
   
   ru: {
@@ -508,7 +571,70 @@ export const translations = {
     // Поделиться (Share Profile)
     btn_share_profile: "Поделиться",
     share_copied_toast: "Ссылка на профиль скопирована! 📋",
-    share_text: "Рекомендую отличного мужского мастера! Запишитесь через BarberHub:"
+    share_text: "Рекомендую отличного мужского мастера! Запишитесь через BarberHub:",
+
+    // Новые элементы интерфейса и баннеры
+    upcoming_queue_title: "Ожидаемая запись",
+    btn_view: "Смотреть",
+    ai_advisor_title: "AI Консультант по стилю",
+    ai_advisor_subtitle: "Подберите 3 стильные стрижки под форму вашего лица через ИИ",
+    quick_rebook_title: "Повторная запись в 1 клик ⚡",
+    quick_rebook_btn: "Записаться",
+    filter_all: "Все",
+    filter_nearest_chip: "📍 Ближайшие",
+    filter_beard_chip: "✂️ Только борода",
+    filter_kids_chip: "👶 Детский мастер",
+    filter_today_chip: "⚡ Сегодня открыто",
+    filter_top_rated_chip: "⭐ Топ рейтинг (4.8+)",
+    filter_budget_chip: "💰 Доступные (<= 50K)",
+    filter_favorites_chip: "❤️ Избранные",
+    map_btn: "Карта",
+    loading_barbers: "Загрузка мастеров...",
+    no_barbers_found: "Мастера не найдены.",
+    status_accepted: "Принято",
+    status_pending: "Ожидает",
+
+    // Умные временные слоты
+    period_all: "Все",
+    period_morning: "🌅 Утро",
+    period_afternoon: "☀️ День",
+    period_evening: "🌙 Вечер",
+    prime_time_badge: "🔥 Популярно",
+
+    // Запись на двоих (Multi-person)
+    add_companion_btn: "+ Записать ещё человека",
+    add_companion_hint: "Два слота подряд для сына или друга",
+    companion_son: "👶 Сын (Ребёнок)",
+    companion_son_service: "Детская стрижка (40 000 UZS)",
+    companion_friend: "🙋‍♂️ Друг / Брат",
+    second_client_label: "👨‍👦 2-й Клиент:",
+    total_multi_label: "Итого (за 2 человек):",
+
+    // Форма и Календарь
+    client_details_title: "Данные клиента",
+    required_fields_badge: "Обязательные поля *",
+    name_required_error: "Введите имя",
+    phone_required_error: "Введите номер телефона полностью",
+    save_to_calendar: "📅 Сохранить в календарь телефона:",
+    apple_calendar: "Apple / Календарь (.ics)",
+    google_calendar: "Google Календарь",
+
+    // Программа лояльности и До/После
+    loyalty_card_title: "Виртуальная Карта Лояльности",
+    loyalty_card_reward: "Каждое 5-е посещение: скидка 50% или бесплатная борода!",
+    loyalty_reward_unlocked: "🎉 Поздравляем! У вас активен ваучер на скидку 50%!",
+    loyalty_reward_progress: "Ещё {count} посещений до подарка — скидки 50%!",
+    tab_before_after: "До/После",
+    slider_before: "ДО ✂️",
+    slider_after: "ПОСЛЕ ✨",
+    slider_drag_hint: "Потяните",
+
+    // Радар очереди
+    live_queue_radar_title: "Радар Живой Очереди",
+    radar_turn_arrived: "🎉 Ваша очередь подошла!",
+    radar_waiting_desc: "Мастер сейчас принимает клиента перед вами",
+    radar_ready_desc: "Мастер вас ждёт. Проходите в барбершоп ✂️",
+    radar_pending_notice: "Ожидается подтверждение записи мастером. Вы получите уведомление в Telegram."
   },
   
   en: {
@@ -764,6 +890,69 @@ export const translations = {
     // Share Profile
     btn_share_profile: "Share",
     share_copied_toast: "Profile link copied! 📋",
-    share_text: "I recommend this great men's barber! Book via BarberHub:"
+    share_text: "I recommend this great men's barber! Book via BarberHub:",
+
+    // New UI Elements & Banners
+    upcoming_queue_title: "Upcoming booking",
+    btn_view: "View",
+    ai_advisor_title: "AI Barber Style Advisor",
+    ai_advisor_subtitle: "Find 3 modern haircuts matching your face shape using AI",
+    quick_rebook_title: "1-Tap Quick Re-book ⚡",
+    quick_rebook_btn: "Book",
+    filter_all: "All",
+    filter_nearest_chip: "📍 Nearest",
+    filter_beard_chip: "✂️ Beard only",
+    filter_kids_chip: "👶 Kids barber",
+    filter_today_chip: "⚡ Available today",
+    filter_top_rated_chip: "⭐ Top rated (4.8+)",
+    filter_budget_chip: "💰 Budget (<= 50K)",
+    filter_favorites_chip: "❤️ Favorites",
+    map_btn: "Map",
+    loading_barbers: "Loading barbers...",
+    no_barbers_found: "No barbers found.",
+    status_accepted: "Accepted",
+    status_pending: "Pending",
+
+    // Smart Time Slots
+    period_all: "All",
+    period_morning: "🌅 Morning",
+    period_afternoon: "☀️ Afternoon",
+    period_evening: "🌙 Evening",
+    prime_time_badge: "🔥 Prime time",
+
+    // Multi-person Booking
+    add_companion_btn: "+ Add another person",
+    add_companion_hint: "Two consecutive slots for your son or friend",
+    companion_son: "👶 My son (Child)",
+    companion_son_service: "Kids haircut (40 000 UZS)",
+    companion_friend: "🙋‍♂️ My friend / Brother",
+    second_client_label: "👨‍👦 2nd Client:",
+    total_multi_label: "Total (for 2 people):",
+
+    // Form & Calendar
+    client_details_title: "Client details",
+    required_fields_badge: "Required fields *",
+    name_required_error: "Enter your name",
+    phone_required_error: "Enter full phone number",
+    save_to_calendar: "📅 Save to phone calendar:",
+    apple_calendar: "Apple / Phone Calendar (.ics)",
+    google_calendar: "Google Calendar",
+
+    // Loyalty & Before/After
+    loyalty_card_title: "Digital Loyalty Card",
+    loyalty_card_reward: "Every 5th visit: 50% discount or free grooming!",
+    loyalty_reward_unlocked: "🎉 Congratulations! You have an active 50% discount voucher!",
+    loyalty_reward_progress: "Only {count} more visits until 50% off gift!",
+    tab_before_after: "Before/After",
+    slider_before: "BEFORE ✂️",
+    slider_after: "AFTER ✨",
+    slider_drag_hint: "Slide",
+
+    // Live Queue Radar
+    live_queue_radar_title: "Live Queue Radar",
+    radar_turn_arrived: "🎉 Your turn has arrived!",
+    radar_waiting_desc: "The barber is currently serving the client before you",
+    radar_ready_desc: "The barber is waiting for you. Please come in ✂️",
+    radar_pending_notice: "Waiting for barber to confirm booking. You will be notified in Telegram."
   }
 };

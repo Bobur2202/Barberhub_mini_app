@@ -6,7 +6,9 @@ export default function BeforeAfterSlider({
   afterImage,
   title,
   styleName,
-  description
+  description,
+  t = {},
+  lang = 'uz'
 }) {
   const [sliderPosition, setSliderPosition] = useState(50); // percentage 0 - 100
   const [isDragging, setIsDragging] = useState(false);
@@ -34,20 +36,23 @@ export default function BeforeAfterSlider({
     }
   };
 
+  const displayTitle = title || (lang === 'ru' ? 'До и После' : lang === 'en' ? 'Before & After' : 'Oldin va Keyin');
+  const displayStyle = styleName || (lang === 'ru' ? 'Трансформация' : lang === 'en' ? 'Transformation' : 'Transformatsiya');
+
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-blue-50">
       {/* Title & Tag */}
       <div className="p-3.5 pb-2.5 flex items-center justify-between">
         <div>
           <span className="text-[10px] font-black uppercase tracking-wider text-brand-orange block">
-            {styleName || "Transformatsiya"}
+            {displayStyle}
           </span>
           <h4 className="text-xs font-black text-brand-blue">
-            {title || "Oldin va Keyin"}
+            {displayTitle}
           </h4>
         </div>
         <div className="flex items-center space-x-1 text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-          <span>Surib ko'ring</span>
+          <span>{t.slider_drag_hint || (lang === 'ru' ? 'Потяните' : lang === 'en' ? 'Slide' : "Surib ko'ring")}</span>
           <span>⟷</span>
         </div>
       </div>
@@ -69,7 +74,7 @@ export default function BeforeAfterSlider({
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
         />
         <div className="absolute top-3 right-3 bg-emerald-600/90 backdrop-blur-xs text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">
-          KEYIN ✨
+          {t.slider_after || (lang === 'ru' ? 'ПОСЛЕ ✨' : lang === 'en' ? 'AFTER ✨' : 'KEYIN ✨')}
         </div>
 
         {/* BEFORE IMAGE (Top layer clipped) */}
@@ -87,7 +92,7 @@ export default function BeforeAfterSlider({
             }}
           />
           <div className="absolute top-3 left-3 bg-gray-900/80 backdrop-blur-xs text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">
-            OLDIN ✂️
+            {t.slider_before || (lang === 'ru' ? 'ДО ✂️' : lang === 'en' ? 'BEFORE ✂️' : 'OLDIN ✂️')}
           </div>
         </div>
 

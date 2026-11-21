@@ -167,10 +167,10 @@ export default function ConfirmScreen({
               <div className="flex justify-between items-center pt-2 bg-blue-50/60 p-2.5 rounded-xl border border-blue-100">
                 <div>
                   <span className="text-xs font-black text-brand-blue block">
-                    👨‍👦 2-Mijoz: {dateTime.companionTitle}
+                    {t.second_client_label || "👨‍👦 2-Mijoz:"} {dateTime.companionTitle}
                   </span>
                   <span className="text-[11px] text-gray-500 block">
-                    {dateTime.companionService} ({dateTime.secondSlot})
+                    {getTranslatedServiceName(dateTime.companionService, lang)} ({dateTime.secondSlot})
                   </span>
                 </div>
                 <span className="font-extrabold text-xs text-brand-blue">
@@ -187,13 +187,13 @@ export default function ConfirmScreen({
             <div className="flex justify-between items-center pt-2">
               <span className="text-gray-500 text-xs">{t.datetime_label}:</span>
               <span className="font-bold text-gray-800 text-right">
-                {dateTime.day.full}, {dateTime.time} {isMulti ? `va ${dateTime.secondSlot}` : ''}
+                {dateTime.day.full}, {dateTime.time} {isMulti ? `${lang === 'ru' ? 'и' : lang === 'en' ? 'and' : 'va'} ${dateTime.secondSlot}` : ''}
               </span>
             </div>
 
             <div className="flex justify-between items-center pt-3">
               <span className="text-gray-700 font-bold text-sm">
-                {isMulti ? "Jami (2 kishi uchun):" : t.total_label}:
+                {isMulti ? (t.total_multi_label || "Jami (2 kishi uchun):") : t.total_label}:
               </span>
               <span className="text-lg font-black text-brand-blue">
                 {totalPrice.toLocaleString()} UZS
@@ -206,10 +206,10 @@ export default function ConfirmScreen({
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-50 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-              Mijoz ma'lumotlari
+              {t.client_details_title || "Mijoz ma'lumotlari"}
             </h3>
             <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-              Majburiy maydonlar *
+              {t.required_fields_badge || "Majburiy maydonlar *"}
             </span>
           </div>
 
@@ -218,7 +218,7 @@ export default function ConfirmScreen({
             <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
               <span>{t.your_name} <span className="text-red-500">*</span></span>
               {nameTouched && !isNameValid && (
-                <span className="text-[10px] text-red-500 font-bold">Ismni kiriting</span>
+                <span className="text-[10px] text-red-500 font-bold">{t.name_required_error || "Ismni kiriting"}</span>
               )}
             </label>
             <div className="relative">
@@ -380,7 +380,7 @@ export default function ConfirmScreen({
             {/* 📅 Taqvimga qo'shish tugmalari */}
             <div className="mt-3.5 p-3 bg-blue-50/70 rounded-2xl border border-blue-100/70 text-left">
               <span className="text-[10px] font-black uppercase text-brand-blue tracking-wider block mb-2">
-                📅 Telefoningiz taqvimiga saqlang:
+                {t.save_to_calendar || "📅 Telefoningiz taqvimiga saqlang:"}
               </span>
               <div className="flex space-x-2">
                 <button
@@ -394,7 +394,7 @@ export default function ConfirmScreen({
                   })}
                   className="flex-1 py-2 px-1 rounded-xl bg-white text-gray-800 text-[11px] font-extrabold shadow-2xs border border-gray-200 hover:bg-gray-50 flex items-center justify-center space-x-1"
                 >
-                  <span>🍎 Apple / .ics</span>
+                  <span>{t.apple_calendar || "🍎 Apple / .ics"}</span>
                 </button>
                 <a
                   href={getGoogleCalendarUrl({
@@ -408,7 +408,7 @@ export default function ConfirmScreen({
                   rel="noreferrer"
                   className="flex-1 py-2 px-1 rounded-xl bg-white text-brand-blue text-[11px] font-extrabold shadow-2xs border border-blue-200 hover:bg-blue-50 flex items-center justify-center space-x-1"
                 >
-                  <span>Google Taqvim</span>
+                  <span>{t.google_calendar || "Google Taqvim"}</span>
                 </a>
               </div>
             </div>

@@ -20,9 +20,17 @@ import { getBarbers } from '../services/api';
 import { calculateDistanceKm, formatDistance } from '../data/mockBarbers';
 import { UZBEKISTAN_REGIONS } from '../data/regionsData';
 import { hapticFeedback } from '../utils/haptics';
+import {
+  getTranslatedServiceName,
+  getTranslatedAddress,
+  getTranslatedRole,
+  formatWalkTime,
+  getTranslatedDistrict
+} from '../data/serviceTranslations';
 
 export default function CatalogScreen({
   t,
+  lang = 'uz',
   onSelectBarber,
   onGoToAppointments,
   activeAppointmentsCount = 0,
@@ -136,7 +144,7 @@ export default function CatalogScreen({
 
     const distString = distanceKm !== null ? formatDistance(distanceKm) : (barber.distance || '1.2 km');
     const walkMins = distanceKm !== null ? Math.max(2, Math.round(distanceKm * 12.5)) : 10;
-    const walkTimeText = walkMins < 60 ? `${walkMins} daq piyoda` : `${Math.round(walkMins / 60)} soat piyoda`;
+    const walkTimeText = formatWalkTime(walkMins, lang);
 
     return {
       ...barber,
@@ -229,21 +237,21 @@ export default function CatalogScreen({
               <div className="text-left">
                 <div className="flex items-center space-x-1.5">
                   <span className="text-[10px] font-black uppercase text-amber-300">
-                    Kutilayotgan navbat ({upcomingTodayApt.time_slot || upcomingTodayApt.time})
+                    {t.upcoming_queue_title || "Kutilayotgan navbat"} ({upcomingTodayApt.time_slot || upcomingTodayApt.time})
                   </span>
                   <span className={`text-[9px] font-bold px-1.5 rounded-full ${
                     upcomingTodayApt.status === 'accepted' ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-gray-900'
                   }`}>
-                    {upcomingTodayApt.status === 'accepted' ? 'Qabul qilindi' : 'Kutilmoqda'}
+                    {upcomingTodayApt.status === 'accepted' ? (t.status_accepted || 'Qabul qilindi') : (t.status_pending || 'Kutilmoqda')}
                   </span>
                 </div>
                 <span className="text-xs font-black text-white block mt-0.5 truncate max-w-[220px]">
-                  {upcomingTodayApt.barber_name || upcomingTodayApt.barberName} • {upcomingTodayApt.service_name || upcomingTodayApt.serviceName}
+                  {upcomingTodayApt.barber_name || upcomingTodayApt.barberName} • {getTranslatedServiceName(upcomingTodayApt.service_name || upcomingTodayApt.serviceName, lang)}
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-1 text-[11px] font-extrabold text-amber-300 shrink-0">
-              <span>Ko'rish</span>
+              <span>{t.btn_view || "Ko'rish"}</span>
               <span>&rarr;</span>
             </div>
           </div>
@@ -261,7 +269,7 @@ export default function CatalogScreen({
           >
             <MapPin className="w-4 h-4 text-brand-blue flex-shrink-0" />
             <span className="text-sm font-bold text-brand-blue truncate">
-              {locationName}
+              {getTranslatedDistrict(locationName, lang)}
             </span>
             <ChevronDown className="w-3.5 h-3.5 text-brand-blue group-hover:translate-y-0.5 transition-transform flex-shrink-0" />
           </button>
@@ -301,14 +309,14 @@ export default function CatalogScreen({
                 <div>
                   <div className="flex items-center space-x-1.5">
                     <span className="text-xs font-black tracking-tight text-white">
-                      AI Sartarosh Maslahatchisi
+                      {t.ai_advisor_title || "AI Sartarosh Maslahatchisi"}
                     </span>
                     <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1.5 py-0.5 rounded-full uppercase">
                       WOW AI
                     </span>
                   </div>
                   <p className="text-[11px] text-blue-100 font-medium leading-tight mt-0.5">
-                    Yuzingizga mos 3 xil zamonaviy turmakni AI orqali aniqlang
+                    {t.ai_advisor_subtitle || "Yuzingizga mos 3 xil zamonaviy turmakni AI orqali aniqlang"}
                   </p>
                 </div>
               </div>
@@ -328,10 +336,10 @@ export default function CatalogScreen({
               </div>
               <div className="truncate">
                 <span className="text-[10px] font-black uppercase text-amber-900 tracking-wide block">
-                  1-Bosishda Qayta Yozilish ⚡
+                  {t.quick_rebook_title || "1-Bosishda Qayta Yozilish ⚡"}
                 </span>
                 <span className="text-xs font-extrabold text-brand-blue block truncate">
-                  {lastAppointment.barber_name} — {lastAppointment.service_name}
+                  {lastAppointment.barber_name} — {getTranslatedServiceName(lastAppointment.service_name || lastAppointment.serviceName, lang)}
                 </span>
               </div>
             </div>
@@ -340,7 +348,7 @@ export default function CatalogScreen({
               onClick={() => onQuickRebook(lastAppointment)}
               className="py-1.5 px-3 rounded-xl bg-brand-orange hover:bg-amber-400 active:scale-95 text-brand-blue font-extrabold text-xs shadow-xs transition-all shrink-0"
             >
-              Yozilish
+              {t.quick_rebook_btn || "Yozilish"}
             </button>
           </div>
         )}
@@ -360,14 +368,14 @@ export default function CatalogScreen({
         {/* Quick Filter Chips (Tezkor Filtrlar) */}
         <div className="flex items-center space-x-2 mt-3 overflow-x-auto no-scrollbar py-1">
           {[
-            { id: 'all', label: 'Barchasi' },
-            { id: 'nearest', label: '📍 Eng yaqin' },
-            { id: 'beard', label: '✂️ Faqat soqol' },
-            { id: 'kids', label: '👶 Bolalar ustasi' },
-            { id: 'available_today', label: '⚡ Bugun ochiq' },
-            { id: 'top_rated', label: '⭐ Top reyting (4.8+)' },
-            { id: 'budget', label: '💰 Hamyonbop (<= 50K)' },
-            { id: 'favorites', label: `❤️ Sevimlilar ${favorites.length ? `(${favorites.length})` : ''}` },
+            { id: 'all', label: t.filter_all || 'Barchasi' },
+            { id: 'nearest', label: t.filter_nearest_chip || '📍 Eng yaqin' },
+            { id: 'beard', label: t.filter_beard_chip || '✂️ Faqat soqol' },
+            { id: 'kids', label: t.filter_kids_chip || '👶 Bolalar ustasi' },
+            { id: 'available_today', label: t.filter_today_chip || '⚡ Bugun ochiq' },
+            { id: 'top_rated', label: t.filter_top_rated_chip || '⭐ Top reyting (4.8+)' },
+            { id: 'budget', label: t.filter_budget_chip || '💰 Hamyonbop (<= 50K)' },
+            { id: 'favorites', label: `${t.filter_favorites_chip || '❤️ Sevimlilar'} ${favorites.length ? `(${favorites.length})` : ''}` },
           ].map((chip) => (
             <button
               key={chip.id}
@@ -402,7 +410,7 @@ export default function CatalogScreen({
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12 text-brand-blue space-y-2">
             <Loader2 className="w-6 h-6 animate-spin text-brand-orange" />
-            <span className="text-xs font-medium text-gray-500">Ustalar yuklanmoqda...</span>
+            <span className="text-xs font-medium text-gray-500">{t.loading_barbers || "Ustalar yuklanmoqda..."}</span>
           </div>
         ) : (
           displayedBarbers.map((barber) => (
@@ -434,7 +442,7 @@ export default function CatalogScreen({
                         handleToggleFavorite(e, barber.id);
                       }}
                       className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                      title="Sevimli usta"
+                      title={t.tab_favorites || "Sevimli usta"}
                     >
                       <Heart
                         className={`w-4 h-4 transition-all ${
@@ -471,7 +479,7 @@ export default function CatalogScreen({
                     )}
                   </div>
                   <span className="text-[11px] text-gray-400 block mt-1 truncate">
-                    {barber.address || t.barber_role}
+                    {getTranslatedAddress(barber.address, lang) || getTranslatedRole(barber.role, lang) || t.barber_role}
                   </span>
                 </div>
               </div>
@@ -488,10 +496,10 @@ export default function CatalogScreen({
                       hapticFeedback.impact('light');
                     }}
                     className="inline-flex items-center space-x-1 text-[10px] font-bold text-brand-blue bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-xl transition-colors border border-blue-200/60"
-                    title="Google Maps marshruti"
+                    title="Google Maps"
                   >
                     <Navigation className="w-3 h-3 text-brand-orange" />
-                    <span>Xarita</span>
+                    <span>{t.map_btn || "Xarita"}</span>
                   </a>
 
                   <a
@@ -503,7 +511,7 @@ export default function CatalogScreen({
                       hapticFeedback.impact('light');
                     }}
                     className="inline-flex items-center space-x-1 text-[10px] font-extrabold text-amber-900 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-xl transition-colors border border-amber-300/70"
-                    title="Yandex Go orqali taksi chaqirish"
+                    title="Yandex Go"
                   >
                     <span>🚕 Yandex Go</span>
                   </a>
@@ -546,7 +554,7 @@ export default function CatalogScreen({
               </>
             ) : (
               <p className="text-gray-500 text-sm font-medium">
-                Hech qanday usta topilmadi.
+                {t.no_barbers_found || "Hech qanday usta topilmadi."}
               </p>
             )}
           </div>

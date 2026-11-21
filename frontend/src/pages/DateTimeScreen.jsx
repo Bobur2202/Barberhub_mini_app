@@ -144,8 +144,8 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
 
   // Companion details
   const companionPrice = companionType === 'child' ? 40000 : service.price;
-  const companionTitle = companionType === 'child' ? "O'g'lim (Bola)" : "Do'stim / Akam";
-  const companionService = companionType === 'child' ? "Bolalar soch turmagi" : service.name;
+  const companionTitle = companionType === 'child' ? (t.companion_son || "👶 O'g'lim (Bola)") : (t.companion_friend || "🙋‍♂️ Do'stim / Akam");
+  const companionService = companionType === 'child' ? (t.companion_son_service || "Bolalar soch turmagi") : getTranslatedServiceName(service.name, lang);
 
   // Find consecutive slot if multi-person is active
   const selectedIndex = timeSlots.findIndex((s) => s.time === selectedTime);
@@ -226,10 +226,10 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
               </div>
               <div>
                 <span className="text-xs font-black text-brand-blue block">
-                  + Yana bir kishini qo'shish
+                  {t.add_companion_btn || "+ Yana bir kishini qo'shish"}
                 </span>
                 <span className="text-[10px] text-gray-500 font-medium block">
-                  O'g'lingiz yoki do'stingiz bilan ketma-ket 2 ta navbat olish
+                  {t.add_companion_hint || "O'g'lingiz yoki do'stingiz bilan ketma-ket 2 ta navbat olish"}
                 </span>
               </div>
             </div>
@@ -256,7 +256,7 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
           {isMultiPerson && (
             <div className="mt-3 pt-3 border-t border-gray-100 space-y-2.5 animate-in fade-in">
               <span className="text-[11px] font-bold text-gray-700 block">
-                Kim uchun navbat olinmoqda?
+                {lang === 'ru' ? 'Для кого запись?' : lang === 'en' ? 'Who is this booking for?' : "Kim uchun navbat olinmoqda?"}
               </span>
 
               <div className="grid grid-cols-2 gap-2">
@@ -269,8 +269,8 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                       : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="text-xs font-extrabold block">👶 O'g'lim (Bola)</span>
-                  <span className="text-[10px] text-gray-500 block">Bolalar sochi (40 000 UZS)</span>
+                  <span className="text-xs font-extrabold block">{t.companion_son || "👶 O'g'lim (Bola)"}</span>
+                  <span className="text-[10px] text-gray-500 block">{t.companion_son_service || "Bolalar sochi (40 000 UZS)"}</span>
                 </button>
 
                 <button
@@ -282,16 +282,16 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                       : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="text-xs font-extrabold block">🙋‍♂️ Do'stim / Akam</span>
-                  <span className="text-[10px] text-gray-500 block">{service.name}</span>
+                  <span className="text-xs font-extrabold block">{t.companion_friend || "🙋‍♂️ Do'stim / Akam"}</span>
+                  <span className="text-[10px] text-gray-500 block">{getTranslatedServiceName(service.name, lang)}</span>
                 </button>
               </div>
 
               {selectedTime && secondSlot && (
                 <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center justify-between">
                   <div>
-                    <span className="block">1-navbat (Siz): {selectedTime}</span>
-                    <span className="block">2-navbat ({companionTitle}): {secondSlot}</span>
+                    <span className="block">{lang === 'ru' ? '1-я запись (Вы):' : lang === 'en' ? '1st slot (You):' : '1-navbat (Siz):'} {selectedTime}</span>
+                    <span className="block">{lang === 'ru' ? '2-я запись' : lang === 'en' ? '2nd slot' : '2-navbat'} ({companionTitle}): {secondSlot}</span>
                   </div>
                   <span className="text-sm font-black text-brand-blue">
                     {(service.price + companionPrice).toLocaleString()} UZS
@@ -386,10 +386,10 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
             {/* 🌅 Smart Time Period Filter Chips */}
             <div className="grid grid-cols-4 gap-1.5 bg-gray-200/60 p-1 rounded-2xl mb-3 text-center">
               {[
-                { key: 'all', label: 'Barchasi', count: timeSlots.filter(s => s.status === 'available').length },
-                { key: 'morning', label: '🌅 Ertalab', count: morningSlots.filter(s => s.status === 'available').length },
-                { key: 'afternoon', label: '☀️ Kunduz', count: afternoonSlots.filter(s => s.status === 'available').length },
-                { key: 'evening', label: '🌙 Oqshom', count: eveningSlots.filter(s => s.status === 'available').length },
+                { key: 'all', label: t.period_all || 'Barchasi', count: timeSlots.filter(s => s.status === 'available').length },
+                { key: 'morning', label: t.period_morning || '🌅 Ertalab', count: morningSlots.filter(s => s.status === 'available').length },
+                { key: 'afternoon', label: t.period_afternoon || '☀️ Kunduz', count: afternoonSlots.filter(s => s.status === 'available').length },
+                { key: 'evening', label: t.period_evening || '🌙 Oqshom', count: eveningSlots.filter(s => s.status === 'available').length },
               ].map((period) => (
                 <button
                   key={period.key}
@@ -406,7 +406,7 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                 >
                   <span className="block truncate">{period.label}</span>
                   <span className={`text-[8px] font-extrabold block ${timePeriodFilter === period.key ? 'text-amber-300' : 'text-gray-400'}`}>
-                    {period.count} bo'sh
+                    {period.count} {lang === 'ru' ? 'свободно' : lang === 'en' ? 'open' : "bo'sh"}
                   </span>
                 </button>
               ))}
@@ -448,7 +448,7 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                     <span>{slot.time}</span>
                     {isPrime && !isSelected && (
                       <span className="block text-[8px] font-extrabold text-amber-600 mt-0.5">
-                        🔥 Ommabop
+                        {t.prime_time_badge || "🔥 Ommabop"}
                       </span>
                     )}
                     {isBreak && (

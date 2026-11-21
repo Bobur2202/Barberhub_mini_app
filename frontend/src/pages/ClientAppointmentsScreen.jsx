@@ -269,11 +269,11 @@ export default function ClientAppointmentsScreen({
                   </div>
                   <div>
                     <h4 className="text-xs font-black text-white flex items-center space-x-1">
-                      <span>Sizning Sadoqat Shtamplaringiz</span>
+                      <span>{t.loyalty_card_title || "Sizning Sadoqat Shtamplaringiz"}</span>
                       <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1.5 rounded-full">VIP</span>
                     </h4>
                     <p className="text-[10px] text-blue-100 font-medium">
-                      Har 5-tashrifingizda 50% chegirma yoki bepul soqol/maska!
+                      {t.loyalty_card_reward || "Har 5-tashrifingizda 50% chegirma yoki bepul soqol/maska!"}
                     </p>
                   </div>
                 </div>
@@ -332,10 +332,10 @@ export default function ClientAppointmentsScreen({
                           }`} />
                           <span>
                             {apt.queue_status === 'ready_call'
-                              ? "Navbatingiz tayyor! ✂️"
+                              ? (lang === 'ru' ? "Ваша очередь готова! ✂️" : lang === 'en' ? "Your turn is ready! ✂️" : "Navbatingiz tayyor! ✂️")
                               : isPending
-                              ? "Kutilmoqda"
-                              : "Qabul qilindi"}
+                              ? (t.status_pending || "Kutilmoqda")
+                              : (t.status_accepted || "Qabul qilindi")}
                           </span>
                         </span>
 
@@ -405,22 +405,22 @@ export default function ClientAppointmentsScreen({
                             <div>
                               <span className="text-[11px] font-black uppercase tracking-wider block">
                                 {apt.queue_status === 'ready_call'
-                                  ? "🎉 Sizning navbatingiz yetib keldi!"
-                                  : "Jonli Navbat Radari"}
+                                  ? (t.radar_turn_arrived || "🎉 Sizning navbatingiz yetib keldi!")
+                                  : (t.live_queue_radar_title || "Jonli Navbat Radari")}
                               </span>
                               <span className={`text-xs font-bold block ${
                                 apt.queue_status === 'ready_call' ? 'text-white' : 'text-gray-700'
                               }`}>
                                 {apt.queue_status === 'ready_call'
-                                  ? "Usta sizni kutmoqda. Sartaroshxonaga kiring ✂️"
-                                  : "Usta hozir sizdan oldingi 1 ta mijozni qabul qilmoqda"}
+                                  ? (t.radar_ready_desc || "Usta sizni kutmoqda. Sartaroshxonaga kiring ✂️")
+                                  : (t.radar_waiting_desc || "Usta hozir sizdan oldingi 1 ta mijozni qabul qilmoqda")}
                               </span>
                             </div>
                           </div>
 
                           {apt.queue_status !== 'ready_call' && (
                             <span className="text-[10px] font-black bg-white/90 text-brand-blue px-2 py-1 rounded-xl shadow-xs border border-blue-100">
-                              ~15-20 daq
+                              ~15-20 {lang === 'ru' ? 'мин' : lang === 'en' ? 'min' : 'daq'}
                             </span>
                           )}
                         </div>
@@ -436,7 +436,7 @@ export default function ClientAppointmentsScreen({
                                 : 'bg-white text-gray-800 border border-blue-100 hover:bg-blue-50'
                             }`}
                           >
-                            <span>🗺️ Marshrut / Taksi</span>
+                            <span>{lang === 'ru' ? '🗺️ Маршрут / Такси' : lang === 'en' ? '🗺️ Route / Taxi' : '🗺️ Marshrut / Taksi'}</span>
                           </button>
 
                           <a
@@ -449,7 +449,7 @@ export default function ClientAppointmentsScreen({
                                 : 'bg-white text-gray-800 border border-blue-100 hover:bg-blue-50'
                             }`}
                           >
-                            <span>📅 Taqvimga</span>
+                            <span>{lang === 'ru' ? '📅 В календарь' : lang === 'en' ? '📅 To Calendar' : '📅 Taqvimga'}</span>
                           </a>
                         </div>
                       </div>
@@ -458,7 +458,7 @@ export default function ClientAppointmentsScreen({
                     {/* Status hint notice if pending */}
                     {isPending && (
                       <div className="mt-3 p-2 bg-gray-50 rounded-xl text-[11px] text-gray-500 leading-relaxed">
-                        Usta navbatingizni tasdiqlashi kutilmoqda. Tasdiqlanganda Telegram orqali xabar olasiz.
+                        {t.radar_pending_notice || "Usta navbatingizni tasdiqlashi kutilmoqda. Tasdiqlanganda Telegram orqali xabar olasiz."}
                       </div>
                     )}
 

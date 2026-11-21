@@ -1,26 +1,34 @@
 import React from 'react';
 import { X, MapPin, ExternalLink, Navigation } from 'lucide-react';
+import { getTranslatedAddress } from '../data/serviceTranslations';
 
 export default function MapNavigationModal({
-  isOpen,
+  isOpen = true,
   onClose,
   address,
   barberName,
   lat,
-  lng
+  lng,
+  lang = 'uz',
+  barber
 }) {
-  if (!isOpen) return null;
+  if (isOpen === false) return null;
 
-  const encodedAddr = encodeURIComponent(address || 'Toshkent');
-  const latLngQuery = lat && lng ? `${lat},${lng}` : null;
+  const actualAddress = address || barber?.address || 'Toshkent shahri';
+  const actualName = barberName || barber?.name || (lang === 'ru' ? 'Барбершоп' : lang === 'en' ? 'Barbershop' : 'Sartaroshxona');
+  const actualLat = lat || barber?.lat;
+  const actualLng = lng || barber?.lng;
+
+  const encodedAddr = encodeURIComponent(actualAddress);
+  const latLngQuery = actualLat && actualLng ? `${actualLat},${actualLng}` : null;
 
   // Xarita va taksi havolalari
   const yandexGoUrl = `https://taxi.yandex.uz/`;
   const yandexMapsUrl = latLngQuery 
-    ? `https://yandex.uz/maps/?pt=${lng},${lat}&z=16&l=map`
+    ? `https://yandex.uz/maps/?pt=${actualLng},${actualLat}&z=16&l=map`
     : `https://yandex.uz/maps/?text=${encodedAddr}`;
   const googleMapsUrl = latLngQuery
-    ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+    ? `https://www.google.com/maps/search/?api=1&query=${actualLat},${actualLng}`
     : `https://www.google.com/maps/search/?api=1&query=${encodedAddr}`;
   const dgisUrl = `https://2gis.uz/search/${encodedAddr}`;
 
@@ -32,6 +40,8 @@ export default function MapNavigationModal({
     }
   };
 
+  const translatedAddr = getTranslatedAddress(actualAddress, lang) || (lang === 'ru' ? 'г. Ташкент' : lang === 'en' ? 'Tashkent city' : 'Toshkent shahri');
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
       <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-sm p-5 shadow-2xl border border-gray-100 animate-in slide-in-from-bottom-5">
@@ -42,10 +52,10 @@ export default function MapNavigationModal({
             </div>
             <div>
               <h3 className="font-extrabold text-sm text-brand-blue">
-                Yo'nalish va Xaritalar
+                {lang === 'ru' ? 'Маршрут и Карты' : lang === 'en' ? 'Directions & Maps' : "Yo'nalish va Xaritalar"}
               </h3>
               <p className="text-[11px] text-gray-500 font-medium truncate max-w-[200px]">
-                {barberName || "Sartaroshxona"}
+                {actualName}
               </p>
             </div>
           </div>
@@ -61,12 +71,12 @@ export default function MapNavigationModal({
         <div className="my-3 p-3 bg-gray-50 rounded-2xl border border-gray-100 flex items-start space-x-2">
           <MapPin className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
           <span className="text-xs text-gray-700 font-semibold leading-relaxed">
-            {address || "Toshkent shahri"}
+            {translatedAddr}
           </span>
         </div>
 
         <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 block mb-2 px-1">
-          Ilovani tanlang:
+          {lang === 'ru' ? 'Выберите приложение:' : lang === 'en' ? 'Choose application:' : 'Ilovani tanlang:'}
         </span>
 
         {/* Navigation buttons */}
@@ -78,7 +88,7 @@ export default function MapNavigationModal({
           >
             <div className="flex items-center space-x-2.5">
               <span className="text-base">🚕</span>
-              <span>Yandex Go (Taksi chaqirish)</span>
+              <span>Yandex Go ({lang === 'ru' ? 'Вызов такси' : lang === 'en' ? 'Order Taxi' : 'Taksi chaqirish'})</span>
             </div>
             <ExternalLink className="w-3.5 h-3.5 opacity-70" />
           </button>
@@ -90,7 +100,7 @@ export default function MapNavigationModal({
           >
             <div className="flex items-center space-x-2.5">
               <span className="text-base">🗺️</span>
-              <span>Yandex Xaritalar</span>
+              <span>Yandex {lang === 'ru' ? 'Карты' : lang === 'en' ? 'Maps' : 'Xaritalar'}</span>
             </div>
             <ExternalLink className="w-3.5 h-3.5 opacity-70" />
           </button>
@@ -102,7 +112,7 @@ export default function MapNavigationModal({
           >
             <div className="flex items-center space-x-2.5">
               <span className="text-base">📍</span>
-              <span>Google Xaritalar</span>
+              <span>Google {lang === 'ru' ? 'Карты' : lang === 'en' ? 'Maps' : 'Xaritalar'}</span>
             </div>
             <ExternalLink className="w-3.5 h-3.5 opacity-70" />
           </button>
@@ -114,7 +124,7 @@ export default function MapNavigationModal({
           >
             <div className="flex items-center space-x-2.5">
               <span className="text-base">🧭</span>
-              <span>2GIS Xaritalar</span>
+              <span>2GIS {lang === 'ru' ? 'Карты' : lang === 'en' ? 'Maps' : 'Xaritalar'}</span>
             </div>
             <ExternalLink className="w-3.5 h-3.5 opacity-70" />
           </button>
@@ -124,7 +134,7 @@ export default function MapNavigationModal({
           onClick={onClose}
           className="w-full mt-3 py-2.5 rounded-2xl bg-gray-100 text-gray-600 font-bold text-xs hover:bg-gray-200 transition-colors"
         >
-          Yopish
+          {lang === 'ru' ? 'Закрыть' : lang === 'en' ? 'Close' : 'Yopish'}
         </button>
       </div>
     </div>

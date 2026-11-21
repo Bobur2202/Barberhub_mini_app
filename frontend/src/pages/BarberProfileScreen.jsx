@@ -18,7 +18,7 @@ import {
   Award,
   Navigation
 } from 'lucide-react';
-import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
+import { getTranslatedServiceName, formatServiceDuration, getTranslatedAddress, getTranslatedRole, getTranslatedBio } from '../data/serviceTranslations';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import MapNavigationModal from '../components/MapNavigationModal';
 
@@ -243,16 +243,16 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
             title="Xaritada ochish yoki taksi chaqirish"
           >
             <MapPin className="w-3.5 h-3.5 text-brand-orange flex-shrink-0" />
-            <span className="text-[11px] font-bold truncate max-w-[200px]">{barber.address}</span>
+            <span className="text-[11px] font-bold truncate max-w-[200px]">{getTranslatedAddress(barber.address, lang)}</span>
             <span className="text-[10px] font-extrabold text-brand-orange underline">
-              Xarita &rarr;
+              {t.map_btn || "Xarita"} &rarr;
             </span>
           </div>
         )}
 
         {/* Short Bio */}
         <p className="text-xs text-gray-600 mt-2 max-w-xs leading-relaxed">
-          {barber.bio}
+          {getTranslatedBio(barber.bio, lang)}
         </p>
 
         {/* Mini Salon Photos Teaser (if photos exist) */}
@@ -293,11 +293,11 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
               </div>
               <div>
                 <h4 className="text-xs font-black tracking-tight text-white flex items-center space-x-1">
-                  <span>Virtual Sadoqat Kartasi</span>
+                  <span>{t.loyalty_card_title || "Virtual Sadoqat Kartasi"}</span>
                   <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1.5 rounded-full">VIP</span>
                 </h4>
                 <p className="text-[10px] text-blue-100 font-medium">
-                  {barber.loyaltyProgram?.rewardText || "Har 5-tashrifingizda 50% chegirma yoki bepul soqol!"}
+                  {t.loyalty_card_reward || "Har 5-tashrifingizda 50% chegirma yoki bepul soqol!"}
                 </p>
               </div>
             </div>
@@ -340,8 +340,8 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
 
           <div className="mt-2 text-[10px] text-blue-100 text-center font-medium">
             {isRewardUnlocked
-              ? "🎉 Tabriklaymiz! Sizda 50% chegirma vaucheri faol!"
-              : `Yana ${5 - currentStamps} ta tashrifdan so'ng 50% chegirma sovg'a olinadi!`}
+              ? (t.loyalty_reward_unlocked || "🎉 Tabriklaymiz! Sizda 50% chegirma vaucheri faol!")
+              : (t.loyalty_reward_progress || "Yana {count} ta tashrifdan so'ng 50% chegirma sovg'a olinadi!").replace('{count}', 5 - currentStamps)}
           </div>
         </div>
 
@@ -365,7 +365,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <span>Oldin/Keyin</span>
+            <span>{t.tab_before_after || "Oldin/Keyin"}</span>
             <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1 rounded-full">✂️</span>
           </button>
           <button
@@ -466,9 +466,9 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
       {activeTab === 'before_after' && (
         <div className="px-4 mt-4 space-y-4 animate-in fade-in">
           <div className="flex items-center justify-between text-xs text-gray-500 font-semibold px-1">
-            <span>Ustaning real mijozlari natijalari</span>
+            <span>{lang === 'ru' ? 'Результаты клиентов мастера' : lang === 'en' ? 'Real client transformation results' : "Ustaning real mijozlari natijalari"}</span>
             <span className="text-[10px] text-brand-orange bg-amber-50 px-2 py-0.5 rounded-full font-bold">
-              Interaktiv slayd
+              {lang === 'ru' ? 'Интерактивный слайдер' : lang === 'en' ? 'Interactive slider' : "Interaktiv slayd"}
             </span>
           </div>
 
@@ -480,6 +480,8 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
               title={item.title}
               styleName={item.styleName || item.style_name}
               description={item.desc}
+              t={t}
+              lang={lang}
             />
           ))}
         </div>
@@ -646,6 +648,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
         barberName={barber.name}
         lat={barber.lat}
         lng={barber.lng}
+        lang={lang}
       />
     </div>
   );
