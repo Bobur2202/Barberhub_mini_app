@@ -16,7 +16,7 @@ import {
   BellRing,
   Zap
 } from 'lucide-react';
-import { getBarbers } from '../services/api';
+import { getBarbers, getPlatformSettings } from '../services/api';
 import { calculateDistanceKm, formatDistance } from '../data/mockBarbers';
 import { UZBEKISTAN_REGIONS } from '../data/regionsData';
 import { hapticFeedback } from '../utils/haptics';
@@ -74,8 +74,9 @@ export default function CatalogScreen({
   const [selectedDistrictId, setSelectedDistrictId] = useState('yunusobod');
 
   const currentRegion = UZBEKISTAN_REGIONS.find(r => r.id === selectedRegionId) || UZBEKISTAN_REGIONS[0];
+  const [platformSettings, setPlatformSettings] = useState(null);
 
-  // Ustalar ro'yxatini yuklash
+  // Ustalar ro'yxatini va platforma sozlamalarini yuklash
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
@@ -84,6 +85,12 @@ export default function CatalogScreen({
       if (isMounted) {
         setBarbersList(data);
         setIsLoading(false);
+      }
+    });
+
+    getPlatformSettings().then((settings) => {
+      if (isMounted && settings) {
+        setPlatformSettings(settings);
       }
     });
 
@@ -207,6 +214,26 @@ export default function CatalogScreen({
     <div className="min-h-screen bg-[#E6EDF9] pb-24 max-w-md mx-auto">
       {/* Top Location Bar */}
       <div className="pt-4 px-4 pb-2">
+        {/* 📢 Super Admin Umumiy E'lon / Aksiya Banneri */}
+        {platformSettings?.announcement_active && platformSettings?.announcement_text && (
+          <div className={`mb-3 p-3 rounded-2xl shadow-xs border flex items-start space-x-2.5 transition-all ${
+            platformSettings.announcement_type === 'warning'
+              ? 'bg-amber-50 border-amber-300 text-amber-950'
+              : platformSettings.announcement_type === 'info'
+              ? 'bg-blue-50 border-blue-200 text-blue-950'
+              : 'bg-gradient-to-r from-amber-400/20 via-orange-400/15 to-yellow-400/20 border-amber-300 text-gray-900'
+          }`}>
+            <span className="text-base flex-shrink-0 mt-0.5">
+              {platformSettings.announcement_type === 'warning' ? '⚠️' : platformSettings.announcement_type === 'info' ? 'ℹ️' : '🎁'}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold leading-snug">
+                {platformSettings.announcement_text}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Client Top Tab Navigation */}
         <div className="grid grid-cols-2 gap-2 bg-gray-200/60 p-1 rounded-2xl mb-3">
           <button
@@ -451,8 +478,13 @@ export default function CatalogScreen({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1.5 truncate">
-                      <h3 className="font-bold text-brand-blue text-base truncate">
-                        {barber.name}
+                      <h3 className="font-bold text-brand-blue text-base truncate flex items-center space-x-1">
+                        <span className="truncate">{barber.name}</span>
+                        {barber.is_verified && (
+                          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-600 text-white text-[9px] font-black shrink-0" title="Rasmiy tasdiqlangan usta">
+                            ✓
+                          </span>
+                        )}
                       </h3>
                       {barber.is_vip && (
                         <span className="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-amber-900 bg-gradient-to-r from-amber-300 to-yellow-400 px-2 py-0.5 rounded-full shadow-2xs shrink-0">

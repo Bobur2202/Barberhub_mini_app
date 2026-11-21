@@ -580,6 +580,11 @@ def register_barber(barber: Barber):
     if idx is not None:
         BARBERS_DB[idx] = barber
     else:
+        # Yangi usta uchun platforma sozlamalaridagi sinov muddatini berish
+        settings = load_platform_settings_from_disk()
+        barber.trial_days_left = int(settings.get("trial_days", 14))
+        barber.is_trial = True
+        barber.subscription_status = "trial"
         BARBERS_DB.insert(0, barber)
     save_barbers_to_disk(BARBERS_DB)
     return barber
@@ -751,6 +756,14 @@ class PlatformSettingsUpdate(BaseModel):
     payment_card_holder: Optional[str] = None
     click_url: Optional[str] = None
     payme_url: Optional[str] = None
+    # Qo'shimcha boshqaruv sozlamalari
+    trial_days: Optional[int] = None
+    support_telegram: Optional[str] = None
+    announcement_active: Optional[bool] = None
+    announcement_text: Optional[str] = None
+    announcement_type: Optional[str] = None
+    maintenance_mode: Optional[bool] = None
+    maintenance_message: Optional[str] = None
 
 @app.get("/api/platform/settings")
 def get_platform_settings():
@@ -1025,13 +1038,22 @@ def manage_barber_subscription(barber_id: str, data: SubscriptionManagePayload):
     elif data.action == "suspend":
         barber.subscription_status = "expired"
         barber.trial_days_left = 0
+    elif data.action == "toggle_vip":
+        barber.is_vip = not getattr(barber, "is_vip", False)
+        if barber.is_vip:
+            barber.rating = 5.0
+            barber.custom_boosted_rating = 5.0
+    elif data.action == "toggle_verified":
+        barber.is_verified = not getattr(barber, "is_verified", False)
 
     save_barbers_to_disk(BARBERS_DB)
     return {
         "success": True,
         "barber_id": barber.id,
         "trial_days_left": barber.trial_days_left,
-        "subscription_status": barber.subscription_status
+        "subscription_status": barber.subscription_status,
+        "is_vip": barber.is_vip,
+        "is_verified": getattr(barber, "is_verified", False)
     }
 
 @app.post("/api/super-admin/broadcast")

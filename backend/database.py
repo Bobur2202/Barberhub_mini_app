@@ -57,6 +57,8 @@ class Barber(BaseModel):
     is_vip: bool = False
     vip_expires_at: Optional[str] = None
     custom_boosted_rating: Optional[float] = None
+    # Rasmiy tasdiqlangan usta nishoni (Verified badge ✅)
+    is_verified: bool = False
 
 class AppointmentCreate(BaseModel):
     barber_id: str
@@ -118,7 +120,15 @@ DEFAULT_PLATFORM_SETTINGS = {
     "payment_card": "8600 0000 0000 0000",
     "payment_card_holder": "BARBERHUB MA'MURIYATI",
     "click_url": "https://my.click.uz/",
-    "payme_url": "https://payme.uz/"
+    "payme_url": "https://payme.uz/",
+    # Super Admin boshqaruv parametrlari:
+    "trial_days": 14,
+    "support_telegram": "@barberhub_admin",
+    "announcement_active": False,
+    "announcement_text": "🎉 BarberHub platformasiga xush kelibsiz! Eng yaxshi ustalarga qulay navbat oling.",
+    "announcement_type": "promo", # promo | info | warning
+    "maintenance_mode": False,
+    "maintenance_message": "Tizimda profilaktika ishlari olib borilmoqda. Tez orada qaytamiz!"
 }
 
 def load_platform_settings_from_disk() -> dict:

@@ -2789,6 +2789,16 @@ export default function AdminDashboardScreen({
                   <p className="text-[10px] text-gray-500 mt-1">
                     Istalgan ilovadan (Click, Payme, Uzum, Bank ilovasi) o'tkazishingiz mumkin.
                   </p>
+                  {platformSettings.support_telegram && (
+                    <a
+                      href={`https://t.me/${platformSettings.support_telegram.replace('@', '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 block text-center py-2 px-3 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black text-[11px] rounded-xl transition-all shadow-xs"
+                    >
+                      Chekni adminga yuborish ({platformSettings.support_telegram}) &rarr;
+                    </a>
+                  )}
                 </div>
               )}
 

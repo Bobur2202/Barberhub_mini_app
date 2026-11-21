@@ -55,7 +55,14 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
     payment_card: "8600 0000 0000 0000",
     payment_card_holder: "BARBERHUB MA'MURIYATI",
     click_url: "https://my.click.uz/",
-    payme_url: "https://payme.uz/"
+    payme_url: "https://payme.uz/",
+    trial_days: 14,
+    support_telegram: "@barberhub_admin",
+    announcement_active: false,
+    announcement_text: "🎉 BarberHub platformasiga xush kelibsiz! Eng yaxshi ustalarga qulay navbat oling.",
+    announcement_type: "promo",
+    maintenance_mode: false,
+    maintenance_message: "Tizimda profilaktika ishlari olib borilmoqda. Tez orada qaytamiz!"
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsSaveMsg, setSettingsSaveMsg] = useState('');
@@ -243,7 +250,11 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
         ? "Sinov muddati +7 kunga uzaytirildi! 🟡"
         : action === 'activate_paid'
         ? "Akkaunt faol obunaga o'tkazildi! 🟢"
-        : "Akkaunt vaqtincha to'xtatildi! 🔴"
+        : action === 'suspend'
+        ? "Akkaunt vaqtincha to'xtatildi! 🔴"
+        : action === 'toggle_vip'
+        ? "Usta VIP maqomi yangilandi! ⭐"
+        : "Tasdiqlanganlik (Verified ✅) holati yangilandi!"
     );
     loadStats();
   };
@@ -521,79 +532,198 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
                 </span>
               </div>
 
-              <form onSubmit={handleSavePlatformSettings} className="space-y-3">
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                      Oylik Obuna narxi (UZS):
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      step="5000"
-                      value={platformSettings.subscription_price}
-                      onChange={(e) => setPlatformSettings(p => ({ ...p, subscription_price: Number(e.target.value) }))}
-                      className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                      VIP Boost narxi (UZS):
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      step="5000"
-                      value={platformSettings.vip_boost_price}
-                      onChange={(e) => setPlatformSettings(p => ({ ...p, vip_boost_price: Number(e.target.value) }))}
-                      className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
-                    />
-                  </div>
-                </div>
-
+              <form onSubmit={handleSavePlatformSettings} className="space-y-4">
+                {/* 1. Moliyaviy tariflar */}
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                    To'lov qabul qiluvchi karta raqami (P2P):
-                  </label>
-                  <input
-                    type="text"
-                    value={platformSettings.payment_card}
-                    onChange={(e) => setPlatformSettings(p => ({ ...p, payment_card: e.target.value }))}
-                    placeholder="8600 0000 0000 0000"
-                    className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-mono text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
-                  />
-                  <span className="text-[10px] text-gray-400 mt-0.5 block">
-                    Ustalar Click yoki Payme orqali to'lov qilganda shu kartaga o'tkazadi
-                  </span>
+                  <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-500 mb-2">
+                    💰 Moliyaviy Tariflar va Kassa (SaaS)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                        Oylik Obuna narxi (UZS):
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        step="5000"
+                        value={platformSettings.subscription_price}
+                        onChange={(e) => setPlatformSettings(p => ({ ...p, subscription_price: Number(e.target.value) }))}
+                        className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                        VIP Boost narxi (UZS):
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        step="5000"
+                        value={platformSettings.vip_boost_price}
+                        onChange={(e) => setPlatformSettings(p => ({ ...p, vip_boost_price: Number(e.target.value) }))}
+                        className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-2.5">
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                      To'lov qabul qiluvchi karta raqami (P2P):
+                    </label>
+                    <input
+                      type="text"
+                      value={platformSettings.payment_card}
+                      onChange={(e) => setPlatformSettings(p => ({ ...p, payment_card: e.target.value }))}
+                      placeholder="8600 0000 0000 0000"
+                      className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-mono text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 mt-2.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                        Click to'lov havolasi:
+                      </label>
+                      <input
+                        type="url"
+                        value={platformSettings.click_url}
+                        onChange={(e) => setPlatformSettings(p => ({ ...p, click_url: e.target.value }))}
+                        placeholder="https://my.click.uz/..."
+                        className="w-full bg-gray-50 rounded-xl px-3 py-2 text-[11px] text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                        Payme to'lov havolasi:
+                      </label>
+                      <input
+                        type="url"
+                        value={platformSettings.payme_url}
+                        onChange={(e) => setPlatformSettings(p => ({ ...p, payme_url: e.target.value }))}
+                        placeholder="https://payme.uz/..."
+                        className="w-full bg-gray-50 rounded-xl px-3 py-2 text-[11px] text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                      Click to'lov havolasi:
+                {/* 2. Platforma Siyosati va Qo'llab-quvvatlash */}
+                <div className="pt-2 border-t border-gray-100">
+                  <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-500 mb-2">
+                    ⚙️ Sinov Muddati va Aloqa
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                        Bepul Sinov Muddati (kun):
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="90"
+                        required
+                        value={platformSettings.trial_days || 14}
+                        onChange={(e) => setPlatformSettings(p => ({ ...p, trial_days: Number(e.target.value) }))}
+                        className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                      />
+                      <span className="text-[9px] text-gray-400 mt-0.5 block">Yangi ustalarga beriladi</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                        Admin Telegram username:
+                      </label>
+                      <input
+                        type="text"
+                        value={platformSettings.support_telegram || "@barberhub_admin"}
+                        onChange={(e) => setPlatformSettings(p => ({ ...p, support_telegram: e.target.value }))}
+                        placeholder="@username"
+                        className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                      />
+                      <span className="text-[9px] text-gray-400 mt-0.5 block">Aloqa va cheklar uchun</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. 📢 Umumiy E'lon / Aksiya Banneri */}
+                <div className="pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-500">
+                      📢 Katalog tepasidagi E'lon Banneri
+                    </h4>
+                    <label className="flex items-center space-x-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={platformSettings.announcement_active || false}
+                        onChange={(e) => setPlatformSettings(p => ({ ...p, announcement_active: e.target.checked }))}
+                        className="w-3.5 h-3.5 rounded text-brand-orange focus:ring-0"
+                      />
+                      <span className="text-[11px] font-bold text-brand-blue">
+                        {platformSettings.announcement_active ? "Ko'rsatilsin" : "O'chiq"}
+                      </span>
                     </label>
-                    <input
-                      type="url"
-                      value={platformSettings.click_url}
-                      onChange={(e) => setPlatformSettings(p => ({ ...p, click_url: e.target.value }))}
-                      placeholder="https://my.click.uz/..."
-                      className="w-full bg-gray-50 rounded-xl px-3 py-2 text-[11px] text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
-                    />
                   </div>
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                      Payme to'lov havolasi:
-                    </label>
-                    <input
-                      type="url"
-                      value={platformSettings.payme_url}
-                      onChange={(e) => setPlatformSettings(p => ({ ...p, payme_url: e.target.value }))}
-                      placeholder="https://payme.uz/..."
-                      className="w-full bg-gray-50 rounded-xl px-3 py-2 text-[11px] text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <select
+                        value={platformSettings.announcement_type || 'promo'}
+                        onChange={(e) => setPlatformSettings(p => ({ ...p, announcement_type: e.target.value }))}
+                        className="bg-gray-50 rounded-xl px-2.5 py-1.5 text-[11px] font-bold text-gray-800 border border-gray-200"
+                      >
+                        <option value="promo">🎁 Aksiya / Yangilik</option>
+                        <option value="info">ℹ️ Muhim ma'lumot</option>
+                        <option value="warning">⚠️ Ogohlantirish</option>
+                      </select>
+                      <span className="text-[10px] text-gray-400">Banner uslubi</span>
+                    </div>
+
+                    <textarea
+                      rows={2}
+                      value={platformSettings.announcement_text || ''}
+                      onChange={(e) => setPlatformSettings(p => ({ ...p, announcement_text: e.target.value }))}
+                      placeholder="Mijozlar katalogida ko'rinadigan umumiy e'lon matni..."
+                      className="w-full bg-gray-50 rounded-xl p-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
                     />
                   </div>
+                </div>
+
+                {/* 4. 🔒 Texnik Profilaktika Rejimi (Maintenance Mode) */}
+                <div className="pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-500 flex items-center space-x-1">
+                      <span>🔒 Profilaktika Rejimi</span>
+                      {platformSettings.maintenance_mode && (
+                        <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-full animate-pulse">
+                          FAOL
+                        </span>
+                      )}
+                    </h4>
+                    <label className="flex items-center space-x-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={platformSettings.maintenance_mode || false}
+                        onChange={(e) => setPlatformSettings(p => ({ ...p, maintenance_mode: e.target.checked }))}
+                        className="w-3.5 h-3.5 rounded text-red-600 focus:ring-0"
+                      />
+                      <span className={`text-[11px] font-bold ${platformSettings.maintenance_mode ? 'text-red-600' : 'text-gray-500'}`}>
+                        {platformSettings.maintenance_mode ? "Tizim yopiq" : "Tizim ochiq"}
+                      </span>
+                    </label>
+                  </div>
+
+                  {platformSettings.maintenance_mode && (
+                    <input
+                      type="text"
+                      value={platformSettings.maintenance_message || ''}
+                      onChange={(e) => setPlatformSettings(p => ({ ...p, maintenance_message: e.target.value }))}
+                      placeholder="Profilaktika xabari..."
+                      className="w-full bg-red-50 rounded-xl px-3 py-2 text-xs font-medium text-red-900 border border-red-200 focus:outline-none"
+                    />
+                  )}
                 </div>
 
                 {settingsSaveMsg && (
@@ -608,7 +738,7 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
                   className="w-full py-2.5 bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-black text-xs rounded-xl shadow-sm transition-all flex items-center justify-center space-x-1.5"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>{isSavingSettings ? "Saqlanmoqda..." : "Tariflar va To'lovni Saqlash ✓"}</span>
+                  <span>{isSavingSettings ? "Saqlanmoqda..." : "Barcha Sozlamalarni Saqlash ✓"}</span>
                 </button>
               </form>
             </div>
@@ -681,8 +811,18 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
                           {b.name?.charAt(0) || 'U'}
                         </div>
                         <div>
-                          <h4 className="font-extrabold text-sm text-brand-blue truncate">
-                            {b.name}
+                          <h4 className="font-extrabold text-sm text-brand-blue truncate flex items-center space-x-1.5">
+                            <span>{b.name}</span>
+                            {b.is_verified && (
+                              <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded-full font-black border border-blue-200" title="Rasmiy tasdiqlangan">
+                                ✓
+                              </span>
+                            )}
+                            {b.is_vip && (
+                              <span className="text-[9px] bg-amber-400 text-amber-950 font-black px-1.5 rounded-full" title="VIP Boost">
+                                ⭐ VIP
+                              </span>
+                            )}
                           </h4>
                           <span className="text-[11px] text-gray-500 block">
                             {b.phone || '+998 90 123 45 67'}
@@ -726,28 +866,55 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
                     </div>
 
                     {/* Action Buttons for Super Admin */}
-                    <div className="flex items-center space-x-2 pt-1 border-t border-gray-100">
-                      <button
-                        onClick={() => handleSubscriptionAction(b.id, 'extend_trial_7')}
-                        className="flex-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-[11px] font-bold transition-colors"
-                      >
-                        +7 kun berish
-                      </button>
+                    <div className="space-y-1.5 pt-1 border-t border-gray-100">
+                      <div className="flex items-center space-x-1.5">
+                        <button
+                          onClick={() => handleSubscriptionAction(b.id, 'extend_trial_7')}
+                          className="flex-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-[10px] font-bold transition-colors"
+                        >
+                          +7 kun
+                        </button>
 
-                      <button
-                        onClick={() => handleSubscriptionAction(b.id, 'activate_paid')}
-                        className="flex-1 py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-[11px] font-bold transition-colors"
-                      >
-                        🟢 Faollashtirish
-                      </button>
+                        <button
+                          onClick={() => handleSubscriptionAction(b.id, 'activate_paid')}
+                          className="flex-1 py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-[10px] font-bold transition-colors"
+                        >
+                          🟢 Obuna
+                        </button>
 
-                      <button
-                        onClick={() => handleSubscriptionAction(b.id, 'suspend')}
-                        className="py-1.5 px-2.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-[11px] font-bold transition-colors"
-                        title="Akkauntni to'xtatish"
-                      >
-                        🔴 To'xtatish
-                      </button>
+                        <button
+                          onClick={() => handleSubscriptionAction(b.id, 'suspend')}
+                          className="py-1.5 px-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-[10px] font-bold transition-colors"
+                          title="Akkauntni to'xtatish"
+                        >
+                          🔴 To'xtatish
+                        </button>
+                      </div>
+
+                      {/* VIP va Verified boshqaruvi */}
+                      <div className="flex items-center space-x-1.5">
+                        <button
+                          onClick={() => handleSubscriptionAction(b.id, 'toggle_vip')}
+                          className={`flex-1 py-1 px-2 rounded-xl text-[10px] font-bold border transition-all flex items-center justify-center space-x-1 ${
+                            b.is_vip
+                              ? 'bg-amber-400 text-amber-950 border-amber-500 shadow-2xs font-black'
+                              : 'bg-amber-50/80 hover:bg-amber-100 text-amber-900 border-amber-200'
+                          }`}
+                        >
+                          <span>{b.is_vip ? "⭐ VIP Faol" : "⭐ VIP berish"}</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleSubscriptionAction(b.id, 'toggle_verified')}
+                          className={`flex-1 py-1 px-2 rounded-xl text-[10px] font-bold border transition-all flex items-center justify-center space-x-1 ${
+                            b.is_verified
+                              ? 'bg-blue-600 text-white border-blue-700 shadow-2xs font-black'
+                              : 'bg-blue-50/80 hover:bg-blue-100 text-brand-blue border-blue-200'
+                          }`}
+                        >
+                          <span>{b.is_verified ? "✅ Tasdiqlangan" : "✅ Tasdiqlash"}</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

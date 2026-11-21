@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Scissors, Calendar, Lock, Crown, Sparkles } from 'lucide-react';
 import { translations } from './i18n/translations';
 import { mockBarbers } from './data/mockBarbers';
-import { getBarberByTelegramId, deleteBarberAccount, checkSuperAdminAccess } from './services/api';
+import { getBarberByTelegramId, deleteBarberAccount, checkSuperAdminAccess, getPlatformSettings } from './services/api';
 import HeaderBar from './components/HeaderBar';
 import SplashScreen from './pages/SplashScreen';
 import RoleSelectionScreen from './pages/RoleSelectionScreen';
@@ -60,6 +60,7 @@ export default function App() {
   const MASTER_SUPER_ADMIN_ID = "1973875822";
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
   const [currentTelegramUserId, setCurrentTelegramUserId] = useState(null);
+  const [platformSettings, setPlatformSettings] = useState(null);
 
   // Mijozning navbatlari va tarixi
   const [clientAppointments, setClientAppointments] = useState(() => {
@@ -228,6 +229,9 @@ export default function App() {
       }
     }
     restoreBarberByTelegramId();
+    getPlatformSettings().then((settings) => {
+      if (settings) setPlatformSettings(settings);
+    });
   }, []);
 
   // 1. Splash ekranda til tanlanganda (faqat 1-marta saqlanadi)
@@ -391,6 +395,51 @@ export default function App() {
     setClientAppointments(updated);
     localStorage.setItem('barberhub_client_appointments', JSON.stringify(updated));
   };
+
+  // 🔒 Texnik profilaktika tekshiruvi (Maintenance Mode)
+  if (platformSettings?.maintenance_mode && !isSuperAdminUser && currentStep !== 'super_admin') {
+    return (
+      <div className="min-h-screen bg-[#002f57] text-white flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto relative select-none">
+        <div
+          onClick={() => {
+            const pin = window.prompt("Super Admin parolini kiriting:");
+            if (pin === "7777" || pin === "1973875822") {
+              setIsSuperAdminUser(true);
+              setCurrentStep('super_admin');
+            }
+          }}
+          className="w-16 h-16 rounded-3xl bg-amber-400/20 text-amber-400 flex items-center justify-center mb-4 text-3xl shadow-lg border border-amber-400/30 cursor-pointer active:scale-95"
+          title="Tizim profilaktikada"
+        >
+          🛠️
+        </div>
+        <h2 className="text-xl font-black mb-2 text-amber-400">
+          Texnik Profilaktika
+        </h2>
+        <p className="text-sm text-blue-100 mb-6 leading-relaxed max-w-xs">
+          {platformSettings.maintenance_message || "Tizimda profilaktika ishlari olib borilmoqda. Tez orada qaytamiz!"}
+        </p>
+        <div className="space-y-3 w-full max-w-xs">
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full py-3 bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-extrabold rounded-2xl text-xs shadow-md active:scale-98 transition-all"
+          >
+            Qayta tekshirish 🔄
+          </button>
+          {platformSettings.support_telegram && (
+            <a
+              href={`https://t.me/${platformSettings.support_telegram.replace('@', '')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="block w-full py-2.5 bg-white/10 hover:bg-white/15 text-blue-100 font-bold rounded-2xl text-xs transition-all"
+            >
+              Adminga yozish ({platformSettings.support_telegram})
+            </a>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#E6EDF9] font-sans antialiased text-gray-900">

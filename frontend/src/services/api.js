@@ -515,7 +515,14 @@ export async function getPlatformSettings() {
     payment_card: "8600 0000 0000 0000",
     payment_card_holder: "BARBERHUB MA'MURIYATI",
     click_url: "https://my.click.uz/",
-    payme_url: "https://payme.uz/"
+    payme_url: "https://payme.uz/",
+    trial_days: 14,
+    support_telegram: "@barberhub_admin",
+    announcement_active: false,
+    announcement_text: "🎉 BarberHub platformasiga xush kelibsiz! Eng yaxshi ustalarga qulay navbat oling.",
+    announcement_type: "promo",
+    maintenance_mode: false,
+    maintenance_message: "Tizimda profilaktika ishlari olib borilmoqda. Tez orada qaytamiz!"
   };
 }
 
