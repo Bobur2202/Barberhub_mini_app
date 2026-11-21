@@ -459,20 +459,44 @@ export default function AdminDashboardScreen({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [newBookingNotification, setNewBookingNotification] = useState(null);
   const barberDisplayName = barberProfile.name || "Sardor Karimov";
 
-  // Backenddan buyurtmalarni yangilash
-  const loadAppointments = async () => {
-    setIsRefreshing(true);
-    const backendData = await getAdminAppointments();
-    if (backendData && backendData.length > 0) {
-      setAppointments(backendData);
+  // Backenddan buyurtmalarni sokin (silent) fonda avtomatik yangilash
+  const loadAppointments = async (silent = false) => {
+    if (!silent) setIsRefreshing(true);
+    try {
+      const backendData = await getAdminAppointments();
+      if (backendData && backendData.length > 0) {
+        setAppointments((prev) => {
+          if (silent && prev && prev.length > 0) {
+            const prevIds = new Set(prev.map((a) => a.id));
+            const brandNew = backendData.filter((a) => !prevIds.has(a.id) && a.status === 'pending');
+            if (brandNew.length > 0) {
+              hapticFeedback.notification('success');
+              setNewBookingNotification(brandNew[0]);
+              setTimeout(() => {
+                setNewBookingNotification(null);
+              }, 7000);
+            }
+          }
+          return backendData;
+        });
+      }
+    } catch (err) {
+      console.warn("Silent sync appointments error:", err);
+    } finally {
+      if (!silent) setIsRefreshing(false);
     }
-    setIsRefreshing(false);
   };
 
   useEffect(() => {
-    loadAppointments();
+    loadAppointments(false);
+    // Fonda har 15 soniyada yangilanish (ustaning qo'shimcha tugma bosishiga hojat yo'q)
+    const interval = setInterval(() => {
+      loadAppointments(true);
+    }, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   // Status changers
@@ -821,9 +845,15 @@ export default function AdminDashboardScreen({
             <h1 className="text-lg font-black text-brand-blue">
               {t.admin_title}
             </h1>
-            <p className="text-xs text-gray-500 font-medium">
-              {t.today_badge} — {appointments.length} ta navbat
-            </p>
+            <div className="flex items-center space-x-2 mt-0.5">
+              <p className="text-xs text-gray-500 font-medium">
+                {t.today_badge} — {appointments.length} ta navbat
+              </p>
+              <span className="inline-flex items-center space-x-1 text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>{lang === 'ru' ? 'Авто-синхронизация' : lang === 'en' ? 'Live sync' : 'Jonli efir'}</span>
+              </span>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -836,6 +866,31 @@ export default function AdminDashboardScreen({
             </button>
           </div>
         </div>
+
+        {/* 🔔 Yangi Navbat Bildirishnomasi (Real-time Pop Toast) */}
+        {newBookingNotification && (
+          <div className="mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-lg flex items-center justify-between animate-in slide-in-from-top-2 duration-300 border border-emerald-400/40">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <BellRing className="w-4 h-4 text-brand-orange animate-bounce" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase text-amber-300 block">
+                  {lang === 'ru' ? '🔔 Новая запись от клиента!' : lang === 'en' ? '🔔 New Booking Alert!' : '🔔 Yangi mijoz navbatga yozildi!'}
+                </span>
+                <span className="text-xs font-black text-white">
+                  {newBookingNotification.client_name || newBookingNotification.clientName} ({newBookingNotification.time_slot || newBookingNotification.time}) — {newBookingNotification.service_name || newBookingNotification.serviceName}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setNewBookingNotification(null)}
+              className="text-white/80 hover:text-white px-2 py-1 text-xs font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* ☕ Tezkor Tanaffus (Quick Break) Banner */}
         {quickBreakUntil && quickBreakUntil > Date.now() ? (

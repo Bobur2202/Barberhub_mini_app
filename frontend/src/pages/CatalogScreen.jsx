@@ -320,6 +320,37 @@ export default function CatalogScreen({
           </div>
         )}
 
+        {/* ✨ AI Turmak Story Highlight (Ixcham va zamonaviy qator) */}
+        {onOpenAiAdvisor && (
+          <div
+            onClick={() => {
+              hapticFeedback.impact('light');
+              onOpenAiAdvisor();
+            }}
+            className="mt-2.5 bg-gradient-to-r from-[#003865] via-[#004B86] to-[#0A66C2] text-white rounded-2xl px-3 py-2 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all shadow-sm border border-blue-400/20"
+          >
+            <div className="flex items-center space-x-2.5">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-0.5 shadow-sm shrink-0">
+                <div className="w-full h-full bg-[#003865] rounded-full flex items-center justify-center">
+                  <Sparkles className="w-3 h-3 text-brand-orange animate-pulse" />
+                </div>
+              </div>
+              <div className="flex items-center space-x-1.5 truncate">
+                <span className="text-xs font-black tracking-tight text-white">
+                  {lang === 'ru' ? 'AI Подбор прически' : lang === 'en' ? 'AI Hairstyle Match' : 'AI Turmak Tanlash'}
+                </span>
+                <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1.5 py-0.2 rounded-full uppercase shrink-0">
+                  AI
+                </span>
+              </div>
+            </div>
+            <div className="text-[11px] font-bold text-amber-300 flex items-center space-x-1 shrink-0 ml-2">
+              <span>{lang === 'ru' ? 'Тест' : lang === 'en' ? 'Try' : 'Sinash'}</span>
+              <span>&rarr;</span>
+            </div>
+          </div>
+        )}
+
         {/* Search Bar */}
         <div className="relative mt-3">
           <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />

@@ -23,6 +23,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
+import { downloadIcsFile } from '../utils/calendarHelper';
 import { submitBarberReview, cancelClientAppointment, rescheduleAppointment } from '../services/api';
 import { mockBarbers } from '../data/mockBarbers';
 import MapNavigationModal from '../components/MapNavigationModal';
@@ -425,32 +426,40 @@ export default function ClientAppointmentsScreen({
                           )}
                         </div>
 
-                        {/* Yandex Go & Google Calendar Quick Actions */}
-                        <div className="mt-2.5 pt-2 border-t border-black/10 flex items-center space-x-2">
+                        {/* Quick Navigation & Calendar Sync (Google & Apple) */}
+                        <div className="mt-2.5 pt-2 border-t border-black/10 flex items-center space-x-1.5">
                           <button
                             type="button"
                             onClick={() => setSelectedAptForMap(apt)}
-                            className={`flex-1 py-1.5 px-2 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-1 transition-all ${
-                              apt.queue_status === 'ready_call'
-                                ? 'bg-white text-emerald-800 hover:bg-emerald-50'
-                                : 'bg-white text-gray-800 border border-blue-100 hover:bg-blue-50'
-                            }`}
+                            className="flex-1 py-1.5 px-2 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-1 transition-all bg-white text-gray-800 border border-blue-100 hover:bg-blue-50 shadow-2xs"
                           >
-                            <span>{lang === 'ru' ? '🗺️ Маршрут / Такси' : lang === 'en' ? '🗺️ Route / Taxi' : '🗺️ Marshrut / Taksi'}</span>
+                            <span>{lang === 'ru' ? '🗺️ Маршрут' : lang === 'en' ? '🗺️ Route' : '🗺️ Marshrut'}</span>
                           </button>
 
                           <a
                             href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`BarberHub: ${barberName}`)}&details=${encodeURIComponent(`Xizmat: ${serviceName}`)}&location=${encodeURIComponent(apt.barber_address || "Barbershop")}`}
                             target="_blank"
                             rel="noreferrer"
-                            className={`flex-1 py-1.5 px-2 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-1 transition-all ${
-                              apt.queue_status === 'ready_call'
-                                ? 'bg-emerald-600/60 text-white hover:bg-emerald-700'
-                                : 'bg-white text-gray-800 border border-blue-100 hover:bg-blue-50'
-                            }`}
+                            className="flex-1 py-1.5 px-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-0.5 transition-all bg-white text-blue-800 border border-blue-100 hover:bg-blue-50 shadow-2xs"
+                            title="Google Calendar"
                           >
-                            <span>{lang === 'ru' ? '📅 В календарь' : lang === 'en' ? '📅 To Calendar' : '📅 Taqvimga'}</span>
+                            <span>📅 Google</span>
                           </a>
+
+                          <button
+                            type="button"
+                            onClick={() => downloadIcsFile({
+                              title: `BarberHub: ${barberName} (${serviceName})`,
+                              details: `BarberHub navbati. Narxi: ${(apt.price || 0).toLocaleString()} UZS`,
+                              location: apt.barber_address || "Toshkent",
+                              timeSlot: apt.time_slot || apt.time,
+                              dateStr: apt.date_str || apt.date
+                            })}
+                            className="flex-1 py-1.5 px-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-0.5 transition-all bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-2xs"
+                            title="Apple Calendar / .ics"
+                          >
+                            <span>🍎 Apple</span>
+                          </button>
                         </div>
                       </div>
                     )}
