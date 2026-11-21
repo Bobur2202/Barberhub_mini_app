@@ -807,71 +807,7 @@ export default function AdminDashboardScreen({
             </div>
           </div>
         </div>
-
-        {/* 4 Asosiy Bo'limlar Navigatsiyasi (Segmented Tabs) */}
-        <div className="grid grid-cols-4 gap-1.5 bg-white p-1.5 rounded-2xl shadow-sm border border-blue-50 mt-2.5">
-          <button
-            type="button"
-            onClick={() => setMainTab('appointments')}
-            className={`py-2 px-1 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center space-y-0.5 relative ${
-              mainTab === 'appointments'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-500 hover:text-brand-blue hover:bg-blue-50/50'
-            }`}
-          >
-            <div className="relative">
-              <Calendar className="w-4 h-4" />
-              {pendingCount > 0 && (
-                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
-                  {pendingCount}
-                </span>
-              )}
-            </div>
-            <span className="text-[10px] leading-none mt-0.5">Navbatlar</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMainTab('schedule')}
-            className={`py-2 px-1 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center space-y-0.5 ${
-              mainTab === 'schedule'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-500 hover:text-brand-blue hover:bg-blue-50/50'
-            }`}
-          >
-            <Clock className="w-4 h-4" />
-            <span className="text-[10px] leading-none mt-0.5">Grafik</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMainTab('services')}
-            className={`py-2 px-1 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center space-y-0.5 ${
-              mainTab === 'services'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-500 hover:text-brand-blue hover:bg-blue-50/50'
-            }`}
-          >
-            <Scissors className="w-4 h-4" />
-            <span className="text-[10px] leading-none mt-0.5">Xizmatlar</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMainTab('finance')}
-            className={`py-2 px-1 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center space-y-0.5 ${
-              mainTab === 'finance'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-500 hover:text-brand-blue hover:bg-blue-50/50'
-            }`}
-          >
-            <DollarSign className="w-4 h-4" />
-            <span className="text-[10px] leading-none mt-0.5">Kassa</span>
-          </button>
-        </div>
       </div>
-
-
 
       {/* 2. TAB CONTENT BO'LIMLARI */}
 
@@ -897,15 +833,6 @@ export default function AdminDashboardScreen({
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>{lang === 'ru' ? '+ С улицы' : lang === 'en' ? '+ Walk-in' : '+ Jonli mijoz'}</span>
-            </button>
-            <button
-              onClick={loadAppointments}
-              className={`p-2 rounded-xl bg-white shadow-sm text-brand-blue hover:bg-gray-100 ${
-                isRefreshing ? 'animate-spin' : ''
-              }`}
-              title={t.refresh_tooltip}
-            >
-              <RefreshCw className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -2370,43 +2297,6 @@ export default function AdminDashboardScreen({
               <Upload className="w-4 h-4 text-brand-orange" />
               <span>{t.choose_file || "Telefondan rasm tanlash (Galereya / Kamera)"}</span>
             </button>
-
-            {/* URL input */}
-            <div className="mb-3">
-              <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                {t.paste_image_url || "Yoki rasm URL havolasini kiriting"}:
-              </label>
-              <input
-                type="url"
-                value={tempSalonPhotoUrl.startsWith('data:') ? '' : tempSalonPhotoUrl}
-                onChange={(e) => setTempSalonPhotoUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="w-full bg-gray-50 rounded-xl p-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
-              />
-            </div>
-
-            {/* Quick Presets */}
-            <div className="mb-4">
-              <span className="text-[11px] font-semibold text-gray-500 block mb-1.5">
-                Yoki tayyor go'zal salon rasmlaridan tanlang:
-              </span>
-              <div className="grid grid-cols-3 gap-2">
-                {SALON_PRESETS.map((pUrl, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => setTempSalonPhotoUrl(pUrl)}
-                    className="relative aspect-square rounded-xl overflow-hidden cursor-pointer ring-1 ring-gray-200 hover:ring-brand-orange transition-all group"
-                  >
-                    <img src={pUrl} alt="Preset" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                    {tempSalonPhotoUrl === pUrl && (
-                      <div className="absolute inset-0 bg-brand-orange/40 flex items-center justify-center">
-                        <Check className="w-5 h-5 text-brand-blue stroke-[3]" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
 
             <div className="flex space-x-2 pt-2 border-t border-gray-100">
               <button

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ArrowLeft, User, Phone, CheckCircle, BellRing, Send, Loader2, Calendar, AlertCircle, Check } from 'lucide-react';
 import { createAppointment } from '../services/api';
 import { getTranslatedServiceName } from '../data/serviceTranslations';
-import { downloadIcsFile, getGoogleCalendarUrl } from '../utils/calendarHelper';
 import { hapticFeedback } from '../utils/haptics';
 
 export default function ConfirmScreen({
@@ -354,64 +353,6 @@ export default function ConfirmScreen({
             <p className="text-xs text-gray-500 mt-2 leading-relaxed">
               {t.booking_success_desc}
             </p>
-
-            {/* Simulated Telegram Message Preview */}
-            <div className="mt-4 p-3.5 bg-gray-50 rounded-2xl text-left border border-gray-200 text-xs">
-              <div className="flex items-center space-x-1.5 text-brand-blue font-bold mb-1">
-                <BellRing className="w-3.5 h-3.5 text-brand-orange" />
-                <span>Backend orqali ustaga ketgan bildirishnoma:</span>
-              </div>
-              <p className="text-gray-700 leading-relaxed">
-                👤 <b>{clientName}</b> ({phoneNumber})<br />
-                ✂️ {service.name}<br />
-                📅 {dateTime.day.dayName} {dateTime.day.dateNum}-Noyabr, {dateTime.time}<br />
-                💰 {service.price.toLocaleString()} UZS
-              </p>
-              <div className="flex space-x-2 mt-2 pt-2 border-t border-gray-200">
-                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold">
-                  ✅ Qabul qilish
-                </span>
-                <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-[10px] font-bold">
-                  ❌ Bekor qilish
-                </span>
-              </div>
-            </div>
-
-            {/* 📅 Taqvimga qo'shish tugmalari */}
-            <div className="mt-3.5 p-3 bg-blue-50/70 rounded-2xl border border-blue-100/70 text-left">
-              <span className="text-[10px] font-black uppercase text-brand-blue tracking-wider block mb-2">
-                {t.save_to_calendar || "📅 Telefoningiz taqvimiga saqlang:"}
-              </span>
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={() => downloadIcsFile({
-                    title: `BarberHub: ${barber.name} (${service.name})`,
-                    details: `BarberHub navbati: ${clientName}. Narxi: ${totalPrice.toLocaleString()} UZS`,
-                    location: barber.address || "Toshkent",
-                    timeSlot: dateTime.time,
-                    dateStr: dateTime.day?.full
-                  })}
-                  className="flex-1 py-2 px-1 rounded-xl bg-white text-gray-800 text-[11px] font-extrabold shadow-2xs border border-gray-200 hover:bg-gray-50 flex items-center justify-center space-x-1"
-                >
-                  <span>{t.apple_calendar || "🍎 Apple / .ics"}</span>
-                </button>
-                <a
-                  href={getGoogleCalendarUrl({
-                    title: `BarberHub: ${barber.name} (${service.name})`,
-                    details: `BarberHub navbati: ${clientName}. Narxi: ${totalPrice.toLocaleString()} UZS`,
-                    location: barber.address || "Toshkent",
-                    timeSlot: dateTime.time,
-                    dateStr: dateTime.day?.full
-                  })}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 py-2 px-1 rounded-xl bg-white text-brand-blue text-[11px] font-extrabold shadow-2xs border border-blue-200 hover:bg-blue-50 flex items-center justify-center space-x-1"
-                >
-                  <span>{t.google_calendar || "Google Taqvim"}</span>
-                </a>
-              </div>
-            </div>
 
             <div className="space-y-2 mt-5">
               <button
