@@ -40,9 +40,19 @@ import {
   UserCheck,
   UserPlus,
   Send,
-  PhoneCall
+  PhoneCall,
+  Rocket
 } from 'lucide-react';
-import { getAdminAppointments, updateAppointmentStatus, updateBarberSchedule, sendAppointmentReminder, callClientToChair } from '../services/api';
+import { 
+  getAdminAppointments, 
+  updateAppointmentStatus, 
+  updateBarberSchedule, 
+  sendAppointmentReminder, 
+  callClientToChair,
+  cancelBarberSubscription,
+  activateVipBoost,
+  getPlatformSettings
+} from '../services/api';
 import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
 import { mockBarbers } from '../data/mockBarbers';
 import { hapticFeedback } from '../utils/haptics';
@@ -455,6 +465,23 @@ export default function AdminDashboardScreen({
   const [inputCardNumber, setInputCardNumber] = useState('');
   const [inputCardExpiry, setInputCardExpiry] = useState('');
 
+  // Super Admin belgilagan dinamik narxlar va to'lov havolalari
+  const [platformSettings, setPlatformSettings] = useState({
+    subscription_price: 50000,
+    vip_boost_price: 40000,
+    payment_card: "8600 0000 0000 0000",
+    click_url: "https://my.click.uz/",
+    payme_url: "https://payme.uz/"
+  });
+
+  useEffect(() => {
+    async function loadSettings() {
+      const data = await getPlatformSettings();
+      if (data) setPlatformSettings(data);
+    }
+    loadSettings();
+  }, []);
+
   // To'lov usullari modali
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
@@ -719,17 +746,23 @@ export default function AdminDashboardScreen({
     setShowServiceModal(false);
   };
 
-  // 5. Kartani saqlash
+  // 5. Kartani saqlash (Uzcard, Humo, Visa, Mastercard)
   const handleSaveCard = (e) => {
     e.preventDefault();
-    if (!inputCardNumber || inputCardNumber.length < 16) {
+    const cleanNum = inputCardNumber.replace(/\s+/g, '');
+    if (!cleanNum || cleanNum.length < 16) {
       alert("Iltimos, 16 xonali karta raqamini to'liq kiriting!");
       return;
     }
-    const last4 = inputCardNumber.slice(-4);
-    const cardType = inputCardNumber.startsWith('9860') ? 'Humo' : 'Uzcard';
+    const last4 = cleanNum.slice(-4);
+    let cardType = 'Bank Card';
+    if (cleanNum.startsWith('8600')) cardType = 'Uzcard';
+    else if (cleanNum.startsWith('9860')) cardType = 'Humo';
+    else if (cleanNum.startsWith('4')) cardType = 'Visa';
+    else if (cleanNum.startsWith('5')) cardType = 'Mastercard';
+
     const newCard = {
-      number: `${inputCardNumber.slice(0, 4)} •••• •••• ${last4}`,
+      number: `${cleanNum.slice(0, 4)} •••• •••• ${last4}`,
       expiry: inputCardExpiry || '12/28',
       type: cardType
     };
@@ -738,13 +771,51 @@ export default function AdminDashboardScreen({
     setShowCardModal(false);
     setInputCardNumber('');
     setInputCardExpiry('');
+    hapticFeedback.notification('success');
+    showScheduleToast("Kartangiz muvaffaqiyatli ulandi! Avto-yechish faol ✓");
   };
 
-  // 6. Kartani o'chirish
+  // 6. Kartani o'chirish / Obunani bekor qilish
   const handleRemoveCard = () => {
     if (window.confirm("Rostdan ham kartani o'chirmoqchimisiz? Avtomatik to'lov to'xtatiladi.")) {
       setLinkedCard(null);
       localStorage.removeItem('barberhub_linked_card');
+      showScheduleToast("Karta o'chirildi.");
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (window.confirm("Rostdan ham oylik avtomatik obunani bekor qilmoqchimisiz? Keyingi oydan pul yechilmaydi.")) {
+      hapticFeedback.impact('medium');
+      await cancelBarberSubscription(barberProfile.id);
+      setLinkedCard(null);
+      localStorage.removeItem('barberhub_linked_card');
+      setBarberProfile(prev => ({ ...prev, subscription_status: 'cancelled' }));
+      showScheduleToast("Obuna bekor qilindi. Avto-yechish to'xtatildi.");
+    }
+  };
+
+  // 7. VIP Boost (Sun'iy reyting 5.0 va Katalog tepasiga chiqish)
+  const handleActivateVip = async () => {
+    const price = (platformSettings.vip_boost_price || 40000).toLocaleString();
+    if (window.confirm(`TOP-1 ga chiqish & Reyting 5.0 ⭐ (VIP Boost) xizmatini faollashtirasizmi? Narxi: ${price} UZS/oy`)) {
+      hapticFeedback.impact('heavy');
+      const res = await activateVipBoost(barberProfile.id);
+      if (res?.success) {
+        hapticFeedback.notification('success');
+        setBarberProfile(prev => ({
+          ...prev,
+          is_vip: true,
+          rating: 5.0,
+          custom_boosted_rating: 5.0
+        }));
+        const idx = mockBarbers.findIndex(b => b.id === barberProfile.id);
+        if (idx !== -1) {
+          mockBarbers[idx].is_vip = true;
+          mockBarbers[idx].rating = 5.0;
+        }
+        showScheduleToast("🚀 VIP Boost faollashtirildi! Profilingiz katalog tepasida 1-o'rinda va 5.0 reyting bilan ko'rinadi!");
+      }
     }
   };
 
@@ -1796,7 +1867,7 @@ export default function AdminDashboardScreen({
               <div>
                 <span className="text-xs text-blue-200 block text-[10px]">Oylik to'lov:</span>
                 <span className="text-sm font-black text-brand-orange">
-                  50,000 UZS / {t.per_month}
+                  {(platformSettings.subscription_price || 50000).toLocaleString()} UZS / {t.per_month}
                 </span>
               </div>
 
@@ -1855,9 +1926,16 @@ export default function AdminDashboardScreen({
                   </button>
                   <button
                     onClick={handleRemoveCard}
-                    className="px-3 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all"
+                    className="px-3 py-2 text-xs font-bold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
                   >
                     {t.btn_remove_card}
+                  </button>
+                  <button
+                    onClick={handleCancelSubscription}
+                    className="px-3 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-all"
+                    title="Oylik obunani bekor qilish"
+                  >
+                    Obunani bekor qilish
                   </button>
                 </div>
               </div>
@@ -1867,14 +1945,59 @@ export default function AdminDashboardScreen({
                 <p className="text-xs text-gray-500 max-w-xs mx-auto mb-3">
                   {t.no_card_linked}
                 </p>
-                <button
-                  onClick={() => setShowCardModal(true)}
-                  className="px-4 py-2 bg-brand-blue text-white rounded-xl text-xs font-bold hover:bg-brand-blue-dark transition-all"
-                >
-                  {t.btn_link_card}
-                </button>
+                <div className="flex justify-center space-x-2">
+                  <button
+                    onClick={() => setShowCardModal(true)}
+                    className="px-4 py-2 bg-brand-blue text-white rounded-xl text-xs font-bold hover:bg-brand-blue-dark transition-all"
+                  >
+                    {t.btn_link_card}
+                  </button>
+                </div>
               </div>
             )}
+          </div>
+
+          {/* 7. 🚀 TOP-1 Reklama & Reyting 5.0 (VIP Boost) */}
+          <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-yellow-500/15 rounded-3xl p-5 shadow-sm border border-amber-300 relative overflow-hidden">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">🚀</span>
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-amber-900 flex items-center space-x-1">
+                    <span>TOP-1 Reklama & Reyting 5.0</span>
+                    <span className="bg-amber-400 text-amber-950 text-[9px] px-1.5 py-0.2 rounded-full font-black">VIP</span>
+                  </h3>
+                  <span className="text-[10px] text-amber-800 font-medium">Katalogda eng yuqorida turish va to'liq 5.0 reyting</span>
+                </div>
+              </div>
+              {barberProfile.is_vip ? (
+                <span className="text-[10px] bg-emerald-600 text-white font-black px-2 py-0.5 rounded-full shadow-xs">
+                  FAOL ⭐
+                </span>
+              ) : (
+                <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                  {(platformSettings.vip_boost_price || 40000).toLocaleString()} UZS/oy
+                </span>
+              )}
+            </div>
+
+            <p className="text-[11px] text-amber-950/80 leading-relaxed mb-3">
+              {barberProfile.is_vip
+                ? "Sizning profilingiz hozir barcha mijozlarga eng birinchi bo'lib TOP-1 qatorda va oltin toj/VIP belgisi bilan 5.0 reytingda ko'rinmoqda."
+                : "VIP xizmatini yoqsangiz, profilingiz katalogda boshqa barcha ustalardan yuqorida (1-o'rinda) va kafolatlangan 5.0 yulduzli reyting bilan ko'rsatiladi. Bu mijozlar oqimini 3-5 barobarga oshiradi!"}
+            </p>
+
+            <button
+              onClick={handleActivateVip}
+              disabled={barberProfile.is_vip}
+              className={`w-full py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-2 shadow-md ${
+                barberProfile.is_vip
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default'
+                  : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-gray-950 active:scale-98'
+              }`}
+            >
+              <span>{barberProfile.is_vip ? "VIP Boost Faol (Katalogda 1-o'rinda)" : `VIP Boostni faollashtirish (${(platformSettings.vip_boost_price || 40000).toLocaleString()} UZS)`}</span>
+            </button>
           </div>
 
           {/* 7. Akkaunt va Xavfsizlik (Cloud Persistence, Logout, Delete Account) */}
@@ -2520,21 +2643,37 @@ export default function AdminDashboardScreen({
         </div>
       )}
 
-      {/* MODAL 2: Bank kartasini ulash (Uzcard / Humo) */}
+      {/* MODAL 2: Bank kartasini ulash (Uzcard / Humo / Visa / Mastercard) */}
       {showCardModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl">
             <h3 className="text-base font-extrabold text-brand-blue mb-1">
-              {t.card_modal_title}
+              {t.card_modal_title || "Bank kartasini ulash"}
             </h3>
-            <p className="text-xs text-gray-500 mb-4">
-              {t.auto_debit_desc}
+            <p className="text-xs text-gray-500 mb-2">
+              {t.auto_debit_desc || "Oylik obunani avtomatik to'lash uchun kartangizni ulang."}
             </p>
+
+            {/* Qo'llab-quvvatlanadigan kartalar */}
+            <div className="flex items-center space-x-1.5 mb-3.5 flex-wrap gap-y-1">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">
+                Uzcard (8600)
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-orange-100 text-orange-800 border border-orange-200">
+                Humo (9860)
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 border border-indigo-200">
+                Visa (4...)
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 border border-rose-200">
+                Mastercard (5...)
+              </span>
+            </div>
 
             <form onSubmit={handleSaveCard} className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  {t.card_number_label} *
+                  {t.card_number_label} (16 ta raqam) *
                 </label>
                 <input
                   type="text"
@@ -2542,7 +2681,7 @@ export default function AdminDashboardScreen({
                   maxLength={16}
                   value={inputCardNumber}
                   onChange={(e) => setInputCardNumber(e.target.value.replace(/\D/g, ''))}
-                  placeholder="8600 0000 0000 0000"
+                  placeholder="8600... / 9860... / 4... / 5..."
                   className="w-full bg-gray-50 rounded-xl p-2.5 text-xs font-mono tracking-wider text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
                 />
               </div>
@@ -2587,7 +2726,7 @@ export default function AdminDashboardScreen({
         </div>
       )}
 
-      {/* MODAL 3: Kengaytirilgan To'lov tizimlari (Payme, Click, Uzum, Paynet, Stars) */}
+      {/* MODAL 3: Kengaytirilgan To'lov tizimlari (Click, Payme, Uzum, Bank kartasi) */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[85vh] flex flex-col">
@@ -2603,15 +2742,18 @@ export default function AdminDashboardScreen({
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 my-3">
-              Obunani faollashtirish uchun o'zingizga qulay to'lov usulini tanlang:
-            </p>
+            <div className="my-2 p-2.5 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-center justify-between">
+              <span className="text-xs text-brand-blue font-semibold">Oylik obuna narxi:</span>
+              <span className="text-sm font-black text-brand-orange">
+                {(platformSettings.subscription_price || 50000).toLocaleString()} UZS
+              </span>
+            </div>
 
-            <div className="space-y-2 overflow-y-auto flex-1">
+            <div className="space-y-2 overflow-y-auto flex-1 mt-1">
               {linkedCard && (
                 <button
                   onClick={() => {
-                    alert(`Avtomatik to'lov muvaffaqiyatli amalga oshirildi! ${linkedCard.number} dan 50,000 UZS yechildi.`);
+                    alert(`Avtomatik to'lov muvaffaqiyatli amalga oshirildi! ${linkedCard.number} dan ${(platformSettings.subscription_price || 50000).toLocaleString()} UZS yechildi.`);
                     setShowPaymentModal(false);
                   }}
                   className="w-full p-3 rounded-2xl bg-gray-900 text-white flex items-center justify-between text-xs font-bold shadow-sm"
@@ -2626,18 +2768,46 @@ export default function AdminDashboardScreen({
                 </button>
               )}
 
+              {/* To'g'ridan-to'g'ri karta o'tkazmasi (P2P) */}
+              {platformSettings.payment_card && (
+                <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] font-bold text-amber-900">Platforma kartasiga o'tkazish:</span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard?.writeText(platformSettings.payment_card.replace(/\s+/g, ''));
+                        alert(`Karta raqami nusxalandi: ${platformSettings.payment_card}`);
+                      }}
+                      className="text-[10px] bg-amber-200 hover:bg-amber-300 text-amber-900 font-extrabold px-2 py-0.5 rounded-full transition-all"
+                    >
+                      Nusxalash 📋
+                    </button>
+                  </div>
+                  <div className="font-mono text-xs font-bold text-gray-900 tracking-wider">
+                    {platformSettings.payment_card}
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Istalgan ilovadan (Click, Payme, Uzum, Bank ilovasi) o'tkazishingiz mumkin.
+                  </p>
+                </div>
+              )}
+
               <button
                 onClick={() => {
-                  alert("Uzum Bank to'lov sahifasiga yo'naltirilmoqda...");
+                  if (platformSettings.click_url) {
+                    window.open(platformSettings.click_url, '_blank');
+                  } else {
+                    alert("Click to'lov sahifasiga yo'naltirilmoqda...");
+                  }
                   setShowPaymentModal(false);
                 }}
-                className="w-full p-3 rounded-2xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 flex items-center justify-between text-xs font-bold transition-all"
+                className="w-full p-3 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 flex items-center justify-between text-xs font-bold transition-all"
               >
                 <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px] font-black">U</span>
-                  <span>{t.pay_with_uzum}</span>
+                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">C</span>
+                  <span>{t.pay_with_click}</span>
                 </div>
-                <span className="text-[11px] text-purple-700 font-extrabold">50,000 UZS</span>
+                <span className="text-[11px] text-blue-700 font-extrabold">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
               </button>
 
               <button
@@ -2651,49 +2821,21 @@ export default function AdminDashboardScreen({
                   <span className="w-5 h-5 rounded-full bg-teal-500 text-white flex items-center justify-center text-[10px] font-black">P</span>
                   <span>{t.pay_with_payme}</span>
                 </div>
-                <span className="text-[11px] text-teal-700 font-extrabold">50,000 UZS</span>
+                <span className="text-[11px] text-teal-700 font-extrabold">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
               </button>
 
               <button
                 onClick={() => {
-                  alert("Click Up to'lov sahifasiga yo'naltirilmoqda...");
+                  alert("Uzum Bank to'lov sahifasiga yo'naltirilmoqda...");
                   setShowPaymentModal(false);
                 }}
-                className="w-full p-3 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 flex items-center justify-between text-xs font-bold transition-all"
+                className="w-full p-3 rounded-2xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 flex items-center justify-between text-xs font-bold transition-all"
               >
                 <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">C</span>
-                  <span>{t.pay_with_click}</span>
+                  <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px] font-black">U</span>
+                  <span>{t.pay_with_uzum}</span>
                 </div>
-                <span className="text-[11px] text-blue-700 font-extrabold">50,000 UZS</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  alert("Paynet to'loviga yo'naltirilmoqda...");
-                  setShowPaymentModal(false);
-                }}
-                className="w-full p-3 rounded-2xl bg-green-50 hover:bg-green-100 border border-green-200 text-green-900 flex items-center justify-between text-xs font-bold transition-all"
-              >
-                <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px] font-black">P</span>
-                  <span>{t.pay_with_paynet}</span>
-                </div>
-                <span className="text-[11px] text-green-700 font-extrabold">50,000 UZS</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  alert("Telegram Stars orqali to'lov oynasi ochilmoqda... (⭐️ 250 Stars)");
-                  setShowPaymentModal(false);
-                }}
-                className="w-full p-3 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 flex items-center justify-between text-xs font-bold transition-all"
-              >
-                <div className="flex items-center space-x-2">
-                  <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                  <span>{t.pay_with_stars}</span>
-                </div>
-                <span className="text-[11px] text-amber-700 font-extrabold">⭐️ 250</span>
+                <span className="text-[11px] text-purple-700 font-extrabold">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
               </button>
             </div>
           </div>

@@ -456,6 +456,90 @@ export async function deleteSuperAdminAccount({ telegramId, adminId }) {
 }
 
 /**
+ * 14f. Ustaning oylik avtomatik obunasini bekor qilish
+ */
+export async function cancelBarberSubscription(barberId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/barbers/${barberId}/cancel-subscription`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Obunani bekor qilishda xatolik:', error.message);
+  }
+  return null;
+}
+
+/**
+ * 14g. VIP Boost: Reytingni sun'iy ko'tarish va katalog tepasiga chiqish
+ */
+export async function activateVipBoost(barberId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/barbers/${barberId}/vip-boost`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] VIP Boost faollashtirishda xatolik:', error.message);
+  }
+  return null;
+}
+
+/**
+ * 14h. Platforma tariflari va to'lov sozlamalari
+ */
+export async function getPlatformSettings() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/platform/settings`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Platform sozlamalari xatosi:', error.message);
+  }
+  return {
+    subscription_price: 50000,
+    vip_boost_price: 40000,
+    payment_card: "8600 0000 0000 0000",
+    payment_card_holder: "BARBERHUB MA'MURIYATI",
+    click_url: "https://my.click.uz/",
+    payme_url: "https://payme.uz/"
+  };
+}
+
+/**
+ * 14i. Super Admin: Platforma tariflarini yangilash
+ */
+export async function updatePlatformSettings(settings, telegramId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/super-admin/platform-settings?telegram_id=${encodeURIComponent(telegramId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Platform sozlamalarini yangilash xatosi:', error.message);
+  }
+  return null;
+}
+
+/**
  * 15. Super Admin: Ustaning obunasi va sinov muddatini boshqarish
  */
 export async function manageBarberSubscription(barberId, action) {

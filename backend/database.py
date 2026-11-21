@@ -53,6 +53,10 @@ class Barber(BaseModel):
         "required_visits": 5,
         "reward": "5-tashrifda 50% chegirma yoki bepul soqol/maska"
     }
+    # VIP Boost (Katalog tepasida turish va sun'iy reyting ko'tarish)
+    is_vip: bool = False
+    vip_expires_at: Optional[str] = None
+    custom_boosted_rating: Optional[float] = None
 
 class AppointmentCreate(BaseModel):
     barber_id: str
@@ -103,9 +107,38 @@ os.makedirs(DATA_DIR, exist_ok=True)
 BARBERS_FILE = os.path.join(DATA_DIR, "barbers.json")
 APPOINTMENTS_FILE = os.path.join(DATA_DIR, "appointments.json")
 SUPER_ADMINS_FILE = os.path.join(DATA_DIR, "super_admins.json")
+PLATFORM_SETTINGS_FILE = os.path.join(DATA_DIR, "platform_settings.json")
 
 # Master Super Admin Telegram ID (Platforma egasining doimiy ID raqami)
 MASTER_SUPER_ADMIN_ID = "1973875822"
+
+DEFAULT_PLATFORM_SETTINGS = {
+    "subscription_price": 50000,
+    "vip_boost_price": 40000,
+    "payment_card": "8600 0000 0000 0000",
+    "payment_card_holder": "BARBERHUB MA'MURIYATI",
+    "click_url": "https://my.click.uz/",
+    "payme_url": "https://payme.uz/"
+}
+
+def load_platform_settings_from_disk() -> dict:
+    """Super Admin belgilagan tariflar va to'lov sozlamalarini yuklash"""
+    if os.path.exists(PLATFORM_SETTINGS_FILE):
+        try:
+            with open(PLATFORM_SETTINGS_FILE, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+                return {**DEFAULT_PLATFORM_SETTINGS, **saved}
+        except Exception as e:
+            print(f"[DB] Platform settings load error: {e}")
+    return DEFAULT_PLATFORM_SETTINGS.copy()
+
+def save_platform_settings_to_disk(settings: dict):
+    """Tariflar va to'lov sozlamalarini saqlash"""
+    try:
+        with open(PLATFORM_SETTINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump(settings, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[DB] Platform settings save error: {e}")
 
 def load_super_admins_from_disk() -> List[dict]:
     """Super adminlar ro'yxatini yuklash (Bosh admin doimo birinchi bo'lib saqlanadi)"""

@@ -24,6 +24,8 @@ from database import (
     save_appointments_to_disk,
     load_super_admins_from_disk,
     save_super_admins_to_disk,
+    load_platform_settings_from_disk,
+    save_platform_settings_to_disk,
     MASTER_SUPER_ADMIN_ID
 )
 from bot import (
@@ -204,13 +206,18 @@ def home():
 def get_barbers(query: Optional[str] = None):
     """
     Katalog uchun barcha sartaroshlarni qaytarish.
+    VIP Boost (reyting ko'tarilgan) ustalar ro'yxat tepasida birinchi bo'lib chiqadi.
     """
+    all_b = sorted(
+        BARBERS_DB, 
+        key=lambda b: (not getattr(b, 'is_vip', False), -float(getattr(b, 'rating', 5.0)))
+    )
     if not query:
-        return BARBERS_DB
+        return all_b
     
     q = query.lower()
     return [
-        b for b in BARBERS_DB 
+        b for b in all_b 
         if q in b.name.lower() or q in b.role.lower()
     ]
 
@@ -644,14 +651,24 @@ class SubscriptionRequest(BaseModel):
 
 @app.post("/api/barbers/{barber_id}/card")
 def link_barber_card(barber_id: str, data: CardLinkRequest):
-    """Ustaning bank kartasini (Uzcard / Humo) avtomatik to'lov uchun ulash"""
+    """Ustaning bank kartasini (Uzcard / Humo / Visa / Mastercard) avtomatik to'lov uchun ulash"""
     barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
     if not barber:
         raise HTTPException(status_code=404, detail="Usta topilmadi")
     
     clean_num = data.card_number.replace(" ", "")
     masked_number = f"{clean_num[:4]} **** **** {clean_num[-4:]}"
-    card_type = "Uzcard" if clean_num.startswith("8600") else ("Humo" if clean_num.startswith("9860") else "Bank Card")
+    
+    if clean_num.startswith("8600"):
+        card_type = "Uzcard"
+    elif clean_num.startswith("9860"):
+        card_type = "Humo"
+    elif clean_num.startswith("4"):
+        card_type = "Visa"
+    elif clean_num.startswith("5"):
+        card_type = "Mastercard"
+    else:
+        card_type = "Bank Card"
 
     barber.linked_card = {
         "number": masked_number,
@@ -673,6 +690,41 @@ def unlink_barber_card(barber_id: str):
     save_barbers_to_disk(BARBERS_DB)
     return {"success": True, "message": "Karta muvaffaqiyatli o'chirildi"}
 
+@app.post("/api/barbers/{barber_id}/cancel-subscription")
+def cancel_barber_subscription(barber_id: str):
+    """Ustaning oylik avtomatik obunasini bekor qilish"""
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    barber.subscription_status = "cancelled"
+    save_barbers_to_disk(BARBERS_DB)
+    return {
+        "success": True, 
+        "message": "Obuna bekor qilindi. Avtomatik pul yechish to'xtatildi.", 
+        "status": "cancelled"
+    }
+
+@app.post("/api/barbers/{barber_id}/vip-boost")
+def activate_vip_boost(barber_id: str):
+    """
+    VIP Boost: Ustaning reytingini sun'iy 5.0 ga ko'tarish va uni katalog tepasida
+    birinchi o'ringa chiqarish (30 kunga)
+    """
+    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
+    if not barber:
+        raise HTTPException(status_code=404, detail="Usta topilmadi")
+    barber.is_vip = True
+    barber.rating = 5.0
+    barber.custom_boosted_rating = 5.0
+    barber.vip_expires_at = datetime.now().isoformat()
+    save_barbers_to_disk(BARBERS_DB)
+    return {
+        "success": True, 
+        "message": "Tabriklaymiz! VIP Boost muvaffaqiyatli faollashtirildi. Profilingiz katalog tepasida 1-o'rinda va 5.0 reyting bilan ko'rinadi!",
+        "is_vip": True,
+        "rating": 5.0
+    }
+
 @app.post("/api/barbers/{barber_id}/subscription")
 def pay_subscription(barber_id: str, data: SubscriptionRequest):
     """Tarif to'lovini amalga oshirish (Click, Payme, Uzum, Paynet, Stars, Auto-Debit)"""
@@ -689,6 +741,33 @@ def pay_subscription(barber_id: str, data: SubscriptionRequest):
         "message": f"{data.payment_method.capitalize()} orqali to'lov qabul qilindi. Obuna faollashtirildi!",
         "status": barber.subscription_status
     }
+
+# ================= PLATFORMA TARIF VA SOZLAMALARI (SUPER ADMIN) =================
+
+class PlatformSettingsUpdate(BaseModel):
+    subscription_price: Optional[int] = None
+    vip_boost_price: Optional[int] = None
+    payment_card: Optional[str] = None
+    payment_card_holder: Optional[str] = None
+    click_url: Optional[str] = None
+    payme_url: Optional[str] = None
+
+@app.get("/api/platform/settings")
+def get_platform_settings():
+    """Joriy obuna va VIP narxlarini olish (Usta va Super Admin uchun)"""
+    return load_platform_settings_from_disk()
+
+@app.put("/api/super-admin/platform-settings")
+def update_platform_settings(data: PlatformSettingsUpdate, telegram_id: Optional[str] = None):
+    """Super Admin tomonidan obuna va VIP narxlarini, to'lov kartasini boshqarish"""
+    verify_super_admin_access(telegram_id)
+    current = load_platform_settings_from_disk()
+    update_dict = data.model_dump(exclude_unset=True)
+    for k, v in update_dict.items():
+        if v is not None:
+            current[k] = v
+    save_platform_settings_to_disk(current)
+    return {"success": True, "settings": current}
 
 # ================= USTA PROFILI, ISH VAQTI VA SALON RASMLARI =================
 

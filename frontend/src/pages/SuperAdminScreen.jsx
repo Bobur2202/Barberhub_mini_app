@@ -29,7 +29,9 @@ import {
   sendSuperAdminBroadcast,
   getSuperAdminsList,
   addSuperAdminAccount,
-  deleteSuperAdminAccount
+  deleteSuperAdminAccount,
+  getPlatformSettings,
+  updatePlatformSettings
 } from '../services/api';
 
 export default function SuperAdminScreen({ onExit, t, telegramUserId = "1973875822" }) {
@@ -45,6 +47,18 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
   const [newAdminName, setNewAdminName] = useState('');
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
   const [adminActionError, setAdminActionError] = useState('');
+
+  // Platform Tarif va To'lov sozlamalari
+  const [platformSettings, setPlatformSettings] = useState({
+    subscription_price: 50000,
+    vip_boost_price: 40000,
+    payment_card: "8600 0000 0000 0000",
+    payment_card_holder: "BARBERHUB MA'MURIYATI",
+    click_url: "https://my.click.uz/",
+    payme_url: "https://payme.uz/"
+  });
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [settingsSaveMsg, setSettingsSaveMsg] = useState('');
 
   // Broadcast state
   const [broadcastTarget, setBroadcastTarget] = useState('all'); // 'all' | 'barbers' | 'clients'
@@ -143,9 +157,31 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
     }
   };
 
+  const handleSavePlatformSettings = async (e) => {
+    e.preventDefault();
+    setIsSavingSettings(true);
+    setSettingsSaveMsg('');
+    try {
+      const res = await updatePlatformSettings(platformSettings, telegramUserId);
+      if (res?.success) {
+        setPlatformSettings(res.settings);
+        setSettingsSaveMsg("Tariflar va to'lov sozlamalari muvaffaqiyatli saqlandi! ✓");
+        setTimeout(() => setSettingsSaveMsg(''), 4000);
+        showToast("Tariflar muvaffaqiyatli yangilandi! ✓");
+      }
+    } catch (err) {
+      alert("Xatolik: " + err.message);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
   useEffect(() => {
     loadStats();
     loadAdmins();
+    getPlatformSettings().then(res => {
+      if (res) setPlatformSettings(res);
+    });
   }, []);
 
   const handleAddAdmin = async (e) => {
@@ -471,6 +507,112 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
         {/* ================= 2. TO'LOVLAR & OBUNALAR TABI ================= */}
         {activeTab === 'billing' && (
           <div className="space-y-4 animate-in fade-in">
+            {/* ⚙️ Super Admin: Tariflar va To'lov Sozlamalari */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
+              <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+                <div className="flex items-center space-x-2">
+                  <CreditCard className="w-5 h-5 text-brand-orange" />
+                  <h3 className="text-xs font-black uppercase tracking-wider text-brand-blue">
+                    Tariflar va To'lov Sozlamalari
+                  </h3>
+                </div>
+                <span className="text-[10px] bg-amber-100 text-amber-900 font-extrabold px-2 py-0.5 rounded-full">
+                  Faqat Super Admin
+                </span>
+              </div>
+
+              <form onSubmit={handleSavePlatformSettings} className="space-y-3">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                      Oylik Obuna narxi (UZS):
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      step="5000"
+                      value={platformSettings.subscription_price}
+                      onChange={(e) => setPlatformSettings(p => ({ ...p, subscription_price: Number(e.target.value) }))}
+                      className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                      VIP Boost narxi (UZS):
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      step="5000"
+                      value={platformSettings.vip_boost_price}
+                      onChange={(e) => setPlatformSettings(p => ({ ...p, vip_boost_price: Number(e.target.value) }))}
+                      className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                    To'lov qabul qiluvchi karta raqami (P2P):
+                  </label>
+                  <input
+                    type="text"
+                    value={platformSettings.payment_card}
+                    onChange={(e) => setPlatformSettings(p => ({ ...p, payment_card: e.target.value }))}
+                    placeholder="8600 0000 0000 0000"
+                    className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-mono text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                  />
+                  <span className="text-[10px] text-gray-400 mt-0.5 block">
+                    Ustalar Click yoki Payme orqali to'lov qilganda shu kartaga o'tkazadi
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                      Click to'lov havolasi:
+                    </label>
+                    <input
+                      type="url"
+                      value={platformSettings.click_url}
+                      onChange={(e) => setPlatformSettings(p => ({ ...p, click_url: e.target.value }))}
+                      placeholder="https://my.click.uz/..."
+                      className="w-full bg-gray-50 rounded-xl px-3 py-2 text-[11px] text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                      Payme to'lov havolasi:
+                    </label>
+                    <input
+                      type="url"
+                      value={platformSettings.payme_url}
+                      onChange={(e) => setPlatformSettings(p => ({ ...p, payme_url: e.target.value }))}
+                      placeholder="https://payme.uz/..."
+                      className="w-full bg-gray-50 rounded-xl px-3 py-2 text-[11px] text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                    />
+                  </div>
+                </div>
+
+                {settingsSaveMsg && (
+                  <p className="text-xs text-emerald-700 font-bold bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 animate-in fade-in">
+                    {settingsSaveMsg}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSavingSettings}
+                  className="w-full py-2.5 bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-black text-xs rounded-xl shadow-sm transition-all flex items-center justify-center space-x-1.5"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  <span>{isSavingSettings ? "Saqlanmoqda..." : "Tariflar va To'lovni Saqlash ✓"}</span>
+                </button>
+              </form>
+            </div>
+
             {/* Quick Filter Badges */}
             <div className="grid grid-cols-4 gap-1.5 bg-gray-200/60 p-1 rounded-2xl text-[11px] font-bold">
               <button

@@ -183,6 +183,12 @@ export default function CatalogScreen({
   });
 
   const displayedBarbers = [...filteredBarbers].sort((a, b) => {
+    // 🚀 VIP Boost olgan ustalar doimo eng birinchi (TOP-1) o'rinda chiqadi
+    const aVip = a.is_vip ? 1 : 0;
+    const bVip = b.is_vip ? 1 : 0;
+    if (aVip !== bVip) {
+      return bVip - aVip;
+    }
     if (selectedFilter === 'nearest') {
       if (a.calculatedDistance === null) return 1;
       if (b.calculatedDistance === null) return -1;
@@ -418,20 +424,42 @@ export default function CatalogScreen({
                 hapticFeedback.impact('light');
                 onSelectBarber(barber);
               }}
-              className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer border border-blue-50/60 active:scale-[0.99] relative"
+              className={`rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-[0.99] relative ${
+                barber.is_vip
+                  ? 'bg-gradient-to-r from-amber-50/50 via-white to-amber-50/30 border-2 border-amber-300 shadow-amber-100/50'
+                  : 'bg-white border border-blue-50/60'
+              }`}
             >
               {/* Top row: Avatar & Info */}
               <div className="flex items-start space-x-3">
-                <img
-                  src={barber.avatar}
-                  alt={barber.name}
-                  className="w-14 h-14 rounded-full object-cover border-2 border-brand-blue/10 shadow-inner flex-shrink-0"
-                />
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={barber.avatar}
+                    alt={barber.name}
+                    className={`w-14 h-14 rounded-full object-cover shadow-inner ${
+                      barber.is_vip
+                        ? 'border-2 border-amber-400 ring-2 ring-amber-300 ring-offset-1'
+                        : 'border-2 border-brand-blue/10'
+                    }`}
+                  />
+                  {barber.is_vip && (
+                    <span className="absolute -top-1 -right-1 bg-amber-400 text-amber-950 text-[9px] font-black px-1 rounded-full shadow-xs border border-white">
+                      👑
+                    </span>
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-brand-blue text-base truncate">
-                      {barber.name}
-                    </h3>
+                    <div className="flex items-center space-x-1.5 truncate">
+                      <h3 className="font-bold text-brand-blue text-base truncate">
+                        {barber.name}
+                      </h3>
+                      {barber.is_vip && (
+                        <span className="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-amber-900 bg-gradient-to-r from-amber-300 to-yellow-400 px-2 py-0.5 rounded-full shadow-2xs shrink-0">
+                          ⭐ TOP VIP
+                        </span>
+                      )}
+                    </div>
                     <button
                       type="button"
                       onClick={(e) => {
