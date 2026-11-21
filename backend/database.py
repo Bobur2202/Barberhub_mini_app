@@ -102,6 +102,47 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 BARBERS_FILE = os.path.join(DATA_DIR, "barbers.json")
 APPOINTMENTS_FILE = os.path.join(DATA_DIR, "appointments.json")
+SUPER_ADMINS_FILE = os.path.join(DATA_DIR, "super_admins.json")
+
+# Master Super Admin Telegram ID (Platforma egasining doimiy ID raqami)
+MASTER_SUPER_ADMIN_ID = "1973875822"
+
+def load_super_admins_from_disk() -> List[dict]:
+    """Super adminlar ro'yxatini yuklash (Bosh admin doimo birinchi bo'lib saqlanadi)"""
+    admins = []
+    if os.path.exists(SUPER_ADMINS_FILE):
+        try:
+            with open(SUPER_ADMINS_FILE, "r", encoding="utf-8") as f:
+                admins = json.load(f)
+        except Exception as e:
+            print(f"[DB] Super Admins load error: {e}")
+            admins = []
+
+    # Master admin ro'yxatda borligini kafolatlaymiz
+    master_found = False
+    for a in admins:
+        if str(a.get("id")) == MASTER_SUPER_ADMIN_ID:
+            a["role"] = "owner"
+            master_found = True
+            break
+            
+    if not master_found:
+        admins.insert(0, {
+            "id": MASTER_SUPER_ADMIN_ID,
+            "name": "Platforma Egasi (Bosh Admin)",
+            "role": "owner",
+            "added_at": datetime.now().isoformat()
+        })
+        save_super_admins_to_disk(admins)
+    return admins
+
+def save_super_admins_to_disk(admins: List[dict]):
+    """Super adminlar ro'yxatini faylga saqlash"""
+    try:
+        with open(SUPER_ADMINS_FILE, "w", encoding="utf-8") as f:
+            json.dump(admins, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[DB] Super Admins save error: {e}")
 
 def load_barbers_from_disk(fallback_barbers: List[Barber]) -> List[Barber]:
     """Fayldan barcha ustalarni yuklash (Server o'chib yonsa ham ma'lumotlar saqlanadi)"""

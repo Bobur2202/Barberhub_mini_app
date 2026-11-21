@@ -21,7 +21,10 @@ from database import (
     APPOINTMENTS_DB,
     load_barbers_from_disk,
     save_barbers_to_disk,
-    save_appointments_to_disk
+    save_appointments_to_disk,
+    load_super_admins_from_disk,
+    save_super_admins_to_disk,
+    MASTER_SUPER_ADMIN_ID
 )
 from bot import (
     bot,
@@ -752,8 +755,82 @@ class BroadcastPayload(BaseModel):
 class SubscriptionManagePayload(BaseModel):
     action: str # "extend_trial_7" | "activate_paid" | "suspend"
 
+class AddSuperAdminPayload(BaseModel):
+    telegram_id: str
+    name: Optional[str] = "Admin"
+    note: Optional[str] = None
+
+def verify_super_admin_access(telegram_id: Optional[str] = None):
+    """Faqat ro'yxatdagi super adminlar va Bosh admin (1973875822) uchun ruxsat berish"""
+    admins = load_super_admins_from_disk()
+    admin_ids = [str(a.get("id")) for a in admins]
+    admin_ids.append(MASTER_SUPER_ADMIN_ID)
+    
+    if not telegram_id or str(telegram_id).strip() not in admin_ids:
+        raise HTTPException(
+            status_code=403, 
+            detail="Kirish taqiqlangan! Bu sahifa faqat platforma egasi va super adminlar uchun."
+        )
+    return True
+
+@app.get("/api/super-admin/check-access")
+def check_super_admin_access(telegram_id: Optional[str] = None):
+    """Foydalanuvchi Super Admin ekanligini xavfsiz tekshirish"""
+    admins = load_super_admins_from_disk()
+    is_admin = False
+    is_owner = False
+    if telegram_id:
+        tg_str = str(telegram_id).strip()
+        is_owner = (tg_str == MASTER_SUPER_ADMIN_ID)
+        is_admin = is_owner or any(str(a.get("id")) == tg_str for a in admins)
+    return {
+        "is_super_admin": is_admin,
+        "is_owner": is_owner
+    }
+
+@app.get("/api/super-admin/admins")
+def get_super_admins_list(telegram_id: Optional[str] = None):
+    """Super adminlar ro'yxatini olish"""
+    verify_super_admin_access(telegram_id)
+    return load_super_admins_from_disk()
+
+@app.post("/api/super-admin/admins")
+def add_super_admin_account(data: AddSuperAdminPayload, telegram_id: Optional[str] = None):
+    """Yangi super admin qo'shish (Faqat mavjud adminlar bajara oladi)"""
+    verify_super_admin_access(telegram_id)
+    clean_id = str(data.telegram_id).strip()
+    if not clean_id.isdigit():
+        raise HTTPException(status_code=400, detail="Telegram ID faqat raqamlardan iborat bo'lishi kerak!")
+    
+    admins = load_super_admins_from_disk()
+    if any(str(a.get("id")) == clean_id for a in admins):
+        raise HTTPException(status_code=400, detail="Ushbu Telegram ID allaqachon super adminlar ro'yxatida mavjud!")
+    
+    new_admin = {
+        "id": clean_id,
+        "name": data.name or f"Admin ({clean_id})",
+        "role": "admin",
+        "note": data.note or "",
+        "added_at": datetime.now().isoformat()
+    }
+    admins.append(new_admin)
+    save_super_admins_to_disk(admins)
+    return {"success": True, "admin": new_admin, "admins": admins}
+
+@app.delete("/api/super-admin/admins/{admin_id}")
+def delete_super_admin_account(admin_id: str, telegram_id: Optional[str] = None):
+    """Super adminni o'chirish (Bosh admin - Egasi hech qachon o'chirilmaydi!)"""
+    verify_super_admin_access(telegram_id)
+    if str(admin_id) == MASTER_SUPER_ADMIN_ID:
+        raise HTTPException(status_code=400, detail="Platforma egasini (Bosh adminni) o'chirib bo'lmaydi!")
+    
+    admins = load_super_admins_from_disk()
+    new_admins = [a for a in admins if str(a.get("id")) != str(admin_id)]
+    save_super_admins_to_disk(new_admins)
+    return {"success": True, "admins": new_admins}
+
 @app.get("/api/super-admin/stats")
-def get_super_admin_stats():
+def get_super_admin_stats(telegram_id: Optional[str] = None):
     """
     Platforma egasi uchun barcha statistikalar:
     - Jami ustalar soni (viloyatlar kesimida)

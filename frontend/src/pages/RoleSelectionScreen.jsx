@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Scissors, ArrowRight, ShieldCheck, Sparkles, Crown, Lock } from 'lucide-react';
 
-export default function RoleSelectionScreen({ onSelectRole, t }) {
+export default function RoleSelectionScreen({ onSelectRole, t, isSuperAdmin = false }) {
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
@@ -93,15 +93,17 @@ export default function RoleSelectionScreen({ onSelectRole, t }) {
         </div>
       </div>
 
-      {/* Footer Info & Super Admin Button */}
+      {/* Footer Info & Super Admin Button (Faqat Super Admin uchun ko'rinadi) */}
       <div className="text-center pb-2 space-y-2">
-        <button
-          onClick={() => setShowPinModal(true)}
-          className="text-xs font-bold text-gray-400 hover:text-brand-blue transition-colors inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl hover:bg-white/60"
-        >
-          <Crown className="w-3.5 h-3.5 text-amber-500" />
-          <span>Platforma egasi (Super Admin)</span>
-        </button>
+        {isSuperAdmin && (
+          <button
+            onClick={() => setShowPinModal(true)}
+            className="text-xs font-bold text-gray-400 hover:text-brand-blue transition-colors inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl hover:bg-white/60"
+          >
+            <Crown className="w-3.5 h-3.5 text-amber-500" />
+            <span>Platforma egasi (Super Admin)</span>
+          </button>
+        )}
 
         <p className="text-[10px] text-gray-400">
           Tanlovni keyinchalik sozlamalar bo'limidan o'zgartirish mumkin

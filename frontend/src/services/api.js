@@ -350,9 +350,12 @@ export async function rescheduleAppointment(appointmentId, { date_str, time_slot
 /**
  * 14. Super Admin: Platforma egasi uchun to'liq statistika
  */
-export async function getSuperAdminStats() {
+export async function getSuperAdminStats(telegramId = null) {
   try {
-    const response = await fetch(`${API_BASE_URL}/super-admin/stats`, {
+    const url = telegramId 
+      ? `${API_BASE_URL}/super-admin/stats?telegram_id=${encodeURIComponent(telegramId)}`
+      : `${API_BASE_URL}/super-admin/stats`;
+    const response = await fetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       signal: AbortSignal.timeout(4000),
@@ -362,6 +365,92 @@ export async function getSuperAdminStats() {
     }
   } catch (error) {
     console.warn('[API] Super Admin statistika xatosi:', error.message);
+  }
+  return null;
+}
+
+/**
+ * 14b. Super Admin: Kirish huquqini tekshirish
+ */
+export async function checkSuperAdminAccess(telegramId) {
+  if (!telegramId) return { is_super_admin: false, is_owner: false };
+  try {
+    const response = await fetch(`${API_BASE_URL}/super-admin/check-access?telegram_id=${encodeURIComponent(telegramId)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Super Admin check access xatosi:', error.message);
+  }
+  // Offline / local fallback: ID 1973875822 is always owner
+  const isOwner = String(telegramId).trim() === "1973875822";
+  return { is_super_admin: isOwner, is_owner: isOwner };
+}
+
+/**
+ * 14c. Super Adminlar ro'yxatini olish
+ */
+export async function getSuperAdminsList(telegramId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/super-admin/admins?telegram_id=${encodeURIComponent(telegramId)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Super adminlar ro\'yxati xatosi:', error.message);
+  }
+  return [
+    {
+      id: "1973875822",
+      name: "Platforma Egasi (Bosh Admin)",
+      role: "owner"
+    }
+  ];
+}
+
+/**
+ * 14d. Yangi Super Admin qo'shish
+ */
+export async function addSuperAdminAccount({ telegramId, newAdminId, name, note }) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/super-admin/admins?telegram_id=${encodeURIComponent(telegramId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id: String(newAdminId), name, note }),
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Yangi super admin qo\'shishda xatolik:', error.message);
+  }
+  return null;
+}
+
+/**
+ * 14e. Super Adminni o'chirish
+ */
+export async function deleteSuperAdminAccount({ telegramId, adminId }) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/super-admin/admins/${adminId}?telegram_id=${encodeURIComponent(telegramId)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Super adminni o\'chirishda xatolik:', error.message);
   }
   return null;
 }

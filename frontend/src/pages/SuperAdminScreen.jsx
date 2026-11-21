@@ -18,16 +18,33 @@ import {
   Crown,
   ChevronRight,
   TrendingUp,
-  Scissors
+  Scissors,
+  UserPlus,
+  Trash2,
+  Key
 } from 'lucide-react';
-import { getSuperAdminStats, manageBarberSubscription, sendSuperAdminBroadcast } from '../services/api';
+import { 
+  getSuperAdminStats, 
+  manageBarberSubscription, 
+  sendSuperAdminBroadcast,
+  getSuperAdminsList,
+  addSuperAdminAccount,
+  deleteSuperAdminAccount
+} from '../services/api';
 
-export default function SuperAdminScreen({ onExit, t }) {
-  const [activeTab, setActiveTab] = useState('stats'); // 'stats' | 'billing' | 'broadcast' | 'barbers'
+export default function SuperAdminScreen({ onExit, t, telegramUserId = "1973875822" }) {
+  const [activeTab, setActiveTab] = useState('stats'); // 'stats' | 'billing' | 'broadcast' | 'admins'
   const [statsData, setStatsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [billingFilter, setBillingFilter] = useState('all'); // 'all' | 'expiring' | 'active' | 'suspended'
+
+  // Super Admins state
+  const [superAdminsList, setSuperAdminsList] = useState([]);
+  const [newAdminTgId, setNewAdminTgId] = useState('');
+  const [newAdminName, setNewAdminName] = useState('');
+  const [isAddingAdmin, setIsAddingAdmin] = useState(false);
+  const [adminActionError, setAdminActionError] = useState('');
 
   // Broadcast state
   const [broadcastTarget, setBroadcastTarget] = useState('all'); // 'all' | 'barbers' | 'clients'
@@ -115,9 +132,67 @@ export default function SuperAdminScreen({ onExit, t }) {
     setIsLoading(false);
   };
 
+  const loadAdmins = async () => {
+    try {
+      const list = await getSuperAdminsList(telegramUserId);
+      if (list && Array.isArray(list)) {
+        setSuperAdminsList(list);
+      }
+    } catch (e) {
+      console.warn("Failed to load super admins list:", e);
+    }
+  };
+
   useEffect(() => {
     loadStats();
+    loadAdmins();
   }, []);
+
+  const handleAddAdmin = async (e) => {
+    e.preventDefault();
+    if (!newAdminTgId.trim()) return;
+    setIsAddingAdmin(true);
+    setAdminActionError('');
+    try {
+      const res = await addSuperAdminAccount({
+        telegramId: telegramUserId,
+        newAdminId: newAdminTgId.trim(),
+        name: newAdminName.trim() || `Admin (${newAdminTgId.trim()})`
+      });
+      if (res?.success) {
+        setSuperAdminsList(res.admins);
+        setNewAdminTgId('');
+        setNewAdminName('');
+        showToast("Yangi super admin muvaffaqiyatli qo'shildi! ✓");
+      } else {
+        setAdminActionError(res?.detail || "Xatolik yuz berdi");
+      }
+    } catch (err) {
+      setAdminActionError(err.message || "Xatolik yuz berdi");
+    } finally {
+      setIsAddingAdmin(false);
+    }
+  };
+
+  const handleDeleteAdmin = async (adminId) => {
+    if (String(adminId) === "1973875822") {
+      alert("Platforma egasini (Bosh adminni) o'chirib bo'lmaydi!");
+      return;
+    }
+    if (!window.confirm(`Haqiqatan ham bu adminni (ID: ${adminId}) ro'yxatdan o'chirmoqchimisiz?`)) return;
+    try {
+      const res = await deleteSuperAdminAccount({
+        telegramId: telegramUserId,
+        adminId
+      });
+      if (res?.success) {
+        setSuperAdminsList(res.admins);
+        showToast("Admin muvaffaqiyatli o'chirildi! ✓");
+      }
+    } catch (err) {
+      alert("O'chirishda xatolik: " + err.message);
+    }
+  };
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -223,44 +298,56 @@ export default function SuperAdminScreen({ onExit, t }) {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="grid grid-cols-3 gap-1 bg-white/10 p-1 rounded-2xl mt-3">
+        <div className="grid grid-cols-4 gap-1 bg-white/10 p-1 rounded-2xl mt-3 text-center">
           <button
             onClick={() => setActiveTab('stats')}
-            className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1 ${
+            className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center space-x-1 ${
               activeTab === 'stats'
                 ? 'bg-amber-400 text-brand-blue shadow-md'
                 : 'text-blue-100 hover:text-white'
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
-            <span>Statistika</span>
+            <span className="truncate">Statistika</span>
           </button>
 
           <button
             onClick={() => setActiveTab('billing')}
-            className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1 relative ${
+            className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center space-x-1 relative ${
               activeTab === 'billing'
                 ? 'bg-amber-400 text-brand-blue shadow-md'
                 : 'text-blue-100 hover:text-white'
             }`}
           >
             <CreditCard className="w-3.5 h-3.5" />
-            <span>To'lovlar</span>
+            <span className="truncate">To'lovlar</span>
             {(statsData?.billing?.trial_expiring_count || 0) > 0 && (
-              <span className="w-2 h-2 rounded-full bg-red-400 absolute top-1.5 right-2" />
+              <span className="w-1.5 h-1.5 rounded-full bg-red-400 absolute top-1.5 right-1" />
             )}
           </button>
 
           <button
             onClick={() => setActiveTab('broadcast')}
-            className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1 ${
+            className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center space-x-1 ${
               activeTab === 'broadcast'
                 ? 'bg-amber-400 text-brand-blue shadow-md'
                 : 'text-blue-100 hover:text-white'
             }`}
           >
             <Send className="w-3.5 h-3.5" />
-            <span>Xabarnoma</span>
+            <span className="truncate">Xabarnoma</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('admins')}
+            className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center space-x-1 ${
+              activeTab === 'admins'
+                ? 'bg-amber-400 text-brand-blue shadow-md'
+                : 'text-blue-100 hover:text-white'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="truncate">Adminlar</span>
           </button>
         </div>
       </div>
@@ -636,6 +723,152 @@ export default function SuperAdminScreen({ onExit, t }) {
                 <span>{broadcastResult.message}</span>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ================= 4. SUPER ADMINLAR TABI ================= */}
+        {activeTab === 'admins' && (
+          <div className="space-y-4 animate-in fade-in pb-12">
+            {/* Header / Info Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-brand-blue text-sm">
+                    Super Adminlar Nazorati
+                  </h3>
+                  <p className="text-[11px] text-gray-500">
+                    Platformani boshqarish huquqiga ega akkauntlar ro'yxati
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 p-3 bg-amber-50/70 rounded-2xl border border-amber-200/60 text-xs text-amber-900 leading-relaxed">
+                <p>
+                  🔒 <b>Xavfsizlik qoidasi:</b> Faqat shu ro'yxatda mavjud bo'lgan Telegram ID egalarigina ilovaning Super Admin bo'limiga kira oladi. Begona mijozlar yoki ustalarga bu boshqaruv bo'limi umuman ko'rinmaydi.
+                </p>
+              </div>
+            </div>
+
+            {/* Qo'shish Formasi */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
+              <h4 className="font-extrabold text-brand-blue text-xs uppercase tracking-wider mb-3 flex items-center space-x-1.5">
+                <UserPlus className="w-4 h-4 text-brand-orange" />
+                <span>Yangi Super Admin Qo'shish</span>
+              </h4>
+
+              <form onSubmit={handleAddAdmin} className="space-y-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                    Telegram ID raqami: *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={newAdminTgId}
+                    onChange={(e) => setNewAdminTgId(e.target.value)}
+                    placeholder="Masalan: 987654321"
+                    className="w-full bg-gray-50 rounded-xl px-3 py-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue font-mono"
+                  />
+                  <span className="text-[10px] text-gray-400 mt-0.5 block">
+                    Admin o'z Telegram ID sini @userinfobot orqali bilishi mumkin
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                    Admin ismi / izoh:
+                  </label>
+                  <input
+                    type="text"
+                    value={newAdminName}
+                    onChange={(e) => setNewAdminName(e.target.value)}
+                    placeholder="Masalan: Akmal (Yordamchi menejer)"
+                    className="w-full bg-gray-50 rounded-xl px-3 py-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                  />
+                </div>
+
+                {adminActionError && (
+                  <p className="text-xs text-red-600 font-bold bg-red-50 p-2 rounded-xl border border-red-100">
+                    ⚠️ {adminActionError}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isAddingAdmin || !newAdminTgId.trim()}
+                  className="w-full py-3 bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-black text-xs rounded-xl shadow-sm transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>{isAddingAdmin ? "Qo'shilmoqda..." : "+ Super Admin qo'shish"}</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Mavjud Adminlar Ro'yxati */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
+              <h4 className="font-extrabold text-brand-blue text-xs uppercase tracking-wider mb-3">
+                Faol Super Adminlar ({superAdminsList.length})
+              </h4>
+
+              <div className="space-y-2.5">
+                {superAdminsList.map((admin) => {
+                  const isOwner = String(admin.id) === "1973875822";
+                  return (
+                    <div
+                      key={admin.id}
+                      className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between ${
+                        isOwner
+                          ? 'bg-amber-50/50 border-amber-200/80 shadow-2xs'
+                          : 'bg-gray-50/70 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${
+                          isOwner ? 'bg-amber-500 text-brand-blue' : 'bg-blue-100 text-brand-blue'
+                        }`}>
+                          {isOwner ? '👑' : '👤'}
+                        </div>
+                        <div>
+                          <div className="flex items-center space-x-1.5">
+                            <span className="font-extrabold text-xs text-brand-blue">
+                              {admin.name || "Admin"}
+                            </span>
+                            {isOwner && (
+                              <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1.5 py-0.2 rounded-full uppercase">
+                                Bosh Admin
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] font-mono text-gray-500 block">
+                            ID: {admin.id}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        {isOwner ? (
+                          <span className="text-[10px] text-amber-800 font-extrabold bg-amber-100/60 px-2 py-1 rounded-lg">
+                            Ega
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAdmin(admin.id)}
+                            className="p-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
+                            title="Adminni o'chirish"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Scissors, Calendar, Lock, Crown, Sparkles } from 'lucide-react';
 import { translations } from './i18n/translations';
 import { mockBarbers } from './data/mockBarbers';
-import { getBarberByTelegramId, deleteBarberAccount } from './services/api';
+import { getBarberByTelegramId, deleteBarberAccount, checkSuperAdminAccess } from './services/api';
 import HeaderBar from './components/HeaderBar';
 import SplashScreen from './pages/SplashScreen';
 import RoleSelectionScreen from './pages/RoleSelectionScreen';
@@ -55,6 +55,11 @@ export default function App() {
   const [showSuperAdminPinModal, setShowSuperAdminPinModal] = useState(false);
   const [headerPinInput, setHeaderPinInput] = useState('');
   const [headerPinError, setHeaderPinError] = useState(false);
+
+  // 👑 Master Super Admin (Platforma egasi: 1973875822)
+  const MASTER_SUPER_ADMIN_ID = "1973875822";
+  const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
+  const [currentTelegramUserId, setCurrentTelegramUserId] = useState(null);
 
   // Mijozning navbatlari va tarixi
   const [clientAppointments, setClientAppointments] = useState(() => {
@@ -189,8 +194,22 @@ export default function App() {
     // uning doimiy Telegram ID si orqali profilini bazadan tiklash
     async function restoreBarberByTelegramId() {
       const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-      const tgId = tgUser?.id;
+      const tgId = tgUser?.id ? String(tgUser.id) : null;
       if (tgId) {
+        setCurrentTelegramUserId(tgId);
+
+        // 👑 Super Admin huquqini tekshirish (Platforma egasi: 1973875822)
+        if (tgId === MASTER_SUPER_ADMIN_ID) {
+          setIsSuperAdminUser(true);
+        } else {
+          try {
+            const adminRes = await checkSuperAdminAccess(tgId);
+            if (adminRes?.is_super_admin) {
+              setIsSuperAdminUser(true);
+            }
+          } catch (e) {}
+        }
+
         const found = await getBarberByTelegramId(tgId);
         if (found) {
           console.log('[Auth] Usta Telegram ID orqali tanildi va tiklandi:', found.name);
@@ -384,7 +403,8 @@ export default function App() {
           userRole={userRole}
           isDarkMode={isDarkMode}
           onToggleTheme={handleToggleTheme}
-          onOpenSuperAdmin={() => {
+          onOpenSuperAdmin={isSuperAdminUser ? () => setCurrentStep('super_admin') : null}
+          onOpenSuperAdminSecret={() => {
             setHeaderPinInput('');
             setHeaderPinError(false);
             setShowSuperAdminPinModal(true);
@@ -402,6 +422,7 @@ export default function App() {
         <RoleSelectionScreen
           onSelectRole={handleSelectRole}
           t={t}
+          isSuperAdmin={isSuperAdminUser}
         />
       )}
 
@@ -501,6 +522,7 @@ export default function App() {
       {currentStep === 'super_admin' && (
         <SuperAdminScreen
           t={t}
+          telegramUserId={currentTelegramUserId || MASTER_SUPER_ADMIN_ID}
           onExit={() => {
             if (userRole === 'barber') {
               setCurrentStep('admin');
@@ -531,6 +553,7 @@ export default function App() {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (headerPinInput === '7777' || headerPinInput === 'admin2026') {
+                  setIsSuperAdminUser(true);
                   setShowSuperAdminPinModal(false);
                   setHeaderPinInput('');
                   setCurrentStep('super_admin');
