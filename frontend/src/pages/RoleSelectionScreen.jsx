@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { User, Scissors, ArrowRight, ShieldCheck, Sparkles, Crown, Lock } from 'lucide-react';
+import { User, Scissors, ArrowRight, ShieldCheck, Sparkles, Crown, Lock, Info, X, MapPin, Clock, BellRing } from 'lucide-react';
 
 export default function RoleSelectionScreen({ onSelectRole, t, isSuperAdmin = false }) {
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
 
@@ -105,10 +106,101 @@ export default function RoleSelectionScreen({ onSelectRole, t, isSuperAdmin = fa
           </button>
         )}
 
+        <div>
+          <button
+            onClick={() => setShowInfoModal(true)}
+            className="text-[11px] font-bold text-brand-blue/80 hover:text-brand-blue inline-flex items-center space-x-1"
+          >
+            <span>ℹ️ BarberHub nima? (Bot haqida ma'lumot)</span>
+          </button>
+        </div>
+
         <p className="text-[10px] text-gray-400">
           Tanlovni keyinchalik sozlamalar bo'limidan o'zgartirish mumkin
         </p>
       </div>
+
+      {/* ℹ️ BOT HAQIDA MA'LUMOT MODALI */}
+      {showInfoModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[85vh] overflow-y-auto flex flex-col">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-100 text-brand-orange flex items-center justify-center">
+                  <Scissors className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-brand-blue">
+                    BarberHub haqida
+                  </h3>
+                  <span className="text-[10px] text-gray-400">Platformaning asosiy imkoniyatlari</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowInfoModal(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 my-4 text-xs text-gray-700 leading-relaxed">
+              <div className="p-3 bg-blue-50/80 rounded-2xl border border-blue-100">
+                <p className="font-semibold text-brand-blue">
+                  💈 <b>BarberHub</b> — sartaroshxonalarda navbat kutishni butunlay unutish va vaqtni tejash uchun yaratilgan zamonaviy platforma.
+                </p>
+              </div>
+
+              {/* Mijozlar uchun */}
+              <div>
+                <h4 className="font-black text-brand-blue uppercase text-[11px] tracking-wider mb-2 flex items-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-brand-orange inline-block" />
+                  <span>Mijozlar uchun:</span>
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-2.5">
+                    <MapPin className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
+                    <span><b>Yaqin ustalar:</b> Xaritadan eng yaqin sartaroshlarni topish va masofani ko'rish.</span>
+                  </div>
+                  <div className="flex items-start space-x-2.5">
+                    <Clock className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span><b>Jonli navbat:</b> Istalgan kunga yoki bugunga bir necha soniyada navbat olish.</span>
+                  </div>
+                  <div className="flex items-start space-x-2.5">
+                    <BellRing className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <span><b>Avto-eslatma:</b> Navbatingizga 30 daqiqa qolganda Telegram bot eslatma beradi.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ustalar uchun */}
+              <div className="pt-2 border-t border-gray-100">
+                <h4 className="font-black text-brand-blue uppercase text-[11px] tracking-wider mb-2 flex items-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                  <span>Ustalar uchun:</span>
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-2.5">
+                    <Scissors className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span><b>Yangi mijozlar oqimi:</b> O'z xizmatlaringizni reklama qilish va doimiy mijozlar orttirish.</span>
+                  </div>
+                  <div className="flex items-start space-x-2.5">
+                    <ShieldCheck className="w-4 h-4 text-brand-blue flex-shrink-0 mt-0.5" />
+                    <span><b>Kassa va Grafik:</b> Ish vaqtini sozlash, kunlik daromadni kuzatish va buyurtmalarni boshqarish.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowInfoModal(false)}
+              className="w-full py-3 bg-brand-blue hover:bg-brand-blue-dark text-white font-extrabold text-xs rounded-2xl shadow-md transition-all active:scale-98"
+            >
+              Tushundim, davom etish ✓
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* PIN Verification Modal */}
       {showPinModal && (

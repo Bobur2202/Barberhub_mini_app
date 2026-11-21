@@ -33,8 +33,8 @@ ACTIVE_BARBER_CHAT_IDS = set()
 @dp.message(CommandStart())
 async def start_handler(message: types.Message):
     """
-    /start bosilganda foydalanuvchiga xush kelibsiz xabari va
-    Mini-App ochish tugmasini beradi.
+    /start bosilganda foydalanuvchiga xush kelibsiz xabari,
+    bot haqida ma'lumot va Mini-App ochish tugmasini beradi.
     """
     user_id = message.from_user.id
     ACTIVE_BARBER_CHAT_IDS.add(user_id)
@@ -43,25 +43,65 @@ async def start_handler(message: types.Message):
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="✂️ BarberHub Mini-App'ni ochish",
+                    text="✂️ BarberHub Ilovasini Ochish",
                     web_app=WebAppInfo(url=WEBAPP_URL)
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="ℹ️ Bot haqida ma'lumot",
+                    callback_data="about_bot"
                 )
             ]
         ]
     )
     
-    user_id = message.from_user.id
     welcome_text = (
-        f"👋 Salom, <b>{message.from_user.first_name}</b>!\n\n"
-        "💈 <b>BarberHub</b> platformasiga xush kelibsiz.\n"
-        "O'zingizga eng yaqin sartaroshlarni toping, xizmat va narxlar bilan "
-        "tanishib, bir zumda navbatga yoziling!\n\n"
+        f"👋 Assalomu alaykum, <b>{message.from_user.first_name}</b>!\n\n"
+        "💈 <b>BarberHub</b> — erkaklar sartaroshxonalari tarmog'i va qulay onlayn navbat ekotizimiga xush kelibsiz!\n\n"
+        "📍 <b>Mijozmisiz?</b> Yaqin atrofdagi eng mohir ustalarni toping, jonli navbatni ko'ring va 1 bosishda oldindan band qiling.\n"
+        "✂️ <b>Ustamisiz?</b> O'z sartaroshxonangizni katalogga qo'shing, yangi mijozlar oqimini jalb qiling va buyurtmalarni boshqaring.\n\n"
         f"🆔 Sizning Telegram ID: <code>{user_id}</code>\n"
         "(Usta sifatida barcha yangi mijozlar xabarnomasi shu ID ga keladi)\n\n"
-        "Mini-appni ishga tushirish uchun quyidagi tugmani bosing 👇"
+        "Batafsil ma'lumot olish yoki ilovani ishga tushirish uchun quyidagi tugmani bosing 👇"
     )
     
     await message.answer(welcome_text, reply_markup=keyboard, parse_mode=ParseMode.HTML)
+
+
+@dp.callback_query(F.data == "about_bot")
+async def about_bot_callback(callback: types.CallbackQuery):
+    """Bot haqida to'liq ma'lumot beruvchi callback xabari"""
+    about_text = (
+        "💈 <b>BarberHub Platformasi Haqida:</b>\n\n"
+        "<b>BarberHub</b> — sartaroshxonalarda navbat kutish vaqtini yo'qotish va jarayonni to'liq avtomatlashtirish uchun ishlab chiqilgan zamonaviy platforma.\n\n"
+        "✨ <b>Mijozlar uchun afzalliklar:</b>\n"
+        "• 📍 <b>GPS va Xarita:</b> Eng yaqin sartaroshlarni va piyoda yurish vaqtini bir zumda aniqlash.\n"
+        "• ⭐️ <b>Haqiqiy portfolio:</b> Ustalarning bajargan ishlari, narxlar va mijozlar sharhlari.\n"
+        "• ⏰ <b>Jonli Navbat:</b> Salonga bormasdan oldin jonli navbatni ko'rish va o'zingizga qulay vaqtni band qilish.\n"
+        "• 🔔 <b>Tezkor Eslatmalar:</b> Navbatga 30 daqiqa qolganda bot orqali avtomatik ogohlantirish.\n"
+        "• 👨‍👦 <b>Birga yozilish:</b> O'zingiz va do'stingiz yoki farzandingiz uchun ketma-ket joy band qilish.\n"
+        "• 🤖 <b>AI Maslahatchi:</b> Yuz tuzilishingizga mos soch turmagini sun'iy intellekt orqali tavsiya qilish.\n\n"
+        "💼 <b>Ustalar va Barbershoplar uchun:</b>\n"
+        "• 📈 Yangi mijozlar oqimi va bepul ro'yxatdan o'tish.\n"
+        "• 📲 Har bir yangi buyurtma haqida Telegram bot orqali qo'ng'iroqdek darhol xabar olish.\n"
+        "• 💰 Kunlik tushum, kassa hisoboti va mijozlar bazasini xavfsiz saqlash.\n\n"
+        "🚀 <i>Ilovadan foydalanish mutlaqo bepul!</i>"
+    )
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✂️ BarberHub Ilovasini Ochish",
+                    web_app=WebAppInfo(url=WEBAPP_URL)
+                )
+            ]
+        ]
+    )
+
+    await callback.message.answer(about_text, reply_markup=keyboard, parse_mode=ParseMode.HTML)
+    await callback.answer()
 
 
 async def send_appointment_notification_to_barber(
