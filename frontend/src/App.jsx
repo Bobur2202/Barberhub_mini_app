@@ -572,6 +572,16 @@ export default function App() {
         <SuperAdminScreen
           t={t}
           telegramUserId={currentTelegramUserId || MASTER_SUPER_ADMIN_ID}
+          onOpenClientView={() => {
+            setUserRole('client');
+            localStorage.setItem('barberhub_user_role', 'client');
+            setCurrentStep('catalog');
+          }}
+          onOpenBarberView={() => {
+            setUserRole('barber');
+            localStorage.setItem('barberhub_user_role', 'barber');
+            setCurrentStep('admin');
+          }}
           onExit={() => {
             if (userRole === 'barber') {
               setCurrentStep('admin');

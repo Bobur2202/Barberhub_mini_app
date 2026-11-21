@@ -75,10 +75,11 @@ export default function HeaderBar({
               hapticFeedback.impact('medium');
               onOpenSuperAdmin();
             }}
-            className="p-1.5 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors shadow-2xs border border-amber-200 animate-in fade-in"
-            title="👑 Platforma Egasi (Super Admin)"
+            className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400/25 to-yellow-400/35 hover:from-amber-400/35 hover:to-yellow-400/45 text-amber-950 border border-amber-300 transition-all shadow-xs flex items-center space-x-1 animate-in fade-in active:scale-95"
+            title="👑 Super Admin Boshqaruv Markaziga qaytish"
           >
-            <Crown className="w-4 h-4 fill-amber-400 text-amber-600" />
+            <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
+            <span className="text-[10px] font-black uppercase tracking-wider">Super Admin</span>
           </button>
         )}
 

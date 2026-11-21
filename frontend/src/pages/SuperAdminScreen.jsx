@@ -19,6 +19,7 @@ import {
   ChevronRight,
   TrendingUp,
   Scissors,
+  User,
   UserPlus,
   Trash2,
   Key
@@ -34,7 +35,13 @@ import {
   updatePlatformSettings
 } from '../services/api';
 
-export default function SuperAdminScreen({ onExit, t, telegramUserId = "1973875822" }) {
+export default function SuperAdminScreen({ 
+  onExit, 
+  t, 
+  telegramUserId = "1973875822",
+  onOpenClientView,
+  onOpenBarberView
+}) {
   const [activeTab, setActiveTab] = useState('stats'); // 'stats' | 'billing' | 'broadcast' | 'admins'
   const [statsData, setStatsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -343,6 +350,33 @@ export default function SuperAdminScreen({ onExit, t, telegramUserId = "19738758
             </button>
           </div>
         </div>
+
+        {/* Tezkor Ko'rinishlar (Quick Preview Switcher for Super Admin) */}
+        {(onOpenClientView || onOpenBarberView) && (
+          <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-white/10">
+            {onOpenClientView && (
+              <button
+                onClick={onOpenClientView}
+                className="py-1.5 px-2.5 rounded-xl bg-blue-500/25 hover:bg-blue-500/40 text-blue-100 hover:text-white border border-blue-400/30 transition-all flex items-center justify-center space-x-1.5 text-xs font-bold active:scale-95"
+                title="Mijozlar ilovasi va katalogini ochish"
+              >
+                <User className="w-3.5 h-3.5 text-cyan-300" />
+                <span>Mijoz ko'rinishi 👤</span>
+              </button>
+            )}
+
+            {onOpenBarberView && (
+              <button
+                onClick={onOpenBarberView}
+                className="py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 hover:text-white border border-amber-400/30 transition-all flex items-center justify-center space-x-1.5 text-xs font-bold active:scale-95"
+                title="Usta kabineti va buyurtmalarni ochish"
+              >
+                <Scissors className="w-3.5 h-3.5 text-amber-400" />
+                <span>Usta kabineti ✂️</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Navigation Tabs */}
         <div className="grid grid-cols-4 gap-1 bg-white/10 p-1 rounded-2xl mt-3 text-center">
