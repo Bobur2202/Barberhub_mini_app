@@ -77,13 +77,13 @@ function TimePickerField({ label, value, onChange, icon }) {
   };
 
   return (
-    <div className="bg-gray-50/90 rounded-2xl p-3 border border-gray-200/80">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-extrabold text-gray-700 flex items-center space-x-1.5">
+    <div className="bg-slate-50 dark:bg-slate-900/90 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100 flex items-center space-x-1.5">
           {icon}
           <span>{label}</span>
         </span>
-        <span className="font-mono text-xs font-black text-brand-blue bg-white px-2.5 py-0.5 rounded-lg border border-blue-100 shadow-2xs">
+        <span className="font-mono text-xs font-black text-amber-600 dark:text-amber-400 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs">
           {h}:{m}
         </span>
       </div>
@@ -91,16 +91,16 @@ function TimePickerField({ label, value, onChange, icon }) {
       <div className="grid grid-cols-2 gap-2">
         {/* Soat (00 - 23) */}
         <div>
-          <label className="text-[10px] font-bold text-gray-400 block mb-1">
+          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
             Soat (00 - 23)
           </label>
           <select
             value={h}
             onChange={(e) => handleHour(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl py-2 px-2 text-xs font-black text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
+            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-2 text-xs font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
           >
             {HOURS_24.map((hour) => (
-              <option key={hour} value={hour}>
+              <option key={hour} value={hour} className="dark:bg-slate-800 dark:text-white">
                 {hour}:00
               </option>
             ))}
@@ -109,16 +109,16 @@ function TimePickerField({ label, value, onChange, icon }) {
 
         {/* Minut (00 - 59) */}
         <div>
-          <label className="text-[10px] font-bold text-gray-400 block mb-1">
+          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
             Minut (00 - 59)
           </label>
           <select
             value={m}
             onChange={(e) => handleMinute(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl py-2 px-2 text-xs font-black text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
+            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-2 text-xs font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
           >
             {MINUTES_60.map((min) => (
-              <option key={min} value={min}>
+              <option key={min} value={min} className="dark:bg-slate-800 dark:text-white">
                 {min}
               </option>
             ))}
@@ -127,8 +127,8 @@ function TimePickerField({ label, value, onChange, icon }) {
       </div>
 
       {/* Tezkor minut knopkalari */}
-      <div className="flex items-center space-x-1.5 mt-2.5 pt-2 border-t border-gray-200/60">
-        <span className="text-[9px] font-bold text-gray-400">Tezkor:</span>
+      <div className="flex items-center space-x-1.5 mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-800">
+        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">Tezkor:</span>
         {['00', '15', '30', '45'].map((quickM) => (
           <button
             key={quickM}
@@ -136,8 +136,8 @@ function TimePickerField({ label, value, onChange, icon }) {
             onClick={() => handleMinute(quickM)}
             className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
               m === quickM
-                ? 'bg-brand-blue text-white shadow-2xs'
-                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                ? 'bg-amber-500 dark:bg-amber-500 text-slate-950 font-black shadow-2xs'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
             }`}
           >
             :{quickM}
@@ -1515,7 +1515,7 @@ export default function AdminDashboardScreen({
                       setTempWorkStart(preset.s);
                       setTempWorkEnd(preset.e);
                     }}
-                    className="py-1.5 px-1 bg-gray-100 hover:bg-gray-200 rounded-xl text-[10px] font-bold text-gray-700 transition-colors text-center"
+                    className="py-1.5 px-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl text-[10px] font-bold text-slate-700 dark:text-slate-200 border border-transparent dark:border-slate-700 transition-colors text-center"
                   >
                     {preset.label}
                   </button>
@@ -1578,7 +1578,7 @@ export default function AdminDashboardScreen({
                           setTempBreakStart(bp.s);
                           setTempBreakEnd(bp.e);
                         }}
-                        className="py-1 px-1 bg-amber-50 hover:bg-amber-100 rounded-lg text-[10px] font-bold text-amber-900 border border-amber-200 text-center"
+                        className="py-1.5 px-1 bg-amber-500/10 hover:bg-amber-500/20 dark:bg-amber-500/15 dark:hover:bg-amber-500/25 rounded-xl text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30 text-center transition-colors"
                       >
                         {bp.label}
                       </button>
@@ -1917,22 +1917,22 @@ export default function AdminDashboardScreen({
                   {t.auto_debit_desc}
                 </p>
 
-                <div className="flex space-x-2 mt-3 pt-2 border-t border-gray-100">
+                <div className="flex space-x-2 mt-3 pt-2 border-t border-gray-100 dark:border-slate-800">
                   <button
                     onClick={() => setShowCardModal(true)}
-                    className="flex-1 py-2 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all"
+                    className="flex-1 py-2 text-xs font-bold rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all"
                   >
                     {t.btn_change_card}
                   </button>
                   <button
                     onClick={handleRemoveCard}
-                    className="px-3 py-2 text-xs font-bold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
+                    className="px-3 py-2 text-xs font-bold rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all"
                   >
                     {t.btn_remove_card}
                   </button>
                   <button
                     onClick={handleCancelSubscription}
-                    className="px-3 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-all"
+                    className="px-3 py-2 text-xs font-bold rounded-xl border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 bg-transparent dark:bg-red-950/30 hover:bg-red-50 dark:hover:bg-red-900/40 transition-all"
                     title="Oylik obunani bekor qilish"
                   >
                     Obunani bekor qilish
@@ -1958,16 +1958,16 @@ export default function AdminDashboardScreen({
           </div>
 
           {/* 7. 🚀 TOP-1 Reklama & Reyting 5.0 (VIP Boost) */}
-          <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-yellow-500/15 rounded-3xl p-5 shadow-sm border border-amber-300 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-yellow-500/15 dark:from-amber-950/40 dark:via-slate-900 dark:to-amber-950/30 rounded-3xl p-5 shadow-sm border border-amber-300 dark:border-amber-500/50 relative overflow-hidden">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
                 <span className="text-xl">🚀</span>
                 <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-amber-900 flex items-center space-x-1">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center space-x-1">
                     <span>TOP-1 Reklama & Reyting 5.0</span>
                     <span className="bg-amber-400 text-amber-950 text-[9px] px-1.5 py-0.2 rounded-full font-black">VIP</span>
                   </h3>
-                  <span className="text-[10px] text-amber-800 font-medium">Katalogda eng yuqorida turish va to'liq 5.0 reyting</span>
+                  <span className="text-[10px] text-amber-800 dark:text-amber-400 font-medium">Katalogda eng yuqorida turish va to'liq 5.0 reyting</span>
                 </div>
               </div>
               {barberProfile.is_vip ? (
@@ -1975,13 +1975,13 @@ export default function AdminDashboardScreen({
                   FAOL ⭐
                 </span>
               ) : (
-                <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                <span className="text-[10px] bg-amber-200 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-transparent dark:border-amber-500/30 font-bold px-2 py-0.5 rounded-full">
                   {(platformSettings.vip_boost_price || 40000).toLocaleString()} UZS/oy
                 </span>
               )}
             </div>
 
-            <p className="text-[11px] text-amber-950/80 leading-relaxed mb-3">
+            <p className="text-[11px] text-amber-950 dark:text-amber-100 font-medium leading-relaxed mb-3.5">
               {barberProfile.is_vip
                 ? "Sizning profilingiz hozir barcha mijozlarga eng birinchi bo'lib TOP-1 qatorda va oltin toj/VIP belgisi bilan 5.0 reytingda ko'rinmoqda."
                 : "VIP xizmatini yoqsangiz, profilingiz katalogda boshqa barcha ustalardan yuqorida (1-o'rinda) va kafolatlangan 5.0 yulduzli reyting bilan ko'rsatiladi. Bu mijozlar oqimini 3-5 barobarga oshiradi!"}
@@ -1990,10 +1990,10 @@ export default function AdminDashboardScreen({
             <button
               onClick={handleActivateVip}
               disabled={barberProfile.is_vip}
-              className={`w-full py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-2 shadow-md ${
+              className={`w-full py-3 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-2 shadow-md leading-normal ${
                 barberProfile.is_vip
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default'
-                  : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-gray-950 active:scale-98'
+                  ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 cursor-default'
+                  : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 active:scale-98'
               }`}
             >
               <span>{barberProfile.is_vip ? "VIP Boost Faol (Katalogda 1-o'rinda)" : `VIP Boostni faollashtirish (${(platformSettings.vip_boost_price || 40000).toLocaleString()} UZS)`}</span>
@@ -2267,7 +2267,7 @@ export default function AdminDashboardScreen({
                 </div>
 
                 {tempBreakEnabled && (
-                  <div className="space-y-2 bg-amber-50/60 p-2.5 rounded-2xl border border-amber-200/70 animate-in fade-in">
+                  <div className="space-y-2 bg-amber-500/10 dark:bg-amber-500/10 p-2.5 rounded-2xl border border-amber-200/70 dark:border-amber-500/30 animate-in fade-in">
                     <TimePickerField
                       label={t.break_start_label || "Tushlik boshlanishi"}
                       value={tempBreakStart}

@@ -93,22 +93,23 @@
 
 /* Sub-card backgrounds (chips, filters, secondary blocks) */
 .dark .bg-gray-50,
+.dark [class*="bg-gray-50"],
+.dark [class*="bg-slate-50"],
 .dark .bg-blue-50,
-.dark .bg-blue-50\/80,
-.dark .bg-blue-50\/70,
-.dark .bg-blue-50\/60 {
+.dark [class*="bg-blue-50"] {
   background-color: #0E1524 !important;
 }
 
 .dark .bg-gray-100,
+.dark [class*="bg-gray-100"],
 .dark .bg-gray-200,
-.dark .bg-gray-200\/60 {
+.dark [class*="bg-gray-200"] {
   background-color: #1A2436 !important;
 }
 
 /* Status badges */
 .dark .bg-emerald-50,
-.dark .bg-emerald-50\/70,
+.dark [class*="bg-emerald-50"],
 .dark .bg-emerald-100 {
   background-color: #064E3B !important;
   color: #6EE7B7 !important;
@@ -116,17 +117,41 @@
 }
 
 .dark .bg-amber-50,
+.dark [class*="bg-amber-50"],
 .dark .bg-amber-100 {
-  background-color: #451A03 !important;
+  background-color: #2D1805 !important;
   color: #FDE68A !important;
   border-color: #78350F !important;
 }
 
 .dark .bg-red-50,
+.dark [class*="bg-red-50"],
 .dark .bg-red-100 {
   background-color: #450A0A !important;
   color: #FCA5A5 !important;
   border-color: #7F1D1D !important;
+}
+
+/* Ensure amber/brown text becomes readable bright gold in dark mode */
+.dark .text-amber-950,
+.dark [class*="text-amber-950"],
+.dark .text-amber-900,
+.dark [class*="text-amber-900"],
+.dark .text-amber-800,
+.dark [class*="text-amber-800"] {
+  color: #FDE68A !important;
+}
+
+/* Fix button text clipping & dark text on bright buttons */
+.dark button[class*="from-amber-500"],
+.dark button[class*="bg-amber-500"],
+.dark button[class*="bg-gradient-to-r"][class*="from-amber-"] {
+  color: #090D16 !important;
+  line-height: normal !important;
+}
+.dark button[class*="from-amber-500"] span,
+.dark button[class*="bg-amber-500"] span {
+  color: #090D16 !important;
 }
 
 /* Form inputs & dropdowns */
