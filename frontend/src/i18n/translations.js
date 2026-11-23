@@ -315,7 +315,79 @@ export const translations = {
     radar_turn_arrived: "🎉 Sizning navbatingiz yetib keldi!",
     radar_waiting_desc: "Usta hozir sizdan oldingi 1 ta mijozni qabul qilmoqda",
     radar_ready_desc: "Usta sizni kutmoqda. Sartaroshxonaga kiring ✂️",
-    radar_pending_notice: "Usta navbatingizni tasdiqlashi kutilmoqda. Tasdiqlanganda Telegram orqali xabar olasiz."
+    radar_pending_notice: "Usta navbatingizni tasdiqlashi kutilmoqda. Tasdiqlanganda Telegram orqali xabar olasiz.",
+
+    // Admin Dashboard Navigation
+    admin_nav_queue: "Navbat",
+    admin_nav_schedule: "Grafik",
+    admin_nav_services: "Xizmatlar",
+    admin_nav_finance: "Kassa",
+
+    // Daily Cash & Statistics
+    daily_cash_stats: "KUNLIK KASSA & STATISTIKA",
+    today_revenue_title: "Bugungi kassa",
+    accepted_and_completed: "Qabul qilingan + Tugatilgan",
+    total_clients_label: "Jami mijozlar",
+    all_bookings_today: "Bugungi barcha navbatlar",
+    completed_services_count: "Tugatilgan xizmatlar:",
+    clients_count_unit: "ta",
+    services_count_unit: "ta",
+
+    // Subscription & VIP
+    btn_cancel_subscription: "Obunani bekor qilish",
+    vip_title: "TOP-1 Reklama & Reyting 5.0",
+    vip_subtitle: "Katalogda eng yuqorida turish va to'liq 5.0 reyting",
+    vip_active_badge: "FAOL ⭐",
+    vip_active_desc: "Sizning profilingiz hozir barcha mijozlarga eng birinchi bo'lib TOP-1 qatorda va oltin toj/VIP belgisi bilan 5.0 reytingda ko'rinmoqda.",
+    vip_inactive_desc: "VIP xizmatini yoqsangiz, profilingiz katalogda boshqa barcha ustalardan yuqorida (1-o'rinda) va kafolatlangan 5.0 yulduzli reyting bilan ko'rsatiladi. Bu mijozlar oqimini 3-5 barobarga oshiradi!",
+    vip_active_btn: "VIP Boost Faol (Katalogda 1-o'rinda)",
+    vip_activate_btn: "VIP Boostni faollashtirish",
+    per_month_unit: "UZS/oy",
+    auto_restore_on: "Avto-tiklash ON",
+
+    // Services Management
+    service_price_label: "Narxi:",
+
+    // Schedule Management
+    today_work_status_title: "Bugungi ish holati",
+    today_work_status_desc: "Agar bugun ishga chiqolmasangiz, bitta tugma bilan dam olishni yoqing",
+    status_working_btn: "Ishdaman 🟢",
+    status_dayoff_btn: "Dam olish 🔴",
+    daily_work_hours_title: "Kunlik ish vaqti",
+    daily_work_hours_hint: "00:00 dan 23:59 gacha istalgan soat va minutni tanlang",
+    work_start_time: "Ish boshlanish vaqti",
+    work_end_time: "Ish tugash vaqti",
+    hour_label_24: "Soat (00 - 23)",
+    minute_label_60: "Minut (00 - 59)",
+    quick_label: "Tezkor:",
+    quick_presets_label: "Tezkor shablonlar:",
+    lunch_break_title: "Tushlik / Tanaffus vaqti",
+    lunch_break_hint: "Bu vaqtda mijozlar navbat ololmaydi",
+    lunch_start_time: "Tushlik boshlanishi",
+    lunch_end_time: "Tushlik tugashi",
+    quick_lunch_label: "Tezkor tushlik:",
+    weekly_days_off_title: "Haftalik dam olish kunlari",
+    weekly_days_off_hint: "Qaysi kunlarda ishlamasligingizni belgilang",
+    day_off_pill: "Dam olish",
+    work_day_pill: "Ish kuni",
+    save_schedule_btn: "Grafik va Vaqtlarni Saqlash",
+
+    // Appointments Queue
+    btn_call_client: "Chaqirish 📢",
+    btn_called_status: "Chaqirildi ✂️",
+    queue_count_label: "ta navbat",
+    auto_reminder_header: "Avto-eslatma: 1 soat oldin (SMS + Telegram)",
+    auto_on_badge: "Avto ON",
+
+    // Role selection
+    role_prompt: "Platformadan qanday maqsadda foydalanmoqchisiz?",
+    role_client_title: "Men mijozman",
+    role_client_desc: "O'zimga eng yaqin sartaroshlarni topish, narxlarni ko'rish va navbatga yozilish.",
+    role_client_badge: "Tezkor, bepul va qulay band qilish",
+    role_barber_title: "Men ustaman / Barbershop",
+    role_barber_desc: "Sartaroshxonamni umumiy katalogga qo'shish, yangi mijozlar oqimi va navbatlarni boshqarish.",
+    role_barber_badge: "SaaS boshqaruv paneli + Telegram bildirishnomalar",
+    about_bot_btn: "ℹ️ Bot haqida ma'lumot"
   },
   
   ru: {
@@ -634,7 +706,79 @@ export const translations = {
     radar_turn_arrived: "🎉 Ваша очередь подошла!",
     radar_waiting_desc: "Мастер сейчас принимает клиента перед вами",
     radar_ready_desc: "Мастер вас ждёт. Проходите в барбершоп ✂️",
-    radar_pending_notice: "Ожидается подтверждение записи мастером. Вы получите уведомление в Telegram."
+    radar_pending_notice: "Ожидается подтверждение записи мастером. Вы получите уведомление в Telegram.",
+
+    // Admin Dashboard Navigation
+    admin_nav_queue: "Записи",
+    admin_nav_schedule: "График",
+    admin_nav_services: "Услуги",
+    admin_nav_finance: "Касса",
+
+    // Daily Cash & Statistics
+    daily_cash_stats: "ЕЖЕДНЕВНАЯ КАССА И СТАТИСТИКА",
+    today_revenue_title: "Касса за сегодня",
+    accepted_and_completed: "Принято + Завершено",
+    total_clients_label: "Всего клиентов",
+    all_bookings_today: "Все записи на сегодня",
+    completed_services_count: "Завершенные услуги:",
+    clients_count_unit: "чел.",
+    services_count_unit: "услуг",
+
+    // Subscription & VIP
+    btn_cancel_subscription: "Отменить подписку",
+    vip_title: "ТОП-1 Реклама & Рейтинг 5.0",
+    vip_subtitle: "1-е место в каталоге и гарантия рейтинга 5.0",
+    vip_active_badge: "АКТИВЕН ⭐",
+    vip_active_desc: "Ваш профиль сейчас отображается на 1-м месте в каталоге с золотой короной и гарантированным рейтингом 5.0.",
+    vip_inactive_desc: "При включении VIP ваш профиль показывается выше всех мастеров в каталоге (на 1-м месте) и с гарантированным рейтингом 5.0. Это увеличивает поток клиентов в 3–5 раз!",
+    vip_active_btn: "VIP Boost активен (1-е место в каталоге)",
+    vip_activate_btn: "Активировать VIP Boost",
+    per_month_unit: "сум/мес",
+    auto_restore_on: "Автовосстановление ВКЛ",
+
+    // Services Management
+    service_price_label: "Цена:",
+
+    // Schedule Management
+    today_work_status_title: "Рабочий статус на сегодня",
+    today_work_status_desc: "Если сегодня не работаете, включите выходной одной кнопкой",
+    status_working_btn: "Работаю 🟢",
+    status_dayoff_btn: "Выходной 🔴",
+    daily_work_hours_title: "Ежедневный график работы",
+    daily_work_hours_hint: "Выберите любые часы и минуты от 00:00 до 23:59",
+    work_start_time: "Время начала работы",
+    work_end_time: "Время окончания работы",
+    hour_label_24: "Час (00 - 23)",
+    minute_label_60: "Минуты (00 - 59)",
+    quick_label: "Быстро:",
+    quick_presets_label: "Быстрые шаблоны:",
+    lunch_break_title: "Обед / Время перерыва",
+    lunch_break_hint: "В это время клиенты не могут записаться",
+    lunch_start_time: "Начало обеда",
+    lunch_end_time: "Конец обеда",
+    quick_lunch_label: "Быстрый обед:",
+    weekly_days_off_title: "Еженедельные выходные дни",
+    weekly_days_off_hint: "Отметьте дни, в которые вы не работаете",
+    day_off_pill: "Выходной",
+    work_day_pill: "Рабочий",
+    save_schedule_btn: "Сохранить график и время",
+
+    // Appointments Queue
+    btn_call_client: "Вызвать 📢",
+    btn_called_status: "Вызван ✂️",
+    queue_count_label: "записей",
+    auto_reminder_header: "Автонапоминание: за 1 час (SMS + Telegram)",
+    auto_on_badge: "Авто ВКЛ",
+
+    // Role selection
+    role_prompt: "С какой целью вы хотите использовать платформу?",
+    role_client_title: "Я клиент",
+    role_client_desc: "Найти ближайших барберов, посмотреть цены и записаться в очередь.",
+    role_client_badge: "Быстрая, бесплатная и удобная запись",
+    role_barber_title: "Я мастер / Барбершоп",
+    role_barber_desc: "Добавить барбершоп в каталог, привлечь клиентов и управлять записями.",
+    role_barber_badge: "Панель управления SaaS + Уведомления в Telegram",
+    about_bot_btn: "ℹ️ Информация о боте"
   },
   
   en: {
@@ -953,6 +1097,78 @@ export const translations = {
     radar_turn_arrived: "🎉 Your turn has arrived!",
     radar_waiting_desc: "The barber is currently serving the client before you",
     radar_ready_desc: "The barber is waiting for you. Please come in ✂️",
-    radar_pending_notice: "Waiting for barber to confirm booking. You will be notified in Telegram."
+    radar_pending_notice: "Waiting for barber to confirm booking. You will be notified in Telegram.",
+
+    // Admin Dashboard Navigation
+    admin_nav_queue: "Queue",
+    admin_nav_schedule: "Schedule",
+    admin_nav_services: "Services",
+    admin_nav_finance: "Cash",
+
+    // Daily Cash & Statistics
+    daily_cash_stats: "DAILY CASH & STATISTICS",
+    today_revenue_title: "Today's revenue",
+    accepted_and_completed: "Accepted + Completed",
+    total_clients_label: "Total clients",
+    all_bookings_today: "All bookings today",
+    completed_services_count: "Completed services:",
+    clients_count_unit: "clients",
+    services_count_unit: "services",
+
+    // Subscription & VIP
+    btn_cancel_subscription: "Cancel subscription",
+    vip_title: "TOP-1 Promo & 5.0 Rating",
+    vip_subtitle: "Top rank in catalog & full 5.0 rating",
+    vip_active_badge: "ACTIVE ⭐",
+    vip_active_desc: "Your profile is currently displayed at #1 in the catalog with a golden crown and guaranteed 5.0 rating.",
+    vip_inactive_desc: "Activating VIP puts your profile above all barbers in the catalog (1st place) with a guaranteed 5.0 rating. This increases client flow by 3–5x!",
+    vip_active_btn: "VIP Boost Active (#1 in catalog)",
+    vip_activate_btn: "Activate VIP Boost",
+    per_month_unit: "UZS/mo",
+    auto_restore_on: "Auto-recovery ON",
+
+    // Services Management
+    service_price_label: "Price:",
+
+    // Schedule Management
+    today_work_status_title: "Today's work status",
+    today_work_status_desc: "If you cannot work today, turn on day off with one tap",
+    status_working_btn: "Working 🟢",
+    status_dayoff_btn: "Day off 🔴",
+    daily_work_hours_title: "Daily working hours",
+    daily_work_hours_hint: "Choose any hour and minute from 00:00 to 23:59",
+    work_start_time: "Work start time",
+    work_end_time: "Work end time",
+    hour_label_24: "Hour (00 - 23)",
+    minute_label_60: "Minutes (00 - 59)",
+    quick_label: "Quick:",
+    quick_presets_label: "Quick presets:",
+    lunch_break_title: "Lunch / Break time",
+    lunch_break_hint: "Clients cannot book during this time",
+    lunch_start_time: "Lunch start",
+    lunch_end_time: "Lunch end",
+    quick_lunch_label: "Quick lunch:",
+    weekly_days_off_title: "Weekly days off",
+    weekly_days_off_hint: "Select the days you do not work",
+    day_off_pill: "Day off",
+    work_day_pill: "Work day",
+    save_schedule_btn: "Save Schedule & Hours",
+
+    // Appointments Queue
+    btn_call_client: "Call client 📢",
+    btn_called_status: "Called ✂️",
+    queue_count_label: "bookings",
+    auto_reminder_header: "Auto-reminder: 1h before (SMS + Telegram)",
+    auto_on_badge: "Auto ON",
+
+    // Role selection
+    role_prompt: "How do you want to use the platform?",
+    role_client_title: "I am a client",
+    role_client_desc: "Find nearby barbers, check prices, and book appointments.",
+    role_client_badge: "Fast, free, and easy booking",
+    role_barber_title: "I am a barber / Barbershop",
+    role_barber_desc: "List barbershop in directory, attract new clients, and manage appointments.",
+    role_barber_badge: "SaaS dashboard + Telegram notifications",
+    about_bot_btn: "ℹ️ About the Bot"
   }
 };

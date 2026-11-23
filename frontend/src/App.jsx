@@ -474,6 +474,7 @@ export default function App() {
         <RoleSelectionScreen
           onSelectRole={handleSelectRole}
           t={t}
+          lang={lang}
           isSuperAdmin={isSuperAdminUser}
         />
       )}

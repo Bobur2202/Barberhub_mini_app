@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Scissors, ArrowRight, ShieldCheck, Sparkles, Crown, Lock, Info, X, MapPin, Clock, BellRing } from 'lucide-react';
 
-export default function RoleSelectionScreen({ onSelectRole, t, isSuperAdmin = false }) {
+export default function RoleSelectionScreen({ onSelectRole, t, lang = 'uz', isSuperAdmin = false }) {
   const [showPinModal, setShowPinModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
@@ -29,7 +29,7 @@ export default function RoleSelectionScreen({ onSelectRole, t, isSuperAdmin = fa
           Barber<span className="text-brand-orange">Hub</span>
         </h1>
         <p className="text-xs text-gray-500 font-medium mt-1">
-          Platformadan qanday maqsadda foydalanmoqchisiz?
+          {t?.role_prompt || (lang === 'ru' ? 'С какой целью вы хотите использовать платформу?' : lang === 'en' ? 'How do you want to use the platform?' : 'Platformadan qanday maqsadda foydalanmoqchisiz?')}
         </p>
       </div>
 
@@ -48,19 +48,19 @@ export default function RoleSelectionScreen({ onSelectRole, t, isSuperAdmin = fa
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <h3 className="font-extrabold text-base text-brand-blue">
-                  Men mijozman
+                  {t?.role_client_title || (lang === 'ru' ? 'Я клиент' : lang === 'en' ? 'I am a client' : 'Men mijozman')}
                 </h3>
                 <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-brand-blue group-hover:translate-x-1 transition-all" />
               </div>
               <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                O'zimga eng yaqin sartaroshlarni topish, narxlarni ko'rish va navbatga yozilish.
+                {t?.role_client_desc || (lang === 'ru' ? 'Найти ближайших барберов, посмотреть цены и записаться в очередь.' : lang === 'en' ? 'Find nearby barbers, check prices, and book appointments.' : "O'zimga eng yaqin sartaroshlarni topish, narxlarni ko'rish va navbatga yozilish.")}
               </p>
             </div>
           </div>
 
           <div className="mt-3.5 pt-3 border-t border-gray-100 flex items-center space-x-1.5 text-[11px] font-semibold text-emerald-600">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Tezkor, bepul va qulay band qilish</span>
+            <span>{t?.role_client_badge || (lang === 'ru' ? 'Быстрая, бесплатная и удобная запись' : lang === 'en' ? 'Fast, free, and easy booking' : 'Tezkor, bepul va qulay band qilish')}</span>
           </div>
         </div>
 
@@ -77,19 +77,19 @@ export default function RoleSelectionScreen({ onSelectRole, t, isSuperAdmin = fa
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <h3 className="font-extrabold text-base text-brand-blue">
-                  Men ustaman / Barbershop
+                  {t?.role_barber_title || (lang === 'ru' ? 'Я мастер / Барбершоп' : lang === 'en' ? 'I am a barber / Barbershop' : 'Men ustaman / Barbershop')}
                 </h3>
                 <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-brand-orange group-hover:translate-x-1 transition-all" />
               </div>
               <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                Sartaroshxonamni umumiy katalogga qo'shish, yangi mijozlar oqimi va navbatlarni boshqarish.
+                {t?.role_barber_desc || (lang === 'ru' ? 'Добавить барбершоп в каталог, привлечь клиентов и управлять записями.' : lang === 'en' ? 'List barbershop in directory, attract new clients, and manage appointments.' : "Sartaroshxonamni umumiy katalogga qo'shish, yangi mijozlar oqimi va navbatlarni boshqarish.")}
               </p>
             </div>
           </div>
 
           <div className="mt-3.5 pt-3 border-t border-gray-100 flex items-center space-x-1.5 text-[11px] font-semibold text-brand-orange">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>SaaS boshqaruv paneli + Telegram bildirishnomalar</span>
+            <span>{t?.role_barber_badge || (lang === 'ru' ? 'Панель управления SaaS + Уведомления в Telegram' : lang === 'en' ? 'SaaS dashboard + Telegram notifications' : 'SaaS boshqaruv paneli + Telegram bildirishnomalar')}</span>
           </div>
         </div>
       </div>

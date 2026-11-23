@@ -53,7 +53,14 @@ import {
   activateVipBoost,
   getPlatformSettings
 } from '../services/api';
-import { getTranslatedServiceName, formatServiceDuration } from '../data/serviceTranslations';
+import { 
+  getTranslatedServiceName, 
+  formatServiceDuration,
+  formatAppointmentDate,
+  getTranslatedPromoBadge,
+  getTranslatedDayName,
+  getTranslatedRole 
+} from '../data/serviceTranslations';
 import { mockBarbers } from '../data/mockBarbers';
 import { hapticFeedback } from '../utils/haptics';
 
@@ -63,7 +70,7 @@ const HOURS_24 = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')
 const MINUTES_60 = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
 // Maxsus aniq vaqt tanlash komponenti (Soat 00-23 va Minut 00-59)
-function TimePickerField({ label, value, onChange, icon }) {
+function TimePickerField({ label, value, onChange, icon, lang = 'uz', t = {} }) {
   const parts = (value || "09:00").split(':');
   const h = parts[0] || "09";
   const m = parts[1] || "00";
@@ -92,7 +99,7 @@ function TimePickerField({ label, value, onChange, icon }) {
         {/* Soat (00 - 23) */}
         <div>
           <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
-            Soat (00 - 23)
+            {t?.hour_label_24 || (lang === 'ru' ? 'Час (00 - 23)' : lang === 'en' ? 'Hour (00 - 23)' : 'Soat (00 - 23)')}
           </label>
           <select
             value={h}
@@ -110,7 +117,7 @@ function TimePickerField({ label, value, onChange, icon }) {
         {/* Minut (00 - 59) */}
         <div>
           <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
-            Minut (00 - 59)
+            {t?.minute_label_60 || (lang === 'ru' ? 'Минуты (00 - 59)' : lang === 'en' ? 'Minutes (00 - 59)' : 'Minut (00 - 59)')}
           </label>
           <select
             value={m}
@@ -128,7 +135,9 @@ function TimePickerField({ label, value, onChange, icon }) {
 
       {/* Tezkor minut knopkalari */}
       <div className="flex items-center space-x-1.5 mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-800">
-        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">Tezkor:</span>
+        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">
+          {t?.quick_label || (lang === 'ru' ? 'Быстро:' : lang === 'en' ? 'Quick:' : 'Tezkor:')}
+        </span>
         {['00', '15', '30', '45'].map((quickM) => (
           <button
             key={quickM}
@@ -878,7 +887,7 @@ export default function AdminDashboardScreen({
               </div>
               
               <p className="text-xs text-gray-500 font-medium truncate mt-0.5">
-                {barberProfile.role || "Erkaklar sartaroshi"}
+                {getTranslatedRole(barberProfile.role, lang) || t.barber_role}
               </p>
 
               {/* Ish vaqti va Tushlik xulosasi */}
@@ -918,7 +927,7 @@ export default function AdminDashboardScreen({
             </h1>
             <div className="flex items-center space-x-2 mt-0.5">
               <p className="text-xs text-gray-500 font-medium">
-                {t.today_badge} — {appointments.length} ta navbat
+                {t.today_badge} — {appointments.length} {t.queue_count_label || (lang === 'ru' ? 'записей' : lang === 'en' ? 'bookings' : 'ta navbat')}
               </p>
               <span className="inline-flex items-center space-x-1 text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -1309,7 +1318,7 @@ export default function AdminDashboardScreen({
                     <span>{time}</span>
                   </div>
                   <span className="text-[10px] text-gray-400 block mt-1">
-                    {apt.date || apt.date_str}
+                    {formatAppointmentDate(apt.date || apt.date_str, lang)}
                   </span>
                 </div>
               </div>
@@ -1364,14 +1373,14 @@ export default function AdminDashboardScreen({
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
                       }`}
-                      title="Mijozga SMS va Telegram eslatma jo'natish"
+                      title={lang === 'ru' ? 'Отправить SMS и Telegram напоминание' : lang === 'en' ? 'Send SMS and Telegram reminder' : "Mijozga SMS va Telegram eslatma jo'natish"}
                     >
                       <BellRing className={`w-3 h-3 ${reminderLoadingId === apt.id ? 'animate-spin' : 'text-amber-600'}`} />
                       <span>
                         {reminderLoadingId === apt.id
                           ? '...'
                           : apt.reminder_sent
-                          ? (t.reminder_sent_badge ? "Eslatildi" : "Sent")
+                          ? (lang === 'ru' ? 'Отправлено' : lang === 'en' ? 'Sent' : (t.reminder_sent_badge ? "Eslatildi" : "Sent"))
                           : (t.btn_send_reminder || "🔔 Eslatma")}
                       </span>
                     </button>
@@ -1407,10 +1416,14 @@ export default function AdminDashboardScreen({
                             ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                             : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs hover:opacity-90 active:scale-95'
                         }`}
-                        title="Mijozga navbati yetganini xabar qilish"
+                        title={lang === 'ru' ? 'Вызвать клиента к креслу' : lang === 'en' ? 'Call client to barber chair' : "Mijozga navbati yetganini xabar qilish"}
                       >
                         <Radio className={`w-3 h-3 ${callingClientId === apt.id ? 'animate-spin' : ''}`} />
-                        <span>{apt.queue_status === 'ready_call' ? "Chaqirildi ✂️" : "Chaqirish 📢"}</span>
+                        <span>
+                          {apt.queue_status === 'ready_call' 
+                            ? (t.btn_called_status || (lang === 'ru' ? 'Вызван ✂️' : lang === 'en' ? 'Called ✂️' : "Chaqirildi ✂️")) 
+                            : (t.btn_call_client || (lang === 'ru' ? 'Вызвать 📢' : lang === 'en' ? 'Call client 📢' : "Chaqirish 📢"))}
+                        </span>
                       </button>
 
                       <button
@@ -1449,10 +1462,10 @@ export default function AdminDashboardScreen({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-gray-700">
-                  Bugungi ish holati
+                  {t.today_work_status_title || "Bugungi ish holati"}
                 </h3>
                 <p className="text-[11px] text-gray-500 mt-0.5">
-                  Agar bugun ishga chiqolmasangiz, bitta tugma bilan dam olishni yoqing
+                  {t.today_work_status_desc || "Agar bugun ishga chiqolmasangiz, bitta tugma bilan dam olishni yoqing"}
                 </p>
               </div>
               <button
@@ -1465,7 +1478,7 @@ export default function AdminDashboardScreen({
                 }`}
               >
                 <span className={`w-2 h-2 rounded-full ${barberProfile.isWorkingToday !== false ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                <span>{barberProfile.isWorkingToday !== false ? "Ishdaman 🟢" : "Dam olish 🔴"}</span>
+                <span>{barberProfile.isWorkingToday !== false ? (t.status_working_btn || "Ishdaman 🟢") : (t.status_dayoff_btn || "Dam olish 🔴")}</span>
               </button>
             </div>
           </div>
@@ -1476,29 +1489,37 @@ export default function AdminDashboardScreen({
               <Clock className="w-4 h-4 text-brand-orange" />
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-brand-blue">
-                  Kunlik ish vaqti
+                  {t.daily_work_hours_title || "Kunlik ish vaqti"}
                 </h3>
-                <span className="text-[10px] text-gray-400 block">00:00 dan 23:59 gacha istalgan soat va minutni tanlang</span>
+                <span className="text-[10px] text-gray-400 block">
+                  {t.daily_work_hours_hint || "00:00 dan 23:59 gacha istalgan soat va minutni tanlang"}
+                </span>
               </div>
             </div>
 
             <TimePickerField
-              label="Ish boshlanish vaqti"
+              label={t.work_start_time || "Ish boshlanish vaqti"}
               value={tempWorkStart}
               onChange={setTempWorkStart}
               icon={<Clock className="w-3.5 h-3.5 text-brand-blue" />}
+              lang={lang}
+              t={t}
             />
 
             <TimePickerField
-              label="Ish tugash vaqti"
+              label={t.work_end_time || "Ish tugash vaqti"}
               value={tempWorkEnd}
               onChange={setTempWorkEnd}
               icon={<Clock className="w-3.5 h-3.5 text-brand-blue" />}
+              lang={lang}
+              t={t}
             />
 
             {/* Tezkor ish vaqti shablonlari */}
             <div className="pt-1">
-              <span className="text-[10px] font-bold text-gray-400 block mb-1.5">Tezkor shablonlar:</span>
+              <span className="text-[10px] font-bold text-gray-400 block mb-1.5">
+                {t.quick_presets_label || "Tezkor shablonlar:"}
+              </span>
               <div className="grid grid-cols-3 gap-1.5">
                 {[
                   { label: "09:00 - 22:00", s: "09:00", e: "22:00" },
@@ -1531,9 +1552,11 @@ export default function AdminDashboardScreen({
                 <Coffee className="w-4 h-4 text-amber-600" />
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-brand-blue">
-                    Tushlik / Tanaffus vaqti
+                    {t.lunch_break_title || "Tushlik / Tanaffus vaqti"}
                   </h3>
-                  <span className="text-[10px] text-gray-400 block">Bu vaqtda mijozlar navbat ololmaydi</span>
+                  <span className="text-[10px] text-gray-400 block">
+                    {t.lunch_break_hint || "Bu vaqtda mijozlar navbat ololmaydi"}
+                  </span>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -1550,21 +1573,27 @@ export default function AdminDashboardScreen({
             {tempBreakEnabled && (
               <div className="space-y-3 animate-in fade-in">
                 <TimePickerField
-                  label="Tushlik boshlanishi"
+                  label={t.lunch_start_time || "Tushlik boshlanishi"}
                   value={tempBreakStart}
                   onChange={setTempBreakStart}
                   icon={<Coffee className="w-3.5 h-3.5 text-amber-600" />}
+                  lang={lang}
+                  t={t}
                 />
 
                 <TimePickerField
-                  label="Tushlik tugashi"
+                  label={t.lunch_end_time || "Tushlik tugashi"}
                   value={tempBreakEnd}
                   onChange={setTempBreakEnd}
                   icon={<Coffee className="w-3.5 h-3.5 text-amber-600" />}
+                  lang={lang}
+                  t={t}
                 />
 
                 <div className="pt-1">
-                  <span className="text-[10px] font-bold text-gray-400 block mb-1">Tezkor tushlik:</span>
+                  <span className="text-[10px] font-bold text-gray-400 block mb-1">
+                    {t.quick_lunch_label || "Tezkor tushlik:"}
+                  </span>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
                       { label: "13:00 - 14:00", s: "13:00", e: "14:00" },
@@ -1595,9 +1624,11 @@ export default function AdminDashboardScreen({
               <CalendarDays className="w-4 h-4 text-brand-blue" />
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-brand-blue">
-                  Haftalik dam olish kunlari
+                  {t.weekly_days_off_title || "Haftalik dam olish kunlari"}
                 </h3>
-                <span className="text-[10px] text-gray-400 block">Qaysi kunlarda ishlamasligingizni belgilang</span>
+                <span className="text-[10px] text-gray-400 block">
+                  {t.weekly_days_off_hint || "Qaysi kunlarda ishlamasligingizni belgilang"}
+                </span>
               </div>
             </div>
 
@@ -1615,9 +1646,9 @@ export default function AdminDashboardScreen({
                         : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200'
                     }`}
                   >
-                    <span>{day}</span>
+                    <span>{getTranslatedDayName(day, lang)}</span>
                     <span className="block text-[8px] font-bold mt-0.5">
-                      {isOff ? "Dam olish" : "Ish kuni"}
+                      {isOff ? (t.day_off_pill || "Dam olish") : (t.work_day_pill || "Ish kuni")}
                     </span>
                   </button>
                 );
@@ -1632,7 +1663,7 @@ export default function AdminDashboardScreen({
             className="w-full py-3.5 bg-brand-orange hover:bg-brand-orange-hover text-brand-blue font-black text-sm rounded-2xl shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all flex items-center justify-center space-x-2"
           >
             <Check className="w-4 h-4 stroke-[3]" />
-            <span>Grafik va Vaqtlarni Saqlash</span>
+            <span>{t.save_schedule_btn || "Grafik va Vaqtlarni Saqlash"}</span>
           </button>
         </div>
       )}
@@ -1673,7 +1704,7 @@ export default function AdminDashboardScreen({
                       {srv.isPromo && (
                         <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
                           <Tag className="w-2.5 h-2.5" />
-                          <span>{srv.promoBadge || 'Aksiya'}</span>
+                          <span>{getTranslatedPromoBadge(srv.promoBadge, lang) || (lang === 'ru' ? 'Акция' : lang === 'en' ? 'Offer' : 'Aksiya')}</span>
                         </span>
                       )}
                     </div>
@@ -1701,7 +1732,9 @@ export default function AdminDashboardScreen({
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-gray-200/60 flex items-center justify-between">
-                  <span className="text-[10px] text-gray-400 font-medium">Narxi:</span>
+                  <span className="text-[10px] text-gray-400 font-medium">
+                    {t.service_price_label || (lang === 'ru' ? 'Цена:' : lang === 'en' ? 'Price:' : 'Narxi:')}
+                  </span>
                   <div className="text-right">
                     {srv.oldPrice && (
                       <span className="text-[10px] text-gray-400 line-through mr-1.5">
@@ -1741,12 +1774,12 @@ export default function AdminDashboardScreen({
               className="text-xs font-extrabold text-brand-blue bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-xl flex items-center space-x-1 transition-colors border border-amber-200/60"
             >
               <Plus className="w-3.5 h-3.5 text-brand-orange" />
-              <span>Rasm qo'shish</span>
+              <span>{t.add_salon_photo || (lang === 'ru' ? '+ Фото' : lang === 'en' ? '+ Photo' : '+ Rasm')}</span>
             </button>
           </div>
 
           <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">
-            Mijozlar profilingizga kirganda sizning ishlaringiz va sartaroshxona qulayliklarini ko'rishadi:
+            {t.salon_photos_desc || (lang === 'ru' ? 'Клиенты увидят эти фотографии при посещении вашего профиля:' : lang === 'en' ? 'Clients will see these photos when visiting your profile:' : "Mijozlar profilingizga kirganda sizning ishlaringiz va sartaroshxona qulayliklarini ko'rishadi:")}
           </p>
 
           <div className="grid grid-cols-3 gap-2">
@@ -1761,7 +1794,7 @@ export default function AdminDashboardScreen({
                   type="button"
                   onClick={() => handleDeleteSalonPhoto(idx)}
                   className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center transition-colors shadow-sm"
-                  title="O'chirish"
+                  title={t.btn_delete || "O'chirish"}
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>
@@ -1774,7 +1807,9 @@ export default function AdminDashboardScreen({
               className="border-2 border-dashed border-gray-200 hover:border-brand-blue/50 rounded-2xl aspect-square flex flex-col items-center justify-center text-gray-400 hover:text-brand-blue bg-gray-50/50 hover:bg-blue-50/30 transition-all"
             >
               <Plus className="w-5 h-5 text-brand-orange mb-1" />
-              <span className="text-[10px] font-bold">Rasm qo'shish</span>
+              <span className="text-[10px] font-bold">
+                {t.add_salon_photo || (lang === 'ru' ? 'Добавить фото' : lang === 'en' ? 'Add photo' : "Rasm qo'shish")}
+              </span>
             </button>
           </div>
         </div>
@@ -1790,39 +1825,49 @@ export default function AdminDashboardScreen({
               <div className="flex items-center space-x-1.5">
                 <DollarSign className="w-4 h-4 text-emerald-600" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
-                  Kunlik Kassa & Statistika
+                  {t.daily_cash_stats || (lang === 'ru' ? 'ЕЖЕДНЕВНАЯ КАССА И СТАТИСТИКА' : lang === 'en' ? 'DAILY CASH & STATISTICS' : 'Kunlik Kassa & Statistika')}
                 </h3>
               </div>
               <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                Bugun
+                {t.today_badge || (lang === 'ru' ? 'Сегодня' : lang === 'en' ? 'Today' : 'Bugun')}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               <div className="p-3.5 bg-emerald-50/70 border border-emerald-100 rounded-2xl">
-                <span className="text-[10px] font-bold text-gray-500 block">Bugungi kassa</span>
+                <span className="text-[10px] font-bold text-gray-500 block">
+                  {t.today_revenue_title || t.today_revenue || (lang === 'ru' ? 'Касса за сегодня' : lang === 'en' ? "Today's revenue" : 'Bugungi kassa')}
+                </span>
                 <span className="text-lg font-black text-emerald-700 block mt-0.5">
                   {todayRevenue.toLocaleString()} UZS
                 </span>
-                <span className="text-[9px] text-emerald-600 font-medium">Qabul qilingan + Tugatilgan</span>
+                <span className="text-[9px] text-emerald-600 font-medium">
+                  {t.accepted_and_completed || (lang === 'ru' ? 'Принято + Завершено' : lang === 'en' ? 'Accepted + Completed' : 'Qabul qilingan + Tugatilgan')}
+                </span>
               </div>
 
               <div className="p-3.5 bg-blue-50/70 border border-blue-100 rounded-2xl">
-                <span className="text-[10px] font-bold text-gray-500 block">Jami mijozlar</span>
-                <span className="text-lg font-black text-brand-blue block mt-0.5">
-                  {appointments.length} ta
+                <span className="text-[10px] font-bold text-gray-500 block">
+                  {t.total_clients_label || (lang === 'ru' ? 'Всего клиентов' : lang === 'en' ? 'Total clients' : 'Jami mijozlar')}
                 </span>
-                <span className="text-[9px] text-gray-500 font-medium">Bugungi barcha navbatlar</span>
+                <span className="text-lg font-black text-brand-blue block mt-0.5">
+                  {appointments.length} {t.clients_count_unit || (lang === 'ru' ? 'чел.' : lang === 'en' ? 'clients' : 'ta')}
+                </span>
+                <span className="text-[9px] text-gray-500 font-medium">
+                  {t.all_bookings_today || (lang === 'ru' ? 'Все записи на сегодня' : lang === 'en' ? 'All bookings today' : 'Bugungi barcha navbatlar')}
+                </span>
               </div>
             </div>
 
             <div className="mt-3 p-3 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between text-xs">
               <div className="flex items-center space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span className="text-gray-600 font-medium">Tugatilgan xizmatlar:</span>
+                <span className="text-gray-600 font-medium">
+                  {t.completed_services_count || (lang === 'ru' ? 'Завершенные услуги:' : lang === 'en' ? 'Completed services:' : 'Tugatilgan xizmatlar:')}
+                </span>
               </div>
               <span className="font-extrabold text-gray-900">
-                {appointments.filter(a => a.status === 'completed').length} ta
+                {appointments.filter(a => a.status === 'completed').length} {t.services_count_unit || (lang === 'ru' ? 'услуг' : lang === 'en' ? 'services' : 'ta')}
               </span>
             </div>
 
@@ -1933,9 +1978,9 @@ export default function AdminDashboardScreen({
                   <button
                     onClick={handleCancelSubscription}
                     className="px-3 py-2 text-xs font-bold rounded-xl border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 bg-transparent dark:bg-red-950/30 hover:bg-red-50 dark:hover:bg-red-900/40 transition-all"
-                    title="Oylik obunani bekor qilish"
+                    title={t.btn_cancel_subscription || "Oylik obunani bekor qilish"}
                   >
-                    Obunani bekor qilish
+                    {t.btn_cancel_subscription || (lang === 'ru' ? 'Отменить подписку' : lang === 'en' ? 'Cancel subscription' : 'Obunani bekor qilish')}
                   </button>
                 </div>
               </div>
@@ -1964,27 +2009,29 @@ export default function AdminDashboardScreen({
                 <span className="text-xl">🚀</span>
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center space-x-1">
-                    <span>TOP-1 Reklama & Reyting 5.0</span>
+                    <span>{t.vip_title || (lang === 'ru' ? 'ТОП-1 Реклама & Рейтинг 5.0' : lang === 'en' ? 'TOP-1 Promo & 5.0 Rating' : 'TOP-1 Reklama & Reyting 5.0')}</span>
                     <span className="bg-amber-400 text-amber-950 text-[9px] px-1.5 py-0.2 rounded-full font-black">VIP</span>
                   </h3>
-                  <span className="text-[10px] text-amber-800 dark:text-amber-400 font-medium">Katalogda eng yuqorida turish va to'liq 5.0 reyting</span>
+                  <span className="text-[10px] text-amber-800 dark:text-amber-400 font-medium">
+                    {t.vip_subtitle || (lang === 'ru' ? '1-е место в каталоге и гарантия рейтинга 5.0' : lang === 'en' ? 'Top rank in catalog & full 5.0 rating' : "Katalogda eng yuqorida turish va to'liq 5.0 reyting")}
+                  </span>
                 </div>
               </div>
               {barberProfile.is_vip ? (
                 <span className="text-[10px] bg-emerald-600 text-white font-black px-2 py-0.5 rounded-full shadow-xs">
-                  FAOL ⭐
+                  {t.vip_active_badge || (lang === 'ru' ? 'АКТИВЕН ⭐' : lang === 'en' ? 'ACTIVE ⭐' : 'FAOL ⭐')}
                 </span>
               ) : (
                 <span className="text-[10px] bg-amber-200 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-transparent dark:border-amber-500/30 font-bold px-2 py-0.5 rounded-full">
-                  {(platformSettings.vip_boost_price || 40000).toLocaleString()} UZS/oy
+                  {(platformSettings.vip_boost_price || 40000).toLocaleString()} {t.per_month_unit || (lang === 'ru' ? 'сум/мес' : lang === 'en' ? 'UZS/mo' : 'UZS/oy')}
                 </span>
               )}
             </div>
 
             <p className="text-[11px] text-amber-950 dark:text-amber-100 font-medium leading-relaxed mb-3.5">
               {barberProfile.is_vip
-                ? "Sizning profilingiz hozir barcha mijozlarga eng birinchi bo'lib TOP-1 qatorda va oltin toj/VIP belgisi bilan 5.0 reytingda ko'rinmoqda."
-                : "VIP xizmatini yoqsangiz, profilingiz katalogda boshqa barcha ustalardan yuqorida (1-o'rinda) va kafolatlangan 5.0 yulduzli reyting bilan ko'rsatiladi. Bu mijozlar oqimini 3-5 barobarga oshiradi!"}
+                ? (t.vip_active_desc || (lang === 'ru' ? 'Ваш профиль сейчас отображается на 1-м месте в каталоге с золотой короной и гарантированным рейтингом 5.0.' : lang === 'en' ? 'Your profile is currently displayed at #1 in the catalog with a golden crown and guaranteed 5.0 rating.' : "Sizning profilingiz hozir barcha mijozlarga eng birinchi bo'lib TOP-1 qatorda va oltin toj/VIP belgisi bilan 5.0 reytingda ko'rinmoqda."))
+                : (t.vip_inactive_desc || (lang === 'ru' ? 'При включении VIP ваш профиль показывается выше всех мастеров в каталоге (на 1-м месте) и с гарантированным рейтингом 5.0. Это увеличивает поток клиентов в 3–5 раз!' : lang === 'en' ? 'Activating VIP puts your profile above all barbers in the catalog (1st place) with a guaranteed 5.0 rating. This increases client flow by 3–5x!' : "VIP xizmatini yoqsangiz, profilingiz katalogda boshqa barcha ustalardan yuqorida (1-o'rinda) va kafolatlangan 5.0 yulduzli reyting bilan ko'rsatiladi. Bu mijozlar oqimini 3-5 barobarga oshiradi!"))}
             </p>
 
             <button
@@ -1996,7 +2043,12 @@ export default function AdminDashboardScreen({
                   : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 active:scale-98'
               }`}
             >
-              <span>{barberProfile.is_vip ? "VIP Boost Faol (Katalogda 1-o'rinda)" : `VIP Boostni faollashtirish (${(platformSettings.vip_boost_price || 40000).toLocaleString()} UZS)`}</span>
+              <span>
+                {barberProfile.is_vip 
+                  ? (t.vip_active_btn || (lang === 'ru' ? 'VIP Boost активен (1-е место в каталоге)' : lang === 'en' ? 'VIP Boost Active (#1 in catalog)' : "VIP Boost Faol (Katalogda 1-o'rinda)")) 
+                  : `${t.vip_activate_btn || (lang === 'ru' ? 'Активировать VIP Boost' : lang === 'en' ? 'Activate VIP Boost' : 'VIP Boostni faollashtirish')} (${(platformSettings.vip_boost_price || 40000).toLocaleString()} UZS)`
+                }
+              </span>
             </button>
           </div>
 
@@ -2024,7 +2076,7 @@ export default function AdminDashboardScreen({
                     Telegram ID: <code>{barberProfile.telegram_id || "87654321"}</code>
                   </span>
                   <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                    Avto-tiklash ON
+                    {t.auto_restore_on || (lang === 'ru' ? 'Автовосстановление ВКЛ' : lang === 'en' ? 'Auto-restore ON' : 'Avto-tiklash ON')}
                   </span>
                 </div>
                 <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
@@ -2078,7 +2130,7 @@ export default function AdminDashboardScreen({
                 </span>
               )}
             </div>
-            <span className="text-[10px] mt-0.5">Navbat</span>
+            <span className="text-[10px] mt-0.5">{t.admin_nav_queue || (lang === 'ru' ? 'Записи' : lang === 'en' ? 'Queue' : 'Navbat')}</span>
           </button>
 
           <button
@@ -2094,7 +2146,7 @@ export default function AdminDashboardScreen({
             }`}
           >
             <Clock className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5">Grafik</span>
+            <span className="text-[10px] mt-0.5">{t.admin_nav_schedule || (lang === 'ru' ? 'График' : lang === 'en' ? 'Schedule' : 'Grafik')}</span>
           </button>
 
           <button
@@ -2110,7 +2162,7 @@ export default function AdminDashboardScreen({
             }`}
           >
             <Scissors className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5">Xizmatlar</span>
+            <span className="text-[10px] mt-0.5">{t.admin_nav_services || (lang === 'ru' ? 'Услуги' : lang === 'en' ? 'Services' : 'Xizmatlar')}</span>
           </button>
 
           <button
@@ -2126,7 +2178,7 @@ export default function AdminDashboardScreen({
             }`}
           >
             <DollarSign className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5">Kassa</span>
+            <span className="text-[10px] mt-0.5">{t.admin_nav_finance || (lang === 'ru' ? 'Касса' : lang === 'en' ? 'Cash' : 'Kassa')}</span>
           </button>
         </div>
       </div>
@@ -2236,6 +2288,8 @@ export default function AdminDashboardScreen({
                   value={tempWorkStart}
                   onChange={setTempWorkStart}
                   icon={<Clock className="w-3.5 h-3.5 text-brand-blue" />}
+                  lang={lang}
+                  t={t}
                 />
 
                 <TimePickerField
@@ -2243,6 +2297,8 @@ export default function AdminDashboardScreen({
                   value={tempWorkEnd}
                   onChange={setTempWorkEnd}
                   icon={<Clock className="w-3.5 h-3.5 text-brand-blue" />}
+                  lang={lang}
+                  t={t}
                 />
               </div>
 
@@ -2273,6 +2329,8 @@ export default function AdminDashboardScreen({
                       value={tempBreakStart}
                       onChange={setTempBreakStart}
                       icon={<Coffee className="w-3.5 h-3.5 text-amber-600" />}
+                      lang={lang}
+                      t={t}
                     />
 
                     <TimePickerField
@@ -2280,6 +2338,8 @@ export default function AdminDashboardScreen({
                       value={tempBreakEnd}
                       onChange={setTempBreakEnd}
                       icon={<Coffee className="w-3.5 h-3.5 text-amber-600" />}
+                      lang={lang}
+                      t={t}
                     />
                   </div>
                 )}
@@ -2930,10 +2990,10 @@ export default function AdminDashboardScreen({
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-gray-900">
-                    Jonli mijoz kiritish 🚶‍♂️
+                    {lang === 'ru' ? 'Запись клиента с улицы 🚶‍♂️' : lang === 'en' ? 'Walk-in Client Entry 🚶‍♂️' : 'Jonli mijoz kiritish 🚶‍♂️'}
                   </h3>
                   <p className="text-[10px] text-gray-500">
-                    Ko'chadan kirgan yoki telefon qilgan mijoz
+                    {lang === 'ru' ? 'Клиент без предварительной записи' : lang === 'en' ? 'Client without prior booking' : "Ko'chadan kirgan yoki telefon qilgan mijoz"}
                   </p>
                 </div>
               </div>
@@ -2948,11 +3008,11 @@ export default function AdminDashboardScreen({
             <form onSubmit={handleSubmitWalkIn} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
-                  Mijoz ismi
+                  {lang === 'ru' ? 'Имя клиента' : lang === 'en' ? 'Client Name' : 'Mijoz ismi'}
                 </label>
                 <input
                   type="text"
-                  placeholder="Masalan: Rustam"
+                  placeholder={lang === 'ru' ? 'Например: Рустам' : lang === 'en' ? 'E.g. Rustam' : 'Masalan: Rustam'}
                   value={walkInName}
                   onChange={(e) => setWalkInName(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:border-brand-blue"
@@ -3059,13 +3119,13 @@ export default function AdminDashboardScreen({
                   onClick={() => setShowWalkInModal(false)}
                   className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
                 >
-                  Bekor qilish
+                  {t.btn_cancel || (lang === 'ru' ? 'Отмена' : lang === 'en' ? 'Cancel' : 'Bekor qilish')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-2.5 text-xs font-black rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white shadow-md active:scale-95 transition-all"
                 >
-                  Kassaga qo'shish ✓
+                  {lang === 'ru' ? 'Внести в кассу ✓' : lang === 'en' ? 'Add to Cash ✓' : "Kassaga qo'shish ✓"}
                 </button>
               </div>
             </form>
@@ -3086,7 +3146,7 @@ export default function AdminDashboardScreen({
           .reduce((sum, a) => sum + (Number(a.price) || 0), 0);
         const netTotal = cashTotal + cardTotal;
         const now = new Date();
-        const dateStr = now.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' });
+        const dateStr = now.toLocaleDateString(lang === 'ru' ? 'ru-RU' : lang === 'en' ? 'en-US' : 'uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' });
         const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
         return (
@@ -3095,7 +3155,7 @@ export default function AdminDashboardScreen({
               <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                 <div className="flex items-center space-x-1.5 text-xs font-black text-gray-800">
                   <Receipt className="w-4 h-4 text-emerald-600" />
-                  <span>KUN YAKUNI KASSA CHEKI</span>
+                  <span>{lang === 'ru' ? 'ИТОГОВЫЙ КАССОВЫЙ ЧЕК' : lang === 'en' ? 'END OF DAY RECEIPT' : 'KUN YAKUNI KASSA CHEKI'}</span>
                 </div>
                 <button
                   onClick={() => setShowDailyReceiptModal(false)}
@@ -3122,50 +3182,50 @@ export default function AdminDashboardScreen({
                 {/* Operations Summary */}
                 <div className="space-y-1 py-1 border-b border-dashed border-gray-300">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Jami mijozlar:</span>
-                    <span className="font-bold text-gray-800">{appointments.length} ta</span>
+                    <span className="text-gray-500">{lang === 'ru' ? 'Всего клиентов:' : lang === 'en' ? 'Total clients:' : 'Jami mijozlar:'}</span>
+                    <span className="font-bold text-gray-800">{appointments.length} {t.clients_count_unit || 'ta'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Xizmat ko'rsatilgan:</span>
-                    <span className="font-bold text-emerald-700">{completedApts.length} ta</span>
+                    <span className="text-gray-500">{lang === 'ru' ? 'Обслужено:' : lang === 'en' ? 'Served:' : "Xizmat ko'rsatilgan:"}</span>
+                    <span className="font-bold text-emerald-700">{completedApts.length} {t.clients_count_unit || 'ta'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Kutilmoqda:</span>
-                    <span className="font-bold text-amber-700">{pendingApts.length} ta</span>
+                    <span className="text-gray-500">{lang === 'ru' ? 'Ожидают:' : lang === 'en' ? 'Pending:' : 'Kutilmoqda:'}</span>
+                    <span className="font-bold text-amber-700">{pendingApts.length} {t.clients_count_unit || 'ta'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Bekor qilingan:</span>
-                    <span className="font-bold text-red-600">{cancelledApts.length} ta</span>
+                    <span className="text-gray-500">{lang === 'ru' ? 'Отменено:' : lang === 'en' ? 'Cancelled:' : 'Bekor qilingan:'}</span>
+                    <span className="font-bold text-red-600">{cancelledApts.length} {t.clients_count_unit || 'ta'}</span>
                   </div>
                 </div>
 
                 {/* Financial Breakdown */}
                 <div className="space-y-1.5 py-1 border-b border-dashed border-gray-300">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Naqd pul tushumi:</span>
+                    <span className="text-gray-500">{lang === 'ru' ? 'Выручка наличными:' : lang === 'en' ? 'Cash revenue:' : 'Naqd pul tushumi:'}</span>
                     <span className="font-bold text-gray-900">{cashTotal.toLocaleString()} UZS</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Karta / Click tushumi:</span>
+                    <span className="text-gray-500">{lang === 'ru' ? 'Выручка по карте:' : lang === 'en' ? 'Card revenue:' : 'Karta / Click tushumi:'}</span>
                     <span className="font-bold text-gray-900">{cardTotal.toLocaleString()} UZS</span>
                   </div>
                 </div>
 
                 {/* Grand Total */}
                 <div className="pt-1 flex justify-between items-baseline text-xs font-black">
-                  <span className="text-gray-900">JAMI KASSA:</span>
+                  <span className="text-gray-900">{lang === 'ru' ? 'ИТОГО КАССА:' : lang === 'en' ? 'TOTAL REVENUE:' : 'JAMI KASSA:'}</span>
                   <span className="text-emerald-700 text-sm">{netTotal.toLocaleString()} UZS</span>
                 </div>
 
                 <div className="text-center pt-2 text-[9px] text-gray-400">
-                  *** KUN MUVAFFAQIYATLI YAKUNLANDI ***
+                  {lang === 'ru' ? '*** ДЕНЬ УСПЕШНО ЗАВЕРШЁН ***' : lang === 'en' ? '*** DAY SUCCESSFULLY CLOSED ***' : '*** KUN MUVAFFAQIYATLI YAKUNLANDI ***'}
                 </div>
               </div>
 
               {receiptSentToTg && (
                 <div className="mt-3 p-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-center text-xs font-bold flex items-center justify-center space-x-1.5 animate-in fade-in">
                   <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>Kassa cheki Telegramingizga yuborildi! ✓</span>
+                  <span>{lang === 'ru' ? 'Кассовый чек отправлен в Telegram! ✓' : lang === 'en' ? 'Receipt sent to your Telegram! ✓' : 'Kassa cheki Telegramingizga yuborildi! ✓'}</span>
                 </div>
               )}
 
@@ -3180,7 +3240,7 @@ export default function AdminDashboardScreen({
                     className="py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all"
                   >
                     <Printer className="w-3.5 h-3.5 text-gray-600" />
-                    <span>Chop etish</span>
+                    <span>{lang === 'ru' ? 'Печать' : lang === 'en' ? 'Print' : 'Chop etish'}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -3190,14 +3250,14 @@ export default function AdminDashboardScreen({
                     className="py-2.5 px-3 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow-sm transition-all"
                   >
                     <Send className="w-3.5 h-3.5 text-blue-200" />
-                    <span>Telegramga 📲</span>
+                    <span>{lang === 'ru' ? 'В Telegram 📲' : lang === 'en' ? 'To Telegram 📲' : 'Telegramga 📲'}</span>
                   </button>
                 </div>
                 <button
                   onClick={() => setShowDailyReceiptModal(false)}
                   className="w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl text-xs font-bold"
                 >
-                  Yopish
+                  {lang === 'ru' ? 'Закрыть' : lang === 'en' ? 'Close' : 'Yopish'}
                 </button>
               </div>
             </div>
@@ -3213,24 +3273,24 @@ export default function AdminDashboardScreen({
               <Radio className="w-7 h-7" />
             </div>
             <h3 className="text-base font-black text-brand-blue mb-1">
-              Mijozga Tezkor Xabar Yuborildi! 📢
+              {lang === 'ru' ? 'Клиент успешно вызван! 📢' : lang === 'en' ? 'Client Alert Sent! 📢' : 'Mijozga Tezkor Xabar Yuborildi! 📢'}
             </h3>
             <p className="text-xs text-gray-500 mb-4 font-medium">
-              Telegram bot orqali mijozga navbati yetgani haqida ovozli va matnli bildirishnoma yetkazildi.
+              {lang === 'ru' ? 'Клиенту отправлено голосовое и текстовое уведомление в Telegram о том, что его очередь подошла.' : lang === 'en' ? 'Client received a notification in Telegram that their turn has arrived.' : 'Telegram bot orqali mijozga navbati yetgani haqida ovozli va matnli bildirishnoma yetkazildi.'}
             </p>
 
             <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-100 text-left text-xs space-y-1 mb-4">
               <div className="flex justify-between">
-                <span className="text-gray-500">Mijoz:</span>
+                <span className="text-gray-500">{lang === 'ru' ? 'Клиент:' : lang === 'en' ? 'Client:' : 'Mijoz:'}</span>
                 <span className="font-extrabold text-gray-900">{calledClientAlert.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Vaqt:</span>
+                <span className="text-gray-500">{lang === 'ru' ? 'Время:' : lang === 'en' ? 'Time:' : 'Vaqt:'}</span>
                 <span className="font-bold text-brand-orange">{calledClientAlert.time}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Xizmat:</span>
-                <span className="font-medium text-gray-700">{calledClientAlert.service}</span>
+                <span className="text-gray-500">{t.service_label || (lang === 'ru' ? 'Услуга:' : lang === 'en' ? 'Service:' : 'Xizmat:')}</span>
+                <span className="font-medium text-gray-700">{getTranslatedServiceName(calledClientAlert.service, lang)}</span>
               </div>
             </div>
 
@@ -3241,7 +3301,7 @@ export default function AdminDashboardScreen({
               }}
               className="w-full py-2.5 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl text-xs font-black shadow-md active:scale-95 transition-all"
             >
-              Tushunarli ✓
+              {lang === 'ru' ? 'Понятно ✓' : lang === 'en' ? 'Got it ✓' : 'Tushunarli ✓'}
             </button>
           </div>
         </div>

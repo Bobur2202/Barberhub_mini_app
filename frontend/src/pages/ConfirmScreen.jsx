@@ -104,7 +104,7 @@ export default function ConfirmScreen({
       client_name: clientName.trim(),
       client_phone: phoneNumber,
       client_telegram_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null,
-      date_str: `${dateTime.day.dayName} ${dateTime.day.dateNum}-Noyabr`,
+      date_str: dateTime.day?.full || `${dateTime.day?.dateNum}-Noyabr`,
       time_slot: dateTime.time,
       is_multi_person: isMulti,
       multi_person_details: isMulti ? {

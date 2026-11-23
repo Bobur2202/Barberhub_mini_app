@@ -18,7 +18,15 @@ import {
   Award,
   Navigation
 } from 'lucide-react';
-import { getTranslatedServiceName, formatServiceDuration, getTranslatedAddress, getTranslatedRole, getTranslatedBio } from '../data/serviceTranslations';
+import { 
+  getTranslatedServiceName, 
+  formatServiceDuration, 
+  getTranslatedAddress, 
+  getTranslatedRole, 
+  getTranslatedBio,
+  getTranslatedPromoBadge,
+  formatAppointmentDate
+} from '../data/serviceTranslations';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import MapNavigationModal from '../components/MapNavigationModal';
 
@@ -426,7 +434,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
                     {/* Discount or badge */}
                     {service.isDiscount && (
                       <span className="inline-block mt-2 text-[10px] bg-amber-50 text-amber-700 font-semibold px-2 py-0.5 rounded-full border border-amber-200">
-                        {service.note || t.student_discount_badge}
+                        {getTranslatedPromoBadge(service.note, lang) || t.student_discount_badge}
                       </span>
                     )}
                   </div>
@@ -552,7 +560,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
                   {review.comment}
                 </p>
                 <span className="text-[10px] text-gray-400 block mt-2">
-                  {review.date}
+                  {formatAppointmentDate(review.date, lang)}
                 </span>
               </div>
             ))

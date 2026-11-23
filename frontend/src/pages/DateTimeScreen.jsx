@@ -155,7 +155,11 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
   if (isMultiPerson && selectedTime && selectedIndex !== -1) {
     const nextSlot = timeSlots[selectedIndex + 1];
     if (!nextSlot || nextSlot.status !== 'available') {
-      multiPersonError = "Ketma-ket 2 ta bo'sh vaqt kerak. Ushbu soatdan keyingi vaqt band yoki tushlik. Boshqa vaqtni tanlang.";
+      multiPersonError = lang === 'ru'
+        ? "Требуется 2 последовательных свободных времени. Следующий слот занят или на перерыве. Выберите другое время."
+        : lang === 'en'
+        ? "Requires 2 consecutive available slots. The next slot is booked or on break. Please choose another time."
+        : "Ketma-ket 2 ta bo'sh vaqt kerak. Ushbu soatdan keyingi vaqt band yoki tushlik. Boshqa vaqtni tanlang.";
     } else {
       secondSlot = nextSlot.time;
     }

@@ -327,3 +327,118 @@ export function getTranslatedDistrict(districtName, lang = 'uz') {
   }
   return districtName;
 }
+
+/**
+ * Sana matnini (masalan: '18-Noyabr', '18-Noyabr, Dush', 'Bugun 18-Noyabr') 3 tilda tarjima qilish
+ */
+export function formatAppointmentDate(dateStr, lang = 'uz') {
+  if (!dateStr) return "";
+  let res = String(dateStr);
+
+  const monthsMap = {
+    'yanvar': { uz: 'Yanvar', ru: 'января', en: 'January' },
+    'fevral': { uz: 'Fevral', ru: 'февраля', en: 'February' },
+    'mart': { uz: 'Mart', ru: 'марта', en: 'March' },
+    'aprel': { uz: 'Aprel', ru: 'апреля', en: 'April' },
+    'may': { uz: 'May', ru: 'мая', en: 'May' },
+    'iyun': { uz: 'Iyun', ru: 'июня', en: 'June' },
+    'iyul': { uz: 'Iyul', ru: 'июля', en: 'July' },
+    'avgust': { uz: 'Avgust', ru: 'августа', en: 'August' },
+    'sentabr': { uz: 'Sentabr', ru: 'сентября', en: 'September' },
+    'oktabr': { uz: 'Oktabr', ru: 'октября', en: 'October' },
+    'noyabr': { uz: 'Noyabr', ru: 'ноября', en: 'November' },
+    'dekabr': { uz: 'Dekabr', ru: 'декабря', en: 'December' },
+    'январ': { uz: 'Yanvar', ru: 'января', en: 'January' },
+    'феврал': { uz: 'Fevral', ru: 'февраля', en: 'February' },
+    'март': { uz: 'Mart', ru: 'марта', en: 'March' },
+    'апрел': { uz: 'Aprel', ru: 'апреля', en: 'April' },
+    'июн': { uz: 'Iyun', ru: 'июня', en: 'June' },
+    'июл': { uz: 'Iyul', ru: 'июля', en: 'July' },
+    'август': { uz: 'Avgust', ru: 'августа', en: 'August' },
+    'сентябр': { uz: 'Sentabr', ru: 'сентября', en: 'September' },
+    'октябр': { uz: 'Oktabr', ru: 'октября', en: 'October' },
+    'ноябр': { uz: 'Noyabr', ru: 'ноября', en: 'November' },
+    'декабр': { uz: 'Dekabr', ru: 'декабря', en: 'December' },
+    'january': { uz: 'Yanvar', ru: 'января', en: 'January' },
+    'february': { uz: 'Fevral', ru: 'февраля', en: 'February' },
+    'march': { uz: 'Mart', ru: 'марта', en: 'March' },
+    'april': { uz: 'Aprel', ru: 'апреля', en: 'April' },
+    'june': { uz: 'Iyun', ru: 'июня', en: 'June' },
+    'july': { uz: 'Iyul', ru: 'июля', en: 'July' },
+    'august': { uz: 'Avgust', ru: 'августа', en: 'August' },
+    'september': { uz: 'Sentabr', ru: 'сентября', en: 'September' },
+    'october': { uz: 'Oktabr', ru: 'октября', en: 'October' },
+    'november': { uz: 'Noyabr', ru: 'ноября', en: 'November' },
+    'december': { uz: 'Dekabr', ru: 'декабря', en: 'December' }
+  };
+
+  const daysMap = {
+    'dush': { uz: 'Dush', ru: 'Пн', en: 'Mon' },
+    'sesh': { uz: 'Sesh', ru: 'Вт', en: 'Tue' },
+    'chor': { uz: 'Chor', ru: 'Ср', en: 'Wed' },
+    'pay': { uz: 'Pay', ru: 'Чт', en: 'Thu' },
+    'juma': { uz: 'Juma', ru: 'Пт', en: 'Fri' },
+    'shan': { uz: 'Shan', ru: 'Сб', en: 'Sat' },
+    'yak': { uz: 'Yak', ru: 'Вс', en: 'Sun' },
+    'bugun': { uz: 'Bugun', ru: 'Сегодня', en: 'Today' },
+    'ertaga': { uz: 'Ertaga', ru: 'Завтра', en: 'Tomorrow' }
+  };
+
+  // Replace months
+  for (const [key, tr] of Object.entries(monthsMap)) {
+    const reg = new RegExp(key, 'gi');
+    if (reg.test(res)) {
+      if (lang === 'ru') {
+        res = res.replace(reg, tr.ru).replace(/(\d+)-/, '$1 ');
+      } else if (lang === 'en') {
+        res = res.replace(reg, tr.en).replace(/(\d+)-/, '$1 ');
+      } else {
+        res = res.replace(reg, tr.uz);
+      }
+      break;
+    }
+  }
+
+  // Replace days / prefixes
+  for (const [key, tr] of Object.entries(daysMap)) {
+    const reg = new RegExp(`\\b${key}\\b`, 'gi');
+    if (reg.test(res)) {
+      res = res.replace(reg, tr[lang] || tr.uz);
+    }
+  }
+
+  return res;
+}
+
+/**
+ * Aksiya va Chegirma nishonlarini (masalan: 'Talabalik guvohnomasi bilan') tarjima qilish
+ */
+export function getTranslatedPromoBadge(badge, lang = 'uz') {
+  if (!badge) return "";
+  if (lang === 'uz') return badge;
+  const lower = badge.toLowerCase();
+  if (lower.includes('talaba') || lower.includes('student')) {
+    return lang === 'ru' ? 'По студенческому билету' : 'With student ID';
+  }
+  if (lower.includes('aksiya') || lower.includes('discount') || lower.includes('скидк')) {
+    return lang === 'ru' ? 'Акция' : 'Special Offer';
+  }
+  return badge;
+}
+
+/**
+ * Hafta kuni qisqartmasini tarjima qilish
+ */
+export function getTranslatedDayName(dayKey, lang = 'uz') {
+  const map = {
+    'Dush': { uz: 'Dush', ru: 'Пн', en: 'Mon' },
+    'Sesh': { uz: 'Sesh', ru: 'Вт', en: 'Tue' },
+    'Chor': { uz: 'Chor', ru: 'Ср', en: 'Wed' },
+    'Pay': { uz: 'Pay', ru: 'Чт', en: 'Thu' },
+    'Juma': { uz: 'Juma', ru: 'Пт', en: 'Fri' },
+    'Shan': { uz: 'Shan', ru: 'Сб', en: 'Sat' },
+    'Yak': { uz: 'Yak', ru: 'Вс', en: 'Sun' }
+  };
+  return map[dayKey]?.[lang] || dayKey;
+}
+

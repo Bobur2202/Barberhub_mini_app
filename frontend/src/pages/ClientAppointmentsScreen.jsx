@@ -22,7 +22,7 @@ import {
   ExternalLink,
   MapPin
 } from 'lucide-react';
-import { getTranslatedServiceName } from '../data/serviceTranslations';
+import { getTranslatedServiceName, formatAppointmentDate } from '../data/serviceTranslations';
 import { downloadIcsFile } from '../utils/calendarHelper';
 import { submitBarberReview, cancelClientAppointment, rescheduleAppointment } from '../services/api';
 import { mockBarbers } from '../data/mockBarbers';
@@ -376,7 +376,7 @@ export default function ClientAppointmentsScreen({
                         )}
                         <p className="text-[11px] text-gray-400 mt-0.5 flex items-center space-x-1">
                           <Calendar className="w-3 h-3 text-brand-blue" />
-                          <span>{dateStr}</span>
+                          <span>{formatAppointmentDate(dateStr, lang)}</span>
                         </p>
                       </div>
 
@@ -545,11 +545,11 @@ export default function ClientAppointmentsScreen({
                         }`}
                       >
                         {isCompleted ? <CheckCircle className="w-3.5 h-3.5 text-blue-600" /> : <XCircle className="w-3.5 h-3.5 text-rose-600" />}
-                        <span>{isCompleted ? "Yakunlandi" : "Bekor qilindi"}</span>
+                        <span>{isCompleted ? (t.status_completed || (lang === 'ru' ? 'Завершено' : lang === 'en' ? 'Completed' : 'Yakunlandi')) : (t.status_cancelled || (lang === 'ru' ? 'Отменено' : lang === 'en' ? 'Cancelled' : 'Bekor qilindi'))}</span>
                       </span>
 
                       <span className="text-xs font-bold text-gray-500">
-                        {apt.date_str || apt.date}
+                        {formatAppointmentDate(apt.date_str || apt.date, lang)}
                       </span>
                     </div>
 
