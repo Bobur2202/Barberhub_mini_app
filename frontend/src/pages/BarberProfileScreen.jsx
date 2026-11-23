@@ -501,8 +501,10 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
           {salonPhotos.length > 0 ? (
             <div>
               <div className="flex items-center justify-between mb-3 text-xs text-gray-600 font-medium">
-                <span>{salonPhotos.length} {t.photos_count || "ta rasm"}</span>
-                <span className="text-[11px] text-gray-400">Rasmni bosib kattalashtiring</span>
+                <span>{salonPhotos.length} {t.photos_count || (lang === 'ru' ? 'фото' : lang === 'en' ? 'photos' : 'ta rasm')}</span>
+                <span className="text-[11px] text-gray-400">
+                  {lang === 'ru' ? 'Нажмите на фото для увеличения' : lang === 'en' ? 'Tap photo to enlarge' : 'Rasmni bosib kattalashtiring'}
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {salonPhotos.map((photo, index) => (
@@ -567,7 +569,9 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
           ) : (
             <div className="text-center py-8 bg-white rounded-2xl">
               <MessageSquare className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-xs text-gray-400">Izohlar hali mavjud emas</p>
+              <p className="text-xs text-gray-400">
+                {lang === 'ru' ? 'Отзывов пока нет' : lang === 'en' ? 'No reviews yet' : 'Izohlar hali mavjud emas'}
+              </p>
             </div>
           )}
         </div>

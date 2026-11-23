@@ -249,10 +249,12 @@ export default function ConfirmScreen({
               {isPhoneValid ? (
                 <span className="text-[10px] text-emerald-600 font-bold flex items-center space-x-0.5">
                   <Check className="w-3 h-3 inline" />
-                  <span>To'g'ri raqam</span>
+                  <span>{lang === 'ru' ? 'Номер корректен' : lang === 'en' ? 'Valid number' : "To'g'ri raqam"}</span>
                 </span>
               ) : phoneTouched ? (
-                <span className="text-[10px] text-red-500 font-bold">9 ta raqam to'liq kiritilishi kerak</span>
+                <span className="text-[10px] text-red-500 font-bold">
+                  {lang === 'ru' ? 'Введите все 9 цифр' : lang === 'en' ? 'Please enter all 9 digits' : "9 ta raqam to'liq kiritilishi kerak"}
+                </span>
               ) : null}
             </label>
             <div className="relative">
@@ -278,9 +280,19 @@ export default function ConfirmScreen({
             </div>
             <p className="text-[11px] text-gray-400 mt-1.5 leading-tight">
               {isPhoneValid ? (
-                <span className="text-emerald-600 font-medium">Usta ushbu raqamga bog'lanishi mumkin.</span>
+                <span className="text-emerald-600 font-medium">
+                  {lang === 'ru' ? 'Мастер сможет связаться по этому номеру.' : lang === 'en' ? 'The barber can reach you on this number.' : "Usta ushbu raqamga bog'lanishi mumkin."}
+                </span>
               ) : (
-                <span>Namuna: <b>+998 90 123 45 67</b> (Operator kodi va 7 ta raqam)</span>
+                <span>
+                  {lang === 'ru' ? (
+                    <>Пример: <b>+998 90 123 45 67</b> (Код оператора и 7 цифр)</>
+                  ) : lang === 'en' ? (
+                    <>Example: <b>+998 90 123 45 67</b> (Operator code and 7 digits)</>
+                  ) : (
+                    <>Namuna: <b>+998 90 123 45 67</b> (Operator kodi va 7 ta raqam)</>
+                  )}
+                </span>
               )}
             </p>
           </div>
@@ -327,7 +339,7 @@ export default function ConfirmScreen({
           {isSubmitting ? (
             <span className="flex items-center space-x-2">
               <Loader2 className="w-4 h-4 animate-spin text-brand-blue" />
-              <span>Serverga yuborilmoqda...</span>
+              <span>{lang === 'ru' ? 'Отправка на сервер...' : lang === 'en' ? 'Submitting to server...' : 'Serverga yuborilmoqda...'}</span>
             </span>
           ) : (
             <>

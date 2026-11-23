@@ -17,8 +17,16 @@ import SuperAdminScreen from './pages/SuperAdminScreen';
 import AiHairstyleAdvisorScreen from './pages/AiHairstyleAdvisorScreen';
 
 export default function App() {
-  // Application State - Tilni eslab qolish (faqat birinchi kirganda so'raladi)
+  // Application State - Tilni eslab qolish (faqat birinchi kirganda so'raladi yoki Botdan ?lang= parametr orqali olinadi)
   const [lang, setLang] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlLang = params.get('lang');
+      if (urlLang && ['uz', 'ru', 'en'].includes(urlLang)) {
+        localStorage.setItem('barberhub_lang', urlLang);
+        return urlLang;
+      }
+    } catch (e) {}
     return localStorage.getItem('barberhub_lang') || 'uz';
   });
   
@@ -27,9 +35,18 @@ export default function App() {
     return localStorage.getItem('barberhub_user_role') || null;
   });
 
-  // Ekran qadamlari: agar til avval tanlangan bo'lsa, splashni o'tkazib yuboramiz!
+  // Ekran qadamlari: agar til avval tanlangan bo'lsa (yoki URL orqali botdan kelsa), splashni o'tkazib yuboramiz!
   const [currentStep, setCurrentStep] = useState(() => {
-    const savedLang = localStorage.getItem('barberhub_lang');
+    let urlLang = null;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('lang');
+      if (q && ['uz', 'ru', 'en'].includes(q)) {
+        urlLang = q;
+      }
+    } catch (e) {}
+
+    const savedLang = urlLang || localStorage.getItem('barberhub_lang');
     const savedRole = localStorage.getItem('barberhub_user_role');
 
     // Agar til hali biror marta ham tanlanmagan bo'lsa (birinchi marta kirish)
@@ -485,6 +502,7 @@ export default function App() {
           onRegisterSuccess={handleBarberRegisterSuccess}
           onBack={() => setCurrentStep('role_select')}
           t={t}
+          lang={lang}
         />
       )}
 
@@ -522,6 +540,7 @@ export default function App() {
       {currentStep === 'ai_advisor' && (
         <AiHairstyleAdvisorScreen
           t={t}
+          lang={lang}
           onBack={() => setCurrentStep('catalog')}
           onSelectBarberWithStyle={handleSelectBarberWithStyle}
         />

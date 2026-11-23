@@ -1910,7 +1910,9 @@ export default function AdminDashboardScreen({
 
             <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
               <div>
-                <span className="text-xs text-blue-200 block text-[10px]">Oylik to'lov:</span>
+                <span className="text-xs text-blue-200 block text-[10px]">
+                  {lang === 'ru' ? 'Ежемесячная оплата:' : lang === 'en' ? 'Monthly fee:' : "Oylik to'lov:"}
+                </span>
                 <span className="text-sm font-black text-brand-orange">
                   {(platformSettings.subscription_price || 50000).toLocaleString()} UZS / {t.per_month}
                 </span>
@@ -2347,7 +2349,9 @@ export default function AdminDashboardScreen({
 
               {/* Quick presets */}
               <div className="pt-2">
-                <span className="text-[11px] font-semibold text-gray-500 block mb-1.5">Tezkor tanlov:</span>
+                <span className="text-[11px] font-semibold text-gray-500 block mb-1.5">
+                  {t.quick_presets_label || (lang === 'ru' ? 'Быстрый выбор:' : lang === 'en' ? 'Quick presets:' : 'Tezkor tanlov:')}
+                </span>
                 <div className="grid grid-cols-3 gap-1.5">
                   {[
                     { label: "09:00 - 22:00", s: "09:00", e: "22:00" },
@@ -2415,7 +2419,9 @@ export default function AdminDashboardScreen({
                 alt="Avatar preview"
                 className="w-24 h-24 rounded-full object-cover mx-auto ring-4 ring-brand-blue/20 shadow-md"
               />
-              <span className="text-[11px] text-gray-400 mt-1 block">Yangi rasm ko'rinishi</span>
+              <span className="text-[11px] text-gray-400 mt-1 block">
+                {lang === 'ru' ? 'Превью нового фото' : lang === 'en' ? 'New photo preview' : "Yangi rasm ko'rinishi"}
+              </span>
             </div>
 
             {/* Upload file from device */}
@@ -2763,7 +2769,9 @@ export default function AdminDashboardScreen({
 
               <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 text-[11px] flex items-center space-x-1.5 border border-emerald-100">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span>Kartangiz xavfsiz shifrlangan holda saqlanadi</span>
+                <span>
+                  {lang === 'ru' ? 'Ваша карта надежно зашифрована' : lang === 'en' ? 'Your card is securely encrypted' : 'Kartangiz xavfsiz shifrlangan holda saqlanadi'}
+                </span>
               </div>
 
               <div className="flex space-x-2 pt-2">
@@ -2803,7 +2811,9 @@ export default function AdminDashboardScreen({
             </div>
 
             <div className="my-2 p-2.5 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-center justify-between">
-              <span className="text-xs text-brand-blue font-semibold">Oylik obuna narxi:</span>
+              <span className="text-xs text-brand-blue font-semibold">
+                {lang === 'ru' ? 'Стоимость подписки:' : lang === 'en' ? 'Monthly subscription:' : 'Oylik obuna narxi:'}
+              </span>
               <span className="text-sm font-black text-brand-orange">
                 {(platformSettings.subscription_price || 50000).toLocaleString()} UZS
               </span>
@@ -2823,7 +2833,7 @@ export default function AdminDashboardScreen({
                     <span>{linkedCard.type} ({linkedCard.number.slice(-4)})</span>
                   </div>
                   <span className="text-[10px] bg-amber-400 text-gray-900 px-2 py-0.5 rounded-full font-extrabold">
-                    Bitta bosishda
+                    {lang === 'ru' ? 'В один клик' : lang === 'en' ? '1-Click' : 'Bitta bosishda'}
                   </span>
                 </button>
               )}
@@ -2832,7 +2842,9 @@ export default function AdminDashboardScreen({
               {platformSettings.payment_card && (
                 <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] font-bold text-amber-900">Platforma kartasiga o'tkazish:</span>
+                    <span className="text-[11px] font-bold text-amber-900">
+                      {lang === 'ru' ? 'Перевод на карту платформы:' : lang === 'en' ? 'Transfer to platform card:' : "Platforma kartasiga o'tkazish:"}
+                    </span>
                     <button
                       onClick={() => {
                         navigator.clipboard?.writeText(platformSettings.payment_card.replace(/\s+/g, ''));
@@ -2840,7 +2852,7 @@ export default function AdminDashboardScreen({
                       }}
                       className="text-[10px] bg-amber-200 hover:bg-amber-300 text-amber-900 font-extrabold px-2 py-0.5 rounded-full transition-all"
                     >
-                      Nusxalash 📋
+                      {lang === 'ru' ? 'Копировать 📋' : lang === 'en' ? 'Copy 📋' : 'Nusxalash 📋'}
                     </button>
                   </div>
                   <div className="font-mono text-xs font-bold text-gray-900 tracking-wider">

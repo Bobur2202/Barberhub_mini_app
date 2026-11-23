@@ -102,7 +102,7 @@ export default function RoleSelectionScreen({ onSelectRole, t, lang = 'uz', isSu
             className="text-xs font-bold text-gray-400 hover:text-brand-blue transition-colors inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl hover:bg-white/60"
           >
             <Crown className="w-3.5 h-3.5 text-amber-500" />
-            <span>Platforma egasi (Super Admin)</span>
+            <span>{lang === 'ru' ? 'Владелец платформы (Super Admin)' : lang === 'en' ? 'Platform Owner (Super Admin)' : 'Platforma egasi (Super Admin)'}</span>
           </button>
         )}
 
@@ -111,12 +111,12 @@ export default function RoleSelectionScreen({ onSelectRole, t, lang = 'uz', isSu
             onClick={() => setShowInfoModal(true)}
             className="text-[11px] font-bold text-brand-blue/80 hover:text-brand-blue inline-flex items-center space-x-1"
           >
-            <span>ℹ️ BarberHub nima? (Bot haqida ma'lumot)</span>
+            <span>{lang === 'ru' ? 'ℹ️ Что такое BarberHub? (О боте)' : lang === 'en' ? 'ℹ️ What is BarberHub? (About)' : "ℹ️ BarberHub nima? (Bot haqida ma'lumot)"}</span>
           </button>
         </div>
 
         <p className="text-[10px] text-gray-400">
-          Tanlovni keyinchalik sozlamalar bo'limidan o'zgartirish mumkin
+          {lang === 'ru' ? 'Выбор можно изменить позже в настройках' : lang === 'en' ? 'You can change this anytime in settings' : "Tanlovni keyinchalik sozlamalar bo'limidan o'zgartirish mumkin"}
         </p>
       </div>
 
@@ -131,9 +131,11 @@ export default function RoleSelectionScreen({ onSelectRole, t, lang = 'uz', isSu
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm text-brand-blue">
-                    BarberHub haqida
+                    {lang === 'ru' ? 'О сервисе BarberHub' : lang === 'en' ? 'About BarberHub' : 'BarberHub haqida'}
                   </h3>
-                  <span className="text-[10px] text-gray-400">Platformaning asosiy imkoniyatlari</span>
+                  <span className="text-[10px] text-gray-400">
+                    {lang === 'ru' ? 'Основные возможности платформы' : lang === 'en' ? 'Key platform capabilities' : 'Platformaning asosiy imkoniyatlari'}
+                  </span>
                 </div>
               </div>
               <button
@@ -147,7 +149,11 @@ export default function RoleSelectionScreen({ onSelectRole, t, lang = 'uz', isSu
             <div className="space-y-3.5 my-4 text-xs text-gray-700 leading-relaxed">
               <div className="p-3 bg-blue-50/80 rounded-2xl border border-blue-100">
                 <p className="font-semibold text-brand-blue">
-                  💈 <b>BarberHub</b> — sartaroshxonalarda navbat kutishni butunlay unutish va vaqtni tejash uchun yaratilgan zamonaviy platforma.
+                  {lang === 'ru'
+                    ? '💈 BarberHub — современная платформа, избавляющая от живых очередей и экономящая ваше время.'
+                    : lang === 'en'
+                    ? '💈 BarberHub — cutting-edge platform designed to eliminate waiting queues and save your time.'
+                    : "💈 BarberHub — sartaroshxonalarda navbat kutishni butunlay unutish va vaqtni tejash uchun yaratilgan zamonaviy platforma."}
                 </p>
               </div>
 
@@ -155,20 +161,29 @@ export default function RoleSelectionScreen({ onSelectRole, t, lang = 'uz', isSu
               <div>
                 <h4 className="font-black text-brand-blue uppercase text-[11px] tracking-wider mb-2 flex items-center space-x-1.5">
                   <span className="w-2 h-2 rounded-full bg-brand-orange inline-block" />
-                  <span>Mijozlar uchun:</span>
+                  <span>{lang === 'ru' ? 'Для клиентов:' : lang === 'en' ? 'For clients:' : 'Mijozlar uchun:'}</span>
                 </h4>
                 <div className="space-y-2">
                   <div className="flex items-start space-x-2.5">
                     <MapPin className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
-                    <span><b>Yaqin ustalar:</b> Xaritadan eng yaqin sartaroshlarni topish va masofani ko'rish.</span>
+                    <span>
+                      <b>{lang === 'ru' ? 'Мастера рядом:' : lang === 'en' ? 'Nearby barbers:' : 'Yaqin ustalar:'}</b>{' '}
+                      {lang === 'ru' ? 'Поиск ближайших мастеров на карте и расстояние.' : lang === 'en' ? 'Find nearest barbers on the map and check distance.' : "Xaritadan eng yaqin sartaroshlarni topish va masofani ko'rish."}
+                    </span>
                   </div>
                   <div className="flex items-start space-x-2.5">
                     <Clock className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span><b>Jonli navbat:</b> Istalgan kunga yoki bugunga bir necha soniyada navbat olish.</span>
+                    <span>
+                      <b>{lang === 'ru' ? 'Живая очередь:' : lang === 'en' ? 'Live queue:' : 'Jonli navbat:'}</b>{' '}
+                      {lang === 'ru' ? 'Быстрая запись на сегодня или любой день в пару кликов.' : lang === 'en' ? 'Instant slot booking for today or any date.' : "Istalgan kunga yoki bugunga bir necha soniyada navbat olish."}
+                    </span>
                   </div>
                   <div className="flex items-start space-x-2.5">
                     <BellRing className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span><b>Avto-eslatma:</b> Navbatingizga 30 daqiqa qolganda Telegram bot eslatma beradi.</span>
+                    <span>
+                      <b>{lang === 'ru' ? 'Авто-напоминание:' : lang === 'en' ? 'Auto-reminder:' : 'Avto-eslatma:'}</b>{' '}
+                      {lang === 'ru' ? 'Telegram бот напомнит за 30-60 минут до начала.' : lang === 'en' ? 'Telegram bot reminds you 30-60 mins before appointment.' : "Navbatingizga 30 daqiqa qolganda Telegram bot eslatma beradi."}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -177,16 +192,22 @@ export default function RoleSelectionScreen({ onSelectRole, t, lang = 'uz', isSu
               <div className="pt-2 border-t border-gray-100">
                 <h4 className="font-black text-brand-blue uppercase text-[11px] tracking-wider mb-2 flex items-center space-x-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                  <span>Ustalar uchun:</span>
+                  <span>{lang === 'ru' ? 'Для мастеров:' : lang === 'en' ? 'For barbers:' : 'Ustalar uchun:'}</span>
                 </h4>
                 <div className="space-y-2">
                   <div className="flex items-start space-x-2.5">
                     <Scissors className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span><b>Yangi mijozlar oqimi:</b> O'z xizmatlaringizni reklama qilish va doimiy mijozlar orttirish.</span>
+                    <span>
+                      <b>{lang === 'ru' ? 'Поток клиентов:' : lang === 'en' ? 'Client flow:' : 'Yangi mijozlar oqimi:'}</b>{' '}
+                      {lang === 'ru' ? 'Продвижение услуг и набор постоянных клиентов.' : lang === 'en' ? 'Showcase your services and build loyal clientele.' : "O'z xizmatlaringizni reklama qilish va doimiy mijozlar orttirish."}
+                    </span>
                   </div>
                   <div className="flex items-start space-x-2.5">
                     <ShieldCheck className="w-4 h-4 text-brand-blue flex-shrink-0 mt-0.5" />
-                    <span><b>Kassa va Grafik:</b> Ish vaqtini sozlash, kunlik daromadni kuzatish va buyurtmalarni boshqarish.</span>
+                    <span>
+                      <b>{lang === 'ru' ? 'Касса и график:' : lang === 'en' ? 'Finance & schedule:' : 'Kassa va Grafik:'}</b>{' '}
+                      {lang === 'ru' ? 'Настройка расписания, отслеживание выручки и заказов.' : lang === 'en' ? 'Custom work hours, revenue tracking and booking manager.' : "Ish vaqtini sozlash, kunlik daromadni kuzatish va buyurtmalarni boshqarish."}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -196,7 +217,7 @@ export default function RoleSelectionScreen({ onSelectRole, t, lang = 'uz', isSu
               onClick={() => setShowInfoModal(false)}
               className="w-full py-3 bg-brand-blue hover:bg-brand-blue-dark text-white font-extrabold text-xs rounded-2xl shadow-md transition-all active:scale-98"
             >
-              Tushundim, davom etish ✓
+              {lang === 'ru' ? 'Понятно, продолжить ✓' : lang === 'en' ? 'Got it, continue ✓' : 'Tushundim, davom etish ✓'}
             </button>
           </div>
         </div>

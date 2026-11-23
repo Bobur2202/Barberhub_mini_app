@@ -46,7 +46,8 @@ const SAMPLE_FACES = [
 export default function AiHairstyleAdvisorScreen({
   onBack,
   onSelectBarberWithStyle,
-  t
+  t,
+  lang = 'uz'
 }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -57,7 +58,17 @@ export default function AiHairstyleAdvisorScreen({
 
   const fileInputRef = useRef(null);
 
-  const scanSteps = [
+  const scanSteps = lang === 'ru' ? [
+    "Сканирование контуров и пропорций лица...",
+    "Измерение формы лба, скул и линии челюсти...",
+    "Gemini AI подбирает 3 идеальные стрижки...",
+    "Поиск лучших мастеров, владеющих этой техникой..."
+  ] : lang === 'en' ? [
+    "Scanning facial contours and proportions...",
+    "Measuring forehead, cheekbones and jawline...",
+    "Gemini AI selecting top 3 tailored modern haircuts...",
+    "Locating expert barbers who master this haircut..."
+  ] : [
     "Yuz konturi va piksellari o'rganilmoqda...",
     "Peshona, yonoq va jag' proporsiyalari o'lchanmoqda...",
     "Gemini AI eng mos keladigan 3 ta zamonaviy turmakni tanlamoqda...",
@@ -141,7 +152,7 @@ export default function AiHairstyleAdvisorScreen({
       {shareSuccessToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center space-x-1.5 animate-in fade-in">
           <Check className="w-3.5 h-3.5" />
-          <span>Natija nusxalandi! Do'stlaringizga yuboring.</span>
+          <span>{lang === 'ru' ? 'Результат скопирован! Отправьте друзьям.' : lang === 'en' ? 'Result copied! Share with your friends.' : "Natija nusxalandi! Do'stlaringizga yuboring."}</span>
         </div>
       )}
 
@@ -171,10 +182,14 @@ export default function AiHairstyleAdvisorScreen({
 
         <div className="text-center mt-3 relative z-10">
           <h1 className="text-xl font-black tracking-tight flex items-center justify-center space-x-1.5">
-            <span>AI Sartarosh Maslahatchisi</span>
+            <span>{lang === 'ru' ? 'AI Стилист' : lang === 'en' ? 'AI Hairstyle Advisor' : 'AI Sartarosh Maslahatchisi'}</span>
           </h1>
           <p className="text-xs text-blue-100 font-medium mt-1 max-w-xs mx-auto">
-            Yuz tuzilishingizga 100% mos keladigan 3 xil zamonaviy turmak va uni qila oladigan ustalarni toping
+            {lang === 'ru'
+              ? 'Подбор 3 современных стрижек под форму лица и лучших мастеров поблизости'
+              : lang === 'en'
+              ? 'Tailored 3 modern haircuts matching your face shape and expert barbers nearby'
+              : "Yuz tuzilishingizga 100% mos keladigan 3 xil zamonaviy turmak va uni qila oladigan ustalarni toping"}
           </p>
         </div>
       </div>
@@ -205,7 +220,7 @@ export default function AiHairstyleAdvisorScreen({
 
             <div className="flex items-center justify-center space-x-2 text-brand-blue font-black text-sm mb-2">
               <Wand2 className="w-4 h-4 animate-spin text-brand-orange" />
-              <span>Yuz tuzilishi tahlil qilinmoqda...</span>
+              <span>{lang === 'ru' ? 'Анализ формы лица...' : lang === 'en' ? 'Analyzing face structure...' : 'Yuz tuzilishi tahlil qilinmoqda...'}</span>
             </div>
 
             {/* Qadamlar ro'yxati */}
@@ -252,10 +267,14 @@ export default function AiHairstyleAdvisorScreen({
               </div>
 
               <h2 className="text-base font-extrabold text-brand-blue">
-                Yuz rasmingizni yuklang yoki selfi oling
+                {lang === 'ru' ? 'Загрузите фото лица или сделайте селфи' : lang === 'en' ? 'Upload face photo or take a selfie' : 'Yuz rasmingizni yuklang yoki selfi oling'}
               </h2>
               <p className="text-xs text-gray-500 mt-1 mb-4 leading-relaxed max-w-xs mx-auto">
-                Gemini AI yuzingiz tuzilishini (oval, dumaloq, kvadrat) aniqlab, ideal 3 ta soch turmagini tavsiya etadi.
+                {lang === 'ru'
+                  ? 'Gemini AI определит форму лица (овальное, круглое, квадратное) и подберет 3 идеальные стрижки.'
+                  : lang === 'en'
+                  ? 'Gemini AI identifies your face shape (oval, round, square) and recommends 3 ideal haircuts.'
+                  : "Gemini AI yuzingiz tuzilishini (oval, dumaloq, kvadrat) aniqlab, ideal 3 ta soch turmagini tavsiya etadi."}
               </p>
 
               <div className="flex flex-col space-y-2.5">
@@ -264,14 +283,14 @@ export default function AiHairstyleAdvisorScreen({
                   className="w-full py-3 px-4 rounded-2xl bg-brand-blue text-white font-extrabold text-sm shadow-md hover:bg-brand-blue/90 active:scale-98 transition-all flex items-center justify-center space-x-2"
                 >
                   <Camera className="w-4 h-4 text-brand-orange" />
-                  <span>Kamera / Rasm yuklash</span>
+                  <span>{lang === 'ru' ? 'Камера / Загрузить фото' : lang === 'en' ? 'Camera / Upload photo' : 'Kamera / Rasm yuklash'}</span>
                 </button>
               </div>
 
               {/* Maslahat */}
               <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-center space-x-1.5 text-[11px] text-gray-400 font-medium">
                 <Info className="w-3.5 h-3.5 text-blue-500" />
-                <span>Aniqroq natija uchun: to'g'riga qarang va yaxshi yorug'likda tushing.</span>
+                <span>{lang === 'ru' ? 'Для точности: смотрите прямо и обеспечьте хорошее освещение.' : lang === 'en' ? 'For best accuracy: look straight and ensure good lighting.' : "Aniqroq natija uchun: to'g'riga qarang va yaxshi yorug'likda tushing."}</span>
               </div>
             </div>
 
@@ -280,7 +299,7 @@ export default function AiHairstyleAdvisorScreen({
               <div className="flex items-center space-x-2 mb-3">
                 <Zap className="w-4 h-4 text-brand-orange" />
                 <h3 className="text-xs font-black uppercase tracking-wider text-gray-700">
-                  Yoki namunani tanlab sinab ko'ring:
+                  {lang === 'ru' ? 'Или выберите пример для теста:' : lang === 'en' ? 'Or choose a sample to try:' : "Yoki namunani tanlab sinab ko'ring:"}
                 </h3>
               </div>
 
@@ -360,7 +379,7 @@ export default function AiHairstyleAdvisorScreen({
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-black uppercase tracking-wider text-gray-700 flex items-center space-x-1">
                   <Scissors className="w-3.5 h-3.5 text-brand-orange" />
-                  <span>Sizga mos 3 xil zamonaviy turmak:</span>
+                  <span>{lang === 'ru' ? '3 подходящие стрижки:' : lang === 'en' ? '3 recommended modern haircuts:' : 'Sizga mos 3 xil zamonaviy turmak:'}</span>
                 </h3>
                 <span className="text-[10px] font-bold text-brand-blue">
                   {activeHairstyleTab + 1} / 3
@@ -404,10 +423,10 @@ export default function AiHairstyleAdvisorScreen({
 
                       <div className="absolute bottom-3 left-3 right-3 text-white">
                         <span className="text-[11px] font-semibold text-blue-200 block uppercase tracking-wider">
-                          Tavsiya etilgan turmak
+                          {lang === 'ru' ? 'Рекомендованная стрижка' : lang === 'en' ? 'Recommended haircut' : 'Tavsiya etilgan turmak'}
                         </span>
                         <h4 className="text-lg font-black text-white leading-tight">
-                          {style.uz_name}
+                          {lang === 'en' ? style.name : style.uz_name}
                         </h4>
                         <span className="text-xs text-gray-300 font-medium">
                           ({style.name})
@@ -420,7 +439,7 @@ export default function AiHairstyleAdvisorScreen({
                       {/* Nima uchun sizga mos? */}
                       <div className="bg-blue-50/70 rounded-2xl p-3 border border-blue-100/60">
                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-wide block mb-1">
-                          💡 Nima uchun aynan sizga mos?
+                          {lang === 'ru' ? '💡 Почему подходит именно вам?' : lang === 'en' ? '💡 Why does this suit you?' : '💡 Nima uchun aynan sizga mos?'}
                         </span>
                         <p className="text-xs text-gray-700 leading-relaxed font-medium">
                           {style.why_fit}
@@ -430,13 +449,15 @@ export default function AiHairstyleAdvisorScreen({
                       {/* Styling va parvarish */}
                       <div className="bg-amber-50/70 rounded-2xl p-3 border border-amber-100/60">
                         <span className="text-[10px] font-black text-amber-900 uppercase tracking-wide block mb-1">
-                          ✂️ Uyda qanday shakl berish (Styling)?
+                          {lang === 'ru' ? '✂️ Как укладывать дома (Стайлинг)?' : lang === 'en' ? '✂️ Home Styling Tips:' : '✂️ Uyda qanday shakl berish (Styling)?'}
                         </span>
                         <p className="text-xs text-gray-700 leading-relaxed font-medium">
                           {style.styling_tip}
                         </p>
                         <div className="mt-2 pt-2 border-t border-amber-200/50 flex items-center justify-between text-[11px]">
-                          <span className="text-gray-500 font-semibold">Tavsiya etilgan vosita:</span>
+                          <span className="text-gray-500 font-semibold">
+                            {lang === 'ru' ? 'Рекомендуемое средство:' : lang === 'en' ? 'Recommended product:' : 'Tavsiya etilgan vosita:'}
+                          </span>
                           <span className="font-extrabold text-amber-900">{style.recommended_product}</span>
                         </div>
                       </div>
@@ -445,10 +466,10 @@ export default function AiHairstyleAdvisorScreen({
                       <div className="pt-2">
                         <div className="flex items-center justify-between mb-2">
                           <h5 className="text-xs font-black text-gray-800 flex items-center space-x-1">
-                            <span>Yaqin atrofdagi mutaxassis ustalar:</span>
+                            <span>{lang === 'ru' ? 'Ближайшие топ-мастера:' : lang === 'en' ? 'Nearby expert barbers:' : 'Yaqin atrofdagi mutaxassis ustalar:'}</span>
                           </h5>
                           <span className="text-[10px] font-semibold text-gray-400">
-                            Reyting bo'yicha
+                            {lang === 'ru' ? 'По рейтингу' : lang === 'en' ? 'By rating' : "Reyting bo'yicha"}
                           </span>
                         </div>
 
@@ -480,7 +501,7 @@ export default function AiHairstyleAdvisorScreen({
                                     </span>
                                     <span>•</span>
                                     <span className="font-black text-brand-blue">
-                                      {barber.price?.toLocaleString()} so'm
+                                      {barber.price?.toLocaleString()} UZS
                                     </span>
                                   </div>
                                 </div>
@@ -490,7 +511,7 @@ export default function AiHairstyleAdvisorScreen({
                                 onClick={() => onSelectBarberWithStyle(barber, style)}
                                 className="px-3 py-1.5 rounded-xl bg-brand-blue text-white font-extrabold text-[11px] shadow-xs hover:bg-brand-blue/90 active:scale-95 transition-all flex items-center space-x-1"
                               >
-                                <span>Navbat</span>
+                                <span>{lang === 'ru' ? 'Запись' : lang === 'en' ? 'Book' : 'Navbat'}</span>
                                 <ChevronRight className="w-3 h-3" />
                               </button>
                             </div>
@@ -513,7 +534,7 @@ export default function AiHairstyleAdvisorScreen({
                 className="flex-1 py-3 px-3 rounded-2xl bg-white border border-gray-200 text-gray-700 font-bold text-xs shadow-xs hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center space-x-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Boshqa rasm</span>
+                <span>{lang === 'ru' ? 'Другое фото' : lang === 'en' ? 'New photo' : 'Boshqa rasm'}</span>
               </button>
 
               <button
@@ -521,7 +542,7 @@ export default function AiHairstyleAdvisorScreen({
                 className="flex-1 py-3 px-3 rounded-2xl bg-gradient-to-r from-brand-blue to-blue-700 text-white font-bold text-xs shadow-md hover:opacity-95 active:scale-95 transition-all flex items-center justify-center space-x-1.5"
               >
                 <Share2 className="w-3.5 h-3.5 text-brand-orange" />
-                <span>Do'stlarga ulashish</span>
+                <span>{lang === 'ru' ? 'Поделиться' : lang === 'en' ? 'Share' : "Do'stlarga ulashish"}</span>
               </button>
             </div>
           </div>
