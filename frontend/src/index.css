@@ -4,8 +4,8 @@
 
 @layer base {
   body {
-    background-color: #E6EDF9;
-    color: #1F2937;
+    background-color: #F8FAFC;
+    color: #0F172A;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
@@ -26,6 +26,7 @@
   color: #F8FAFC !important;
 }
 
+.dark .bg-\[\#F8FAFC\],
 .dark .bg-\[\#E6EDF9\],
 .dark .bg-\[\#E6EDF9\]\/95 {
   background-color: #0B132B !important;

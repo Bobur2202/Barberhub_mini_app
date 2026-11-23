@@ -136,7 +136,7 @@ export default function AiHairstyleAdvisorScreen({
   };
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] pb-24 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] pb-24 max-w-md mx-auto">
       {/* Toast */}
       {shareSuccessToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center space-x-1.5 animate-in fade-in">
@@ -146,7 +146,7 @@ export default function AiHairstyleAdvisorScreen({
       )}
 
       {/* Top Header */}
-      <div className="bg-gradient-to-r from-[#003865] via-[#004B86] to-[#0A66C2] text-white px-4 pt-5 pb-6 shadow-md relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-4 pt-5 pb-6 shadow-md relative overflow-hidden">
         {/* Orqa fondagi yorqin nurlar */}
         <div className="absolute -top-12 -right-12 w-44 h-44 bg-brand-orange/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-blue-400/20 rounded-full blur-2xl pointer-events-none" />

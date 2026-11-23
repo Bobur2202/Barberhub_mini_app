@@ -5,7 +5,7 @@ export default function SplashScreen({ onSelectLanguage }) {
   const [showAboutModal, setShowAboutModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] flex flex-col justify-between px-6 py-8 max-w-md mx-auto relative">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between px-6 py-8 max-w-md mx-auto relative">
       {/* Top Bar with Info button */}
       <div className="flex justify-end pt-2">
         <button

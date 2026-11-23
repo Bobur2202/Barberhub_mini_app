@@ -8,19 +8,19 @@ export default {
     extend: {
       colors: {
         brand: {
-          blue: '#004B86',
-          'blue-dark': '#003660',
-          'blue-light': '#E9F1F7',
-          orange: '#FAA100',
-          'orange-hover': '#E59400',
-          bg: '#E6EDF9',
+          blue: '#0F172A',
+          'blue-dark': '#020617',
+          'blue-light': '#F1F5F9',
+          orange: '#D97706',
+          'orange-hover': '#B45309',
+          bg: '#F8FAFC',
           card: '#FFFFFF',
-          muted: '#6B7280',
-          dark: '#111827',
+          muted: '#64748B',
+          dark: '#0F172A',
         }
       },
       borderRadius: {
-        'card': '14px'
+        'card': '16px'
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],

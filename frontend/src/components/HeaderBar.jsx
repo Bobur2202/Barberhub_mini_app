@@ -28,7 +28,7 @@ export default function HeaderBar({
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100 px-4 py-2.5 flex items-center justify-between shadow-sm">
+    <div className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200/70 px-4 py-2.5 flex items-center justify-between shadow-2xs">
       {/* Brand logo / name with secret click handler for PC development */}
       <div 
         className="flex items-center space-x-2 cursor-pointer select-none"

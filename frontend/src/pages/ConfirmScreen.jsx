@@ -131,9 +131,9 @@ export default function ConfirmScreen({
   };
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] pb-32 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] pb-32 max-w-md mx-auto">
       {/* Top Header */}
-      <div className="sticky top-0 bg-[#E6EDF9]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
+      <div className="sticky top-0 bg-[#F8FAFC]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
         <button
           onClick={onBack}
           className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-blue hover:bg-gray-100 transition-colors"

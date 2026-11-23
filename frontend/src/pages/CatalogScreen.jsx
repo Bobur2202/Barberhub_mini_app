@@ -211,7 +211,7 @@ export default function CatalogScreen({
   });
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] pb-24 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] pb-24 max-w-md mx-auto">
       {/* Top Location Bar */}
       <div className="pt-4 px-4 pb-2">
         {/* 📢 Super Admin Umumiy E'lon / Aksiya Banneri */}
@@ -261,10 +261,10 @@ export default function CatalogScreen({
         {upcomingTodayApt && (
           <div
             onClick={onGoToAppointments}
-            className="mb-2.5 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 text-white p-3 rounded-2xl shadow-md flex items-center justify-between cursor-pointer active:scale-98 transition-all border border-blue-400/30 animate-in fade-in"
+            className="mb-2.5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-3 rounded-2xl shadow-sm flex items-center justify-between cursor-pointer active:scale-98 transition-all border border-slate-700/60 animate-in fade-in"
           >
             <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
                 <BellRing className="w-4 h-4 text-brand-orange animate-bounce" />
               </div>
               <div className="text-left">
@@ -360,11 +360,11 @@ export default function CatalogScreen({
               hapticFeedback.impact('light');
               onOpenAiAdvisor();
             }}
-            className="mt-2.5 bg-gradient-to-r from-[#003865] via-[#004B86] to-[#0A66C2] text-white rounded-2xl px-3 py-2 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all shadow-sm border border-blue-400/20"
+            className="mt-2.5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl px-3 py-2 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all shadow-sm border border-slate-700/60"
           >
             <div className="flex items-center space-x-2.5">
               <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-0.5 shadow-sm shrink-0">
-                <div className="w-full h-full bg-[#003865] rounded-full flex items-center justify-center">
+                <div className="w-full h-full bg-slate-900 rounded-full flex items-center justify-center">
                   <Sparkles className="w-3 h-3 text-brand-orange animate-pulse" />
                 </div>
               </div>

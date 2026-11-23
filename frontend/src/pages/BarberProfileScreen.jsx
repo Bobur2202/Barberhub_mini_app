@@ -134,7 +134,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
   };
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] pb-32 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] pb-32 max-w-md mx-auto">
       {/* Toast */}
       {showShareToast && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-blue text-white py-2 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in border border-white/20">
@@ -144,7 +144,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
       )}
 
       {/* Top Header */}
-      <div className="sticky top-0 bg-[#E6EDF9]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
+      <div className="sticky top-0 bg-[#F8FAFC]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
         <button
           onClick={onBack}
           className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-blue hover:bg-gray-100 transition-colors"
@@ -283,7 +283,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
         )}
 
         {/* 🏷️ VIRTUAL SADOQAT KARTASI (Digital Loyalty Stamp Card) */}
-        <div className="w-full mt-3 bg-gradient-to-r from-[#003865] via-[#004B86] to-[#0A66C2] rounded-3xl p-3.5 text-white shadow-md border border-blue-400/20 relative overflow-hidden text-left">
+        <div className="w-full mt-3 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-3.5 text-white shadow-sm border border-slate-700/60 relative overflow-hidden text-left">
           <div className="absolute -top-8 -right-8 w-24 h-24 bg-brand-orange/20 rounded-full blur-xl pointer-events-none" />
           
           <div className="flex items-center justify-between relative z-10">

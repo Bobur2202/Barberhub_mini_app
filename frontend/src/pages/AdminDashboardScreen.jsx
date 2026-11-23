@@ -833,7 +833,7 @@ export default function AdminDashboardScreen({
     .reduce((sum, a) => sum + (Number(a.price) || 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] pb-32 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] pb-32 max-w-md mx-auto">
       {/* Toast bildirishnoma */}
       {scheduleSaveToast && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white py-2.5 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in max-w-xs text-center border border-white/20">
@@ -2056,7 +2056,7 @@ export default function AdminDashboardScreen({
       )}
 
       {/* 8. Fixed Bottom Navigation Bar (Usta uchun bir barmoq bilan qulay navigatsiya) */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 px-3 py-2 z-40 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200/70 px-3 py-2 z-40 shadow-2xl">
         <div className="grid grid-cols-4 gap-1 text-center">
           <button
             type="button"

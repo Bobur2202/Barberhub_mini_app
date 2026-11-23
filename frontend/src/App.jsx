@@ -138,8 +138,8 @@ export default function App() {
     } else {
       document.documentElement.classList.remove('dark');
       if (window.Telegram?.WebApp) {
-        if (window.Telegram.WebApp.setHeaderColor) window.Telegram.WebApp.setHeaderColor('#004B86');
-        if (window.Telegram.WebApp.setBackgroundColor) window.Telegram.WebApp.setBackgroundColor('#E6EDF9');
+        if (window.Telegram.WebApp.setHeaderColor) window.Telegram.WebApp.setHeaderColor('#0F172A');
+        if (window.Telegram.WebApp.setBackgroundColor) window.Telegram.WebApp.setBackgroundColor('#F8FAFC');
       }
     }
   };
@@ -442,7 +442,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] font-sans antialiased text-gray-900">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans antialiased text-slate-900">
       {/* Top Header Bar (Faqat splash, role_select, barber_register, super_admin va ai_advisor'dan tashqari ko'rinadi) */}
       {!['splash', 'role_select', 'barber_register', 'super_admin', 'ai_advisor'].includes(currentStep) && (
         <HeaderBar
@@ -669,7 +669,7 @@ export default function App() {
 
       {/* Mijoz uchun Qulay Bottom Navigation Bar (Katalog, AI Maslahat va Navbatlarim) */}
       {userRole === 'client' && ['catalog', 'ai_advisor', 'my_appointments'].includes(currentStep) && (
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 py-2 px-4 flex items-center justify-around shadow-lg z-40">
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200/70 py-2 px-4 flex items-center justify-around shadow-lg z-40">
           <button
             onClick={() => setCurrentStep('catalog')}
             className={`flex flex-col items-center space-y-1 transition-all ${

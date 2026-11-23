@@ -19,7 +19,7 @@ export default function RoleSelectionScreen({ onSelectRole, t, isSuperAdmin = fa
   };
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] flex flex-col justify-between px-5 py-8 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between px-5 py-8 max-w-md mx-auto">
       {/* Top Header */}
       <div className="pt-4 text-center">
         <div className="w-16 h-16 rounded-2xl bg-brand-blue flex items-center justify-center mx-auto text-white shadow-lg shadow-blue-900/10 mb-3">

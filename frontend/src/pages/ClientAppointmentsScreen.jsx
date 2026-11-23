@@ -176,7 +176,7 @@ export default function ClientAppointmentsScreen({
   };
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] pb-28 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] pb-28 max-w-md mx-auto">
       {/* Reschedule Toast */}
       {rescheduleToast && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-blue text-white py-2.5 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in max-w-xs text-center border border-white/20">
@@ -186,7 +186,7 @@ export default function ClientAppointmentsScreen({
       )}
 
       {/* Top Header */}
-      <div className="sticky top-0 bg-[#E6EDF9]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2">
+      <div className="sticky top-0 bg-[#F8FAFC]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {onBackToCatalog && (
@@ -262,7 +262,7 @@ export default function ClientAppointmentsScreen({
         {activeTab === 'active' && (
           <>
             {/* 🏷️ Virtual Sadoqat Kartalari banner */}
-            <div className="bg-gradient-to-r from-[#003865] via-[#004B86] to-[#0A66C2] rounded-3xl p-3.5 text-white shadow-md border border-blue-400/20 mb-3 relative overflow-hidden">
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-3.5 text-white shadow-sm border border-slate-700/60 mb-3 relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center text-brand-orange">

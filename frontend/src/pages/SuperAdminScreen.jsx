@@ -306,7 +306,7 @@ export default function SuperAdminScreen({
   });
 
   return (
-    <div className="min-h-screen bg-[#E6EDF9] pb-32 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] pb-32 max-w-md mx-auto">
       {/* Toast */}
       {toastMessage && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-blue text-white py-2.5 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in max-w-xs text-center border border-white/20">
@@ -316,7 +316,7 @@ export default function SuperAdminScreen({
       )}
 
       {/* Top Header */}
-      <div className="sticky top-0 bg-[#002f57] text-white z-40 pt-4 px-4 pb-3 shadow-md">
+      <div className="sticky top-0 bg-[#0F172A] text-white z-40 pt-4 px-4 pb-3 shadow-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-xl bg-amber-400 text-brand-blue flex items-center justify-center font-black shadow-md">
