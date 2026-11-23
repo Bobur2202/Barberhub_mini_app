@@ -20,81 +20,121 @@
   scrollbar-width: none;
 }
 
-/* ================= Telegram Dark Theme Support ================= */
+/* ================= Telegram & App Dark Theme Support ================= */
 .dark body {
-  background-color: #0B132B !important;
+  background-color: #090D16 !important;
   color: #F8FAFC !important;
 }
 
 .dark .bg-\[\#F8FAFC\],
 .dark .bg-\[\#E6EDF9\],
-.dark .bg-\[\#E6EDF9\]\/95 {
-  background-color: #0B132B !important;
+.dark .bg-\[\#E6EDF9\]\/95,
+.dark .bg-\[\#F8FAFC\]\/95 {
+  background-color: #090D16 !important;
 }
 
+/* Card surfaces: clean elevated slate-800 surface */
 .dark .bg-white,
 .dark .bg-white\/90,
 .dark .bg-white\/95 {
-  background-color: #16223F !important;
+  background-color: #131B2A !important;
   color: #F8FAFC !important;
+  border-color: #223048 !important;
+}
+
+/* Text readability in dark mode */
+.dark .text-brand-blue {
+  color: #F8FAFC !important;
+}
+
+/* Fix: On orange/amber buttons or badges, text must remain dark for perfect contrast */
+.dark .bg-brand-orange,
+.dark .bg-brand-orange .text-brand-blue,
+.dark button.bg-brand-orange,
+.dark [class*="bg-brand-orange"] .text-brand-blue,
+.dark [class*="from-amber-400"] .text-brand-blue {
+  color: #0F172A !important;
+}
+
+/* Primary dark buttons & active tabs that have bg-brand-blue */
+.dark button.bg-brand-blue,
+.dark .bg-brand-blue.text-white,
+.dark div.bg-brand-blue.text-white {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
 }
 
 .dark .text-gray-900,
 .dark .text-gray-800,
 .dark .text-gray-700 {
-  color: #F1F5F9 !important;
+  color: #F8FAFC !important;
 }
 
 .dark .text-gray-600,
-.dark .text-gray-500,
-.dark .text-gray-400 {
+.dark .text-gray-500 {
   color: #94A3B8 !important;
 }
 
+.dark .text-gray-400,
+.dark .text-gray-300 {
+  color: #64748B !important;
+}
+
+/* Subtle border lines */
 .dark .border-blue-50,
 .dark .border-blue-100,
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-200\/70,
 .dark .border-gray-100,
 .dark .border-gray-200 {
-  border-color: #233154 !important;
+  border-color: #223048 !important;
 }
 
-.dark .bg-gray-50 {
-  background-color: #1A284A !important;
-}
-
-.dark .bg-gray-100 {
-  background-color: #1F2E52 !important;
-}
-
-.dark .bg-gray-200\/60 {
-  background-color: #1E2B4B !important;
-}
-
+/* Sub-card backgrounds (chips, filters, secondary blocks) */
+.dark .bg-gray-50,
 .dark .bg-blue-50,
 .dark .bg-blue-50\/80,
 .dark .bg-blue-50\/70,
 .dark .bg-blue-50\/60 {
-  background-color: #1A294C !important;
+  background-color: #0E1524 !important;
 }
 
+.dark .bg-gray-100,
+.dark .bg-gray-200,
+.dark .bg-gray-200\/60 {
+  background-color: #1A2436 !important;
+}
+
+/* Status badges */
 .dark .bg-emerald-50,
-.dark .bg-emerald-50\/70 {
-  background-color: #0F322B !important;
+.dark .bg-emerald-50\/70,
+.dark .bg-emerald-100 {
+  background-color: #064E3B !important;
+  color: #6EE7B7 !important;
+  border-color: #047857 !important;
 }
 
-.dark .bg-amber-50 {
-  background-color: #2C2618 !important;
+.dark .bg-amber-50,
+.dark .bg-amber-100 {
+  background-color: #451A03 !important;
+  color: #FDE68A !important;
+  border-color: #78350F !important;
 }
 
-.dark .text-brand-blue {
-  color: #60A5FA !important;
+.dark .bg-red-50,
+.dark .bg-red-100 {
+  background-color: #450A0A !important;
+  color: #FCA5A5 !important;
+  border-color: #7F1D1D !important;
 }
 
+/* Form inputs & dropdowns */
 .dark input,
 .dark select,
 .dark textarea {
-  background-color: #16223F !important;
+  background-color: #0E1524 !important;
   color: #F8FAFC !important;
-  border-color: #2A3B63 !important;
+  border-color: #26364D !important;
 }
 

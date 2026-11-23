@@ -119,6 +119,8 @@ export default function App() {
 
   // 🌙 Telegram Avtomatik Tungi / Kunduzgi Rejim (Auto Dark/Light Theme)
   const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('barberhub_theme');
+    if (saved) return saved === 'dark';
     if (typeof window !== 'undefined') {
       const tgScheme = window.Telegram?.WebApp?.colorScheme;
       if (tgScheme) return tgScheme === 'dark';
@@ -129,11 +131,12 @@ export default function App() {
 
   const applyThemeMode = (dark) => {
     setIsDarkMode(dark);
+    localStorage.setItem('barberhub_theme', dark ? 'dark' : 'light');
     if (dark) {
       document.documentElement.classList.add('dark');
       if (window.Telegram?.WebApp) {
-        if (window.Telegram.WebApp.setHeaderColor) window.Telegram.WebApp.setHeaderColor('#0F172A');
-        if (window.Telegram.WebApp.setBackgroundColor) window.Telegram.WebApp.setBackgroundColor('#0B132B');
+        if (window.Telegram.WebApp.setHeaderColor) window.Telegram.WebApp.setHeaderColor('#090D16');
+        if (window.Telegram.WebApp.setBackgroundColor) window.Telegram.WebApp.setBackgroundColor('#090D16');
       }
     } else {
       document.documentElement.classList.remove('dark');
