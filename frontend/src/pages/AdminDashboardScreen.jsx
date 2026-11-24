@@ -813,23 +813,98 @@ export default function AdminDashboardScreen({
     const price = (platformSettings.vip_boost_price || 40000).toLocaleString();
     if (window.confirm(`TOP-1 ga chiqish & Reyting 5.0 ⭐ (VIP Boost) xizmatini faollashtirasizmi? Narxi: ${price} UZS/oy`)) {
       hapticFeedback.impact('heavy');
-      const res = await activateVipBoost(barberProfile.id);
-      if (res?.success) {
-        hapticFeedback.notification('success');
-        setBarberProfile(prev => ({
-          ...prev,
-          is_vip: true,
-          rating: 5.0,
-          custom_boosted_rating: 5.0
-        }));
-        const idx = mockBarbers.findIndex(b => b.id === barberProfile.id);
-        if (idx !== -1) {
-          mockBarbers[idx].is_vip = true;
-          mockBarbers[idx].rating = 5.0;
-        }
-        showScheduleToast("🚀 VIP Boost faollashtirildi! Profilingiz katalog tepasida 1-o'rinda va 5.0 reyting bilan ko'rinadi!");
+
+      // Optimistik yangilash: usta darhol VIP holatiga o'tadi va ma'lumotlar saqlanadi
+      const vipData = {
+        is_vip: true,
+        rating: 5.0,
+        custom_boosted_rating: 5.0
+      };
+      updateProfileData(vipData);
+
+      // mockBarbers ro'yxatida ham 1-o'ringa ko'tarish
+      const idx = mockBarbers.findIndex(b => b.id === barberProfile.id || b.name === barberProfile.name);
+      if (idx !== -1) {
+        mockBarbers[idx].is_vip = true;
+        mockBarbers[idx].rating = 5.0;
+        mockBarbers[idx].custom_boosted_rating = 5.0;
+        const [vipB] = mockBarbers.splice(idx, 1);
+        mockBarbers.unshift(vipB);
+      }
+
+      try {
+        await activateVipBoost(barberProfile.id);
+      } catch (err) {
+        console.warn("VIP boost backend sync warning:", err);
+      }
+
+      hapticFeedback.notification('success');
+      showScheduleToast("🚀 VIP Boost faollashtirildi! Profilingiz katalog tepasida 1-o'rinda va 5.0 reyting bilan ko'rinadi!");
+    }
+  };
+
+  // 8. To'lov ilovalarini to'g'ridan-to'g'ri native ilovada ochish (Click, Payme, Uzum Bank)
+  const handleOpenPaymentApp = (type) => {
+    const ua = navigator.userAgent || '';
+    const isAndroid = /android/i.test(ua);
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+
+    let deepUrl = '';
+    let fallbackWebUrl = '';
+
+    if (type === 'click') {
+      fallbackWebUrl = platformSettings.click_url || 'https://my.click.uz/';
+      if (isAndroid) {
+        deepUrl = `intent://my.click.uz/#Intent;scheme=clickuz;package=uz.click;S.browser_fallback_url=${encodeURIComponent(fallbackWebUrl)};end`;
+      } else if (isIOS) {
+        deepUrl = `clickuz://`;
+      } else {
+        deepUrl = fallbackWebUrl;
+      }
+    } else if (type === 'payme') {
+      fallbackWebUrl = platformSettings.payme_url || 'https://payme.uz/';
+      if (isAndroid) {
+        deepUrl = `intent://paycom.uz/#Intent;scheme=payme;package=uz.dida.payme;S.browser_fallback_url=${encodeURIComponent(fallbackWebUrl)};end`;
+      } else if (isIOS) {
+        deepUrl = `payme://`;
+      } else {
+        deepUrl = fallbackWebUrl;
+      }
+    } else if (type === 'uzum') {
+      fallbackWebUrl = 'https://uzumbank.uz/';
+      if (isAndroid) {
+        deepUrl = `intent://uzumbank.uz/#Intent;scheme=uzumbank;package=uz.apelsin;S.browser_fallback_url=${encodeURIComponent(fallbackWebUrl)};end`;
+      } else if (isIOS) {
+        deepUrl = `uzumbank://`;
+      } else {
+        deepUrl = fallbackWebUrl;
       }
     }
+
+    try {
+      if (isAndroid && deepUrl.startsWith('intent:')) {
+        window.location.href = deepUrl;
+      } else if (deepUrl.startsWith('clickuz:') || deepUrl.startsWith('payme:') || deepUrl.startsWith('uzumbank:')) {
+        window.location.href = deepUrl;
+        setTimeout(() => {
+          if (window.Telegram?.WebApp?.openLink) {
+            window.Telegram.WebApp.openLink(fallbackWebUrl);
+          } else {
+            window.open(fallbackWebUrl, '_blank');
+          }
+        }, 1200);
+      } else {
+        if (window.Telegram?.WebApp?.openLink) {
+          window.Telegram.WebApp.openLink(fallbackWebUrl);
+        } else {
+          window.open(fallbackWebUrl, '_blank');
+        }
+      }
+    } catch (err) {
+      window.location.href = fallbackWebUrl;
+    }
+
+    setShowPaymentModal(false);
   };
 
   // Filterlangan buyurtmalar
@@ -2059,43 +2134,43 @@ export default function AdminDashboardScreen({
           </div>
 
           {/* 7. Akkaunt va Xavfsizlik (Cloud Persistence, Logout, Delete Account) */}
-          <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm border border-blue-50 dark:border-slate-800 text-slate-900 dark:text-white">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center space-x-1.5">
-                <ShieldCheck className="w-4 h-4 text-brand-blue" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-slate-300 flex items-center space-x-1.5">
+                <ShieldCheck className="w-4 h-4 text-brand-blue dark:text-amber-400" />
                 <span>{t.account_settings_title || "Akkaunt va Xavfsizlik"}</span>
               </h3>
-              <span className="text-[10px] text-brand-blue font-extrabold bg-blue-50 px-2.5 py-0.5 rounded-full flex items-center space-x-1 border border-blue-100">
-                <Cloud className="w-3 h-3 text-brand-orange" />
+              <span className="text-[10px] text-brand-blue dark:text-blue-300 font-extrabold bg-blue-50 dark:bg-blue-950/50 px-2.5 py-0.5 rounded-full flex items-center space-x-1 border border-blue-100 dark:border-blue-900/40">
+                <Cloud className="w-3 h-3 text-brand-orange dark:text-amber-400" />
                 <span>{t.cloud_saved_badge || "Bulutda saqlangan"}</span>
               </span>
             </div>
 
             {/* Telegram ID Protection Card */}
-            <div className="p-3.5 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-xl bg-brand-blue text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-2xs">
+            <div className="p-3.5 bg-blue-50/70 dark:bg-slate-800/80 rounded-2xl border border-blue-100 dark:border-slate-700 flex items-start space-x-3">
+              <div className="w-8 h-8 rounded-xl bg-brand-blue dark:bg-slate-700 text-white dark:text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-2xs">
                 <Smartphone className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-brand-blue">
+                  <span className="text-xs font-bold text-brand-blue dark:text-white">
                     Telegram ID: <code>{barberProfile.telegram_id || "87654321"}</code>
                   </span>
-                  <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  <span className="text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/20">
                     {t.auto_restore_on || (lang === 'ru' ? 'Автовосстановление ВКЛ' : lang === 'en' ? 'Auto-restore ON' : 'Avto-tiklash ON')}
                   </span>
                 </div>
-                <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
+                <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-1 leading-relaxed">
                   {t.cloud_saved_desc || "Tarix tozalansa yoki botdan chiqib ketilsa ham sizning barcha ma'lumotlaringiz, izohlar va reyting saqlanib qoladi."}
                 </p>
               </div>
             </div>
 
             {/* Actions: Logout & Delete Account */}
-            <div className="space-y-2 mt-4 pt-3 border-t border-gray-100">
+            <div className="space-y-2 mt-4 pt-3 border-t border-gray-100 dark:border-slate-800">
               <button
                 onClick={() => setShowLogoutModal(true)}
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-200 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center space-x-2"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>{t.btn_logout || "Hisobdan chiqish (Log Out)"}</span>
@@ -2103,7 +2178,7 @@ export default function AdminDashboardScreen({
 
               <button
                 onClick={() => setShowDeleteAccountModal(true)}
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors flex items-center justify-center space-x-2"
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-200 dark:hover:border-red-900/40 transition-colors flex items-center justify-center space-x-2"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>{t.btn_delete_account || "Akkauntni butunlay o'chirish"}</span>
@@ -2821,25 +2896,25 @@ export default function AdminDashboardScreen({
 
       {/* MODAL 3: Kengaytirilgan To'lov tizimlari (Click, Payme, Uzum, Bank kartasi) */}
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between border-b pb-3 border-gray-100">
-              <h3 className="font-extrabold text-base text-brand-blue">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-[#0F172A] rounded-t-3xl sm:rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[85vh] flex flex-col border border-gray-100 dark:border-slate-800 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between border-b pb-3 border-gray-100 dark:border-slate-800">
+              <h3 className="font-extrabold text-base text-brand-blue dark:text-white">
                 {t.payment_methods_title}
               </h3>
               <button
                 onClick={() => setShowPaymentModal(false)}
-                className="text-gray-400 font-bold p-1"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-white font-bold p-1"
               >
                 ✕
               </button>
             </div>
 
-            <div className="my-2 p-2.5 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-center justify-between">
-              <span className="text-xs text-brand-blue font-semibold">
+            <div className="my-2 p-2.5 bg-blue-50/70 dark:bg-slate-900 rounded-2xl border border-blue-100 dark:border-slate-800 flex items-center justify-between">
+              <span className="text-xs text-brand-blue dark:text-slate-300 font-semibold">
                 {lang === 'ru' ? 'Стоимость подписки:' : lang === 'en' ? 'Monthly subscription:' : 'Oylik obuna narxi:'}
               </span>
-              <span className="text-sm font-black text-brand-orange">
+              <span className="text-sm font-black text-brand-orange dark:text-amber-400">
                 {(platformSettings.subscription_price || 50000).toLocaleString()} UZS
               </span>
             </div>
@@ -2851,7 +2926,7 @@ export default function AdminDashboardScreen({
                     alert(`Avtomatik to'lov muvaffaqiyatli amalga oshirildi! ${linkedCard.number} dan ${(platformSettings.subscription_price || 50000).toLocaleString()} UZS yechildi.`);
                     setShowPaymentModal(false);
                   }}
-                  className="w-full p-3 rounded-2xl bg-gray-900 text-white flex items-center justify-between text-xs font-bold shadow-sm"
+                  className="w-full p-3 rounded-2xl bg-gray-900 dark:bg-slate-800 text-white flex items-center justify-between text-xs font-bold shadow-sm border border-transparent dark:border-slate-700"
                 >
                   <div className="flex items-center space-x-2">
                     <CreditCard className="w-4 h-4 text-amber-400" />
@@ -2865,9 +2940,9 @@ export default function AdminDashboardScreen({
 
               {/* To'g'ridan-to'g'ri karta o'tkazmasi (P2P) */}
               {platformSettings.payment_card && (
-                <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200">
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-900/90 border border-amber-200 dark:border-amber-500/30">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] font-bold text-amber-900">
+                    <span className="text-[11px] font-bold text-amber-900 dark:text-amber-400">
                       {lang === 'ru' ? 'Перевод на карту платформы:' : lang === 'en' ? 'Transfer to platform card:' : "Platforma kartasiga o'tkazish:"}
                     </span>
                     <button
@@ -2875,15 +2950,15 @@ export default function AdminDashboardScreen({
                         navigator.clipboard?.writeText(platformSettings.payment_card.replace(/\s+/g, ''));
                         alert(`Karta raqami nusxalandi: ${platformSettings.payment_card}`);
                       }}
-                      className="text-[10px] bg-amber-200 hover:bg-amber-300 text-amber-900 font-extrabold px-2 py-0.5 rounded-full transition-all"
+                      className="text-[10px] bg-amber-200 hover:bg-amber-300 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 text-amber-900 dark:text-amber-300 font-extrabold px-2.5 py-1 rounded-full transition-all border border-transparent dark:border-amber-500/30"
                     >
                       {lang === 'ru' ? 'Копировать 📋' : lang === 'en' ? 'Copy 📋' : 'Nusxalash 📋'}
                     </button>
                   </div>
-                  <div className="font-mono text-xs font-bold text-gray-900 tracking-wider">
+                  <div className="font-mono text-xs font-bold text-gray-900 dark:text-white tracking-wider">
                     {platformSettings.payment_card}
                   </div>
-                  <p className="text-[10px] text-gray-500 mt-1">
+                  <p className="text-[10px] text-gray-500 dark:text-slate-400 mt-1">
                     Istalgan ilovadan (Click, Payme, Uzum, Bank ilovasi) o'tkazishingiz mumkin.
                   </p>
                   {platformSettings.support_telegram && (
@@ -2891,7 +2966,7 @@ export default function AdminDashboardScreen({
                       href={`https://t.me/${platformSettings.support_telegram.replace('@', '')}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 block text-center py-2 px-3 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black text-[11px] rounded-xl transition-all shadow-xs"
+                      className="mt-2.5 block text-center py-2 px-3 bg-amber-400 hover:bg-amber-500 dark:bg-amber-500 dark:hover:bg-amber-400 text-amber-950 dark:text-slate-950 font-black text-[11px] rounded-xl transition-all shadow-xs"
                     >
                       Chekni adminga yuborish ({platformSettings.support_telegram}) &rarr;
                     </a>
@@ -2900,49 +2975,36 @@ export default function AdminDashboardScreen({
               )}
 
               <button
-                onClick={() => {
-                  if (platformSettings.click_url) {
-                    window.open(platformSettings.click_url, '_blank');
-                  } else {
-                    alert("Click to'lov sahifasiga yo'naltirilmoqda...");
-                  }
-                  setShowPaymentModal(false);
-                }}
-                className="w-full p-3 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 flex items-center justify-between text-xs font-bold transition-all"
+                onClick={() => handleOpenPaymentApp('click')}
+                className="w-full p-3 rounded-2xl bg-blue-50 hover:bg-blue-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-blue-200 dark:border-blue-500/30 text-blue-950 dark:text-white flex items-center justify-between text-xs font-bold transition-all shadow-2xs active:scale-98"
               >
-                <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">C</span>
-                  <span>{t.pay_with_click}</span>
+                <div className="flex items-center space-x-2.5">
+                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black shadow-xs">C</span>
+                  <span className="font-extrabold">{t.pay_with_click}</span>
                 </div>
-                <span className="text-[11px] text-blue-700 font-extrabold">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
+                <span className="text-[11px] text-blue-700 dark:text-blue-400 font-black">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
               </button>
 
               <button
-                onClick={() => {
-                  alert("Payme to'lov sahifasiga yo'naltirilmoqda...");
-                  setShowPaymentModal(false);
-                }}
-                className="w-full p-3 rounded-2xl bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-900 flex items-center justify-between text-xs font-bold transition-all"
+                onClick={() => handleOpenPaymentApp('payme')}
+                className="w-full p-3 rounded-2xl bg-teal-50 hover:bg-teal-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-teal-200 dark:border-teal-500/30 text-teal-950 dark:text-white flex items-center justify-between text-xs font-bold transition-all shadow-2xs active:scale-98"
               >
-                <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-full bg-teal-500 text-white flex items-center justify-center text-[10px] font-black">P</span>
-                  <span>{t.pay_with_payme}</span>
+                <div className="flex items-center space-x-2.5">
+                  <span className="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center text-[11px] font-black shadow-xs">P</span>
+                  <span className="font-extrabold">{t.pay_with_payme}</span>
                 </div>
-                <span className="text-[11px] text-teal-700 font-extrabold">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
+                <span className="text-[11px] text-teal-700 dark:text-teal-400 font-black">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
               </button>
 
               <button
-                onClick={() => {
-                  alert("Uzum Bank to'lov sahifasiga yo'naltirilmoqda...");
-                  setShowPaymentModal(false);
-                }}
-                className="w-full p-3 rounded-2xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 flex items-center justify-between text-xs font-bold transition-all"
+                onClick={() => handleOpenPaymentApp('uzum')}
+                className="w-full p-3 rounded-2xl bg-purple-50 hover:bg-purple-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-purple-200 dark:border-purple-500/30 text-purple-950 dark:text-white flex items-center justify-between text-xs font-bold transition-all shadow-2xs active:scale-98"
               >
-                <div className="flex items-center space-x-2">
-                  <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px] font-black">U</span>
-                  <span>{t.pay_with_uzum}</span>
+                <div className="flex items-center space-x-2.5">
+                  <span className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-[11px] font-black shadow-xs">U</span>
+                  <span className="font-extrabold">{t.pay_with_uzum}</span>
                 </div>
-                <span className="text-[11px] text-purple-700 font-extrabold">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
+                <span className="text-[11px] text-purple-700 dark:text-purple-400 font-black">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
               </button>
             </div>
           </div>

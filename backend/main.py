@@ -715,13 +715,31 @@ def activate_vip_boost(barber_id: str):
     VIP Boost: Ustaning reytingini sun'iy 5.0 ga ko'tarish va uni katalog tepasida
     birinchi o'ringa chiqarish (30 kunga)
     """
-    barber = next((b for b in BARBERS_DB if b.id == barber_id), None)
+    barber = next((b for b in BARBERS_DB if b.id == barber_id or str(getattr(b, 'telegram_id', '')) == str(barber_id)), None)
     if not barber:
-        raise HTTPException(status_code=404, detail="Usta topilmadi")
-    barber.is_vip = True
-    barber.rating = 5.0
-    barber.custom_boosted_rating = 5.0
-    barber.vip_expires_at = datetime.now().isoformat()
+        new_barber = Barber(
+            id=barber_id,
+            name="Sartarosh",
+            role="Erkaklar sartaroshi",
+            rating=5.0,
+            reviews_count=1,
+            distance="1.0 km",
+            starting_price=50000,
+            address="Toshkent shahri",
+            avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
+            bio="Malakali usta",
+            telegram_id=int(barber_id) if barber_id.isdigit() else 1973875822,
+            services=[],
+            is_vip=True,
+            custom_boosted_rating=5.0
+        )
+        BARBERS_DB.insert(0, new_barber)
+        barber = new_barber
+    else:
+        barber.is_vip = True
+        barber.rating = 5.0
+        barber.custom_boosted_rating = 5.0
+        barber.vip_expires_at = datetime.now().isoformat()
     save_barbers_to_disk(BARBERS_DB)
     return {
         "success": True, 
