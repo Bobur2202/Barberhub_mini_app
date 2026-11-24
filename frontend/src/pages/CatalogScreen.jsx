@@ -331,16 +331,16 @@ export default function CatalogScreen({
 
         {/* ⚡ 1-BOSISHDA QAYTA YOZILISH (Quick Re-book) */}
         {lastAppointment && onQuickRebook && (
-          <div className="mt-2.5 bg-gradient-to-r from-amber-500/10 via-amber-50 to-orange-50/50 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 rounded-2xl p-2.5 border border-amber-300/70 dark:border-amber-500/30 shadow-2xs flex items-center justify-between transition-all">
+          <div className="mt-2.5 bg-gradient-to-r from-amber-50 via-orange-50/60 to-amber-50 dark:from-[#131D31] dark:via-[#18243E] dark:to-[#131D31] rounded-2xl p-3 border border-amber-300/80 dark:border-amber-500/40 shadow-sm dark:shadow-md dark:shadow-amber-500/5 flex items-center justify-between transition-all">
             <div className="flex items-center space-x-2.5 truncate pr-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-400/20 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <Zap className="w-4 h-4 text-amber-600 dark:text-amber-400 fill-amber-500" />
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 text-slate-950 flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/20">
+                <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
               </div>
               <div className="truncate">
-                <span className="text-[10px] font-black uppercase text-amber-900 dark:text-amber-400 tracking-wide block">
+                <span className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-400 tracking-wider block">
                   {t.quick_rebook_title || "1-Bosishda Qayta Yozilish ⚡"}
                 </span>
-                <span className="text-xs font-extrabold text-brand-blue dark:text-white block truncate">
+                <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
                   {lastAppointment.barber_name} — {getTranslatedServiceName(lastAppointment.service_name || lastAppointment.serviceName, lang)}
                 </span>
               </div>
@@ -348,7 +348,7 @@ export default function CatalogScreen({
 
             <button
               onClick={() => onQuickRebook(lastAppointment)}
-              className="py-1.5 px-3 rounded-xl bg-brand-orange hover:bg-amber-400 dark:bg-amber-500 dark:hover:bg-amber-400 active:scale-95 text-brand-blue dark:text-slate-950 font-black text-xs shadow-xs transition-all shrink-0"
+              className="py-2 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:brightness-110 active:scale-95 text-slate-950 font-black text-xs shadow-md shadow-amber-500/25 transition-all shrink-0 cursor-pointer"
             >
               {t.quick_rebook_btn || "Yozilish"}
             </button>

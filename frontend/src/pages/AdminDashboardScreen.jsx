@@ -693,7 +693,7 @@ export default function AdminDashboardScreen({
     setEditingServiceId(null);
     setFormServiceName('');
     setFormServicePrice('');
-    setFormServiceDuration('40 daq');
+    setFormServiceDuration('40');
     setFormIsPromo(false);
     setFormOldPrice('');
     setFormPromoBadge('Talabalar uchun');
@@ -705,7 +705,8 @@ export default function AdminDashboardScreen({
     setEditingServiceId(service.id);
     setFormServiceName(service.name);
     setFormServicePrice(service.price);
-    setFormServiceDuration(service.duration || '40 daq');
+    const minsOnly = service.duration ? String(service.duration).replace(/\D/g, '') : '40';
+    setFormServiceDuration(minsOnly || '40');
     setFormIsPromo(Boolean(service.isPromo));
     setFormOldPrice(service.oldPrice || '');
     setFormPromoBadge(service.promoBadge || 'Talabalar uchun');
@@ -724,6 +725,9 @@ export default function AdminDashboardScreen({
     e.preventDefault();
     if (!formServiceName || !formServicePrice) return;
 
+    const mins = formServiceDuration ? String(formServiceDuration).replace(/\D/g, '') : '40';
+    const formattedDuration = `${mins || 40} daq`;
+
     if (editingServiceId) {
       setServicesList(prev => prev.map(s => {
         if (s.id === editingServiceId) {
@@ -731,7 +735,7 @@ export default function AdminDashboardScreen({
             ...s,
             name: formServiceName,
             price: Number(formServicePrice),
-            duration: formServiceDuration,
+            duration: formattedDuration,
             isPromo: formIsPromo,
             oldPrice: formIsPromo && formOldPrice ? Number(formOldPrice) : null,
             promoBadge: formIsPromo ? formPromoBadge : null
@@ -744,7 +748,7 @@ export default function AdminDashboardScreen({
         id: `s-${Date.now()}`,
         name: formServiceName,
         price: Number(formServicePrice),
-        duration: formServiceDuration,
+        duration: formattedDuration,
         isPromo: formIsPromo,
         oldPrice: formIsPromo && formOldPrice ? Number(formOldPrice) : null,
         promoBadge: formIsPromo ? formPromoBadge : null
@@ -2629,20 +2633,41 @@ export default function AdminDashboardScreen({
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  {t.service_duration_label}
+                  {t.service_duration_label || "Davomiyligi (daq)"} *
                 </label>
-                <select
-                  value={formServiceDuration}
-                  onChange={(e) => setFormServiceDuration(e.target.value)}
-                  className="w-full bg-gray-50 rounded-xl p-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
-                >
-                  <option value="20 daq">20 daq</option>
-                  <option value="30 daq">30 daq</option>
-                  <option value="40 daq">40 daq</option>
-                  <option value="50 daq">50 daq</option>
-                  <option value="60 daq">60 daq</option>
-                  <option value="90 daq">90 daq</option>
-                </select>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="5"
+                    max="480"
+                    step="5"
+                    required
+                    value={formServiceDuration ? String(formServiceDuration).replace(/\D/g, '') : ''}
+                    onChange={(e) => setFormServiceDuration(e.target.value)}
+                    placeholder="Masalan: 40"
+                    className="w-full bg-gray-50 rounded-xl p-2.5 pr-14 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue font-bold text-brand-blue"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 pointer-events-none">
+                    {lang === 'ru' ? 'мин' : lang === 'en' ? 'min' : 'daq'}
+                  </span>
+                </div>
+                {/* Tezkor tavsiyalar */}
+                <div className="flex items-center space-x-1.5 mt-1.5 overflow-x-auto no-scrollbar">
+                  {[20, 30, 40, 50, 60, 90].map((mins) => (
+                    <button
+                      key={mins}
+                      type="button"
+                      onClick={() => setFormServiceDuration(String(mins))}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all ${
+                        String(formServiceDuration).replace(/\D/g, '') === String(mins)
+                          ? 'bg-brand-blue text-white border-brand-blue'
+                          : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                      }`}
+                    >
+                      {mins} {lang === 'ru' ? 'мин' : lang === 'en' ? 'min' : 'daq'}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="p-3 bg-amber-50/70 rounded-2xl border border-amber-200/70">

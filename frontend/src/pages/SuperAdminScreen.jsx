@@ -368,10 +368,10 @@ export default function SuperAdminScreen({
             {onOpenBarberView && (
               <button
                 onClick={onOpenBarberView}
-                className="py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 hover:text-white border border-amber-400/30 transition-all flex items-center justify-center space-x-1.5 text-xs font-bold active:scale-95"
+                className="py-1.5 px-2.5 rounded-xl bg-blue-500/25 hover:bg-blue-500/40 text-blue-100 hover:text-white border border-blue-400/30 transition-all flex items-center justify-center space-x-1.5 text-xs font-bold active:scale-95"
                 title="Usta kabineti va buyurtmalarni ochish"
               >
-                <Scissors className="w-3.5 h-3.5 text-amber-400" />
+                <Scissors className="w-3.5 h-3.5 text-cyan-300" />
                 <span>Usta kabineti ✂️</span>
               </button>
             )}
