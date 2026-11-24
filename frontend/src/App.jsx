@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Scissors, Calendar, Lock, Crown, Sparkles } from 'lucide-react';
 import { translations } from './i18n/translations';
 import { mockBarbers } from './data/mockBarbers';
-import { getBarberByTelegramId, deleteBarberAccount, checkSuperAdminAccess, getPlatformSettings } from './services/api';
+import { getBarberByTelegramId, deleteBarberAccount, checkSuperAdminAccess, getPlatformSettings, updateUserLanguageBackend } from './services/api';
 import HeaderBar from './components/HeaderBar';
 import SplashScreen from './pages/SplashScreen';
 import RoleSelectionScreen from './pages/RoleSelectionScreen';
@@ -17,17 +17,41 @@ import SuperAdminScreen from './pages/SuperAdminScreen';
 import AiHairstyleAdvisorScreen from './pages/AiHairstyleAdvisorScreen';
 
 export default function App() {
-  // Application State - Tilni eslab qolish (faqat birinchi kirganda so'raladi yoki Botdan ?lang= parametr orqali olinadi)
+  // Application State - Tilni eslab qolish (standart: O'zbek tili 'uz')
   const [lang, setLang] = useState(() => {
+    let urlLang = null;
     try {
       const params = new URLSearchParams(window.location.search);
-      const urlLang = params.get('lang');
-      if (urlLang && ['uz', 'ru', 'en'].includes(urlLang)) {
-        localStorage.setItem('barberhub_lang', urlLang);
-        return urlLang;
+      const q = params.get('lang');
+      if (q && ['uz', 'ru', 'en'].includes(q)) {
+        urlLang = q;
       }
     } catch (e) {}
-    return localStorage.getItem('barberhub_lang') || 'uz';
+
+    // Agar URL da til ko'rsatilgan bo'lsa (masalan botdan tanlanganda)
+    if (urlLang) {
+      localStorage.setItem('barberhub_lang', urlLang);
+      localStorage.setItem('barberhub_lang_fixed_v1', 'true');
+      return urlLang;
+    }
+
+    const saved = localStorage.getItem('barberhub_lang');
+
+    // Avvalgi xatolik tufayli 'en' saqlanib qolgan bo'lsa, asosiy 'uz' ga tuzatish
+    const hasFixed = localStorage.getItem('barberhub_lang_fixed_v1');
+    if (!hasFixed) {
+      localStorage.setItem('barberhub_lang_fixed_v1', 'true');
+      if (saved === 'en' || !saved) {
+        localStorage.setItem('barberhub_lang', 'uz');
+        return 'uz';
+      }
+    }
+
+    if (saved && ['uz', 'ru', 'en'].includes(saved)) {
+      return saved;
+    }
+
+    return 'uz';
   });
   
   // Rolni saqlash: 'client' | 'barber' | null
@@ -252,12 +276,25 @@ export default function App() {
     getPlatformSettings().then((settings) => {
       if (settings) setPlatformSettings(settings);
     });
+
+    // URL dagi ?lang= parametrini xotiraga olgach, toza URL holatiga keltirish
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('lang')) {
+        url.searchParams.delete('lang');
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : '') + url.hash);
+      }
+    } catch (e) {}
   }, []);
 
   // 1. Splash ekranda til tanlanganda (faqat 1-marta saqlanadi)
   const handleSelectLanguage = (selectedLang) => {
     setLang(selectedLang);
     localStorage.setItem('barberhub_lang', selectedLang);
+    localStorage.setItem('barberhub_lang_fixed_v1', 'true');
+    const tgId = currentTelegramUserId || MASTER_SUPER_ADMIN_ID;
+    updateUserLanguageBackend(tgId, selectedLang);
+
     // Agar foydalanuvchi roli avval tanlangan bo'lsa
     if (userRole === 'barber') {
       setCurrentStep('admin');
@@ -269,10 +306,13 @@ export default function App() {
     }
   };
 
-  // HeaderBar'dan til o'zgartirilganda ham xotiraga saqlab boriladi
+  // HeaderBar'dan til o'zgartirilganda ham xotiraga va backendga saqlab boriladi
   const handleSetLang = (newLang) => {
     setLang(newLang);
     localStorage.setItem('barberhub_lang', newLang);
+    localStorage.setItem('barberhub_lang_fixed_v1', 'true');
+    const tgId = currentTelegramUserId || MASTER_SUPER_ADMIN_ID;
+    updateUserLanguageBackend(tgId, newLang);
   };
 
   // 2. Rol tanlanganda

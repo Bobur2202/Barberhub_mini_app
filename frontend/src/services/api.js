@@ -806,3 +806,24 @@ export async function callClientToChair(appointmentId) {
     message: "Mijozga Telegram orqali 'Navbatingiz tayyor' xabari yuborildi!"
   };
 }
+
+/**
+ * 19. 🌐 Foydalanuvchi tilini backend va Telegram bot bilan sinxronlash
+ */
+export async function updateUserLanguageBackend(telegramId, lang) {
+  if (!telegramId || !lang) return null;
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/language`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id: telegramId, lang }),
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('[API] Tilni backendga sinxronlashda ogohlantirish:', error.message);
+  }
+  return null;
+}

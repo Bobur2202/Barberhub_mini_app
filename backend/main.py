@@ -8,7 +8,7 @@ import uuid
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -1443,3 +1443,26 @@ async def ai_hairstyle_advisor(data: HairstyleAdvisorRequest):
         "hairstyles": hairstyles_with_barbers,
         "ai_powered_by": ai_mode
     }
+
+
+class UserLanguageUpdate(BaseModel):
+    telegram_id: Union[str, int]
+    lang: str
+
+@app.post("/api/user/language")
+def update_user_language_api(data: UserLanguageUpdate):
+    """Foydalanuvchi ilovada tilni o'zgartirganda backend va bot bilan sinxronlash"""
+    try:
+        from bot import save_user_language
+        save_user_language(int(data.telegram_id), data.lang)
+        return {"success": True, "lang": data.lang}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/user/language/{user_id}")
+def get_user_language_api(user_id: int):
+    try:
+        from bot import get_user_language
+        return {"lang": get_user_language(user_id)}
+    except Exception:
+        return {"lang": "uz"}
