@@ -1038,13 +1038,13 @@ export default function AdminDashboardScreen({
         )}
 
         {/* 📋 vs 📅 Jadval (Timeline / List View Switch) */}
-        <div className="grid grid-cols-2 gap-1.5 bg-white p-1 rounded-2xl border border-blue-50 shadow-xs mt-3">
+        <div className="grid grid-cols-2 gap-1.5 bg-white dark:bg-slate-900 p-1 rounded-2xl border border-blue-50 dark:border-slate-800 shadow-xs mt-3">
           <button
             onClick={() => { hapticFeedback.selection(); setAppointmentsViewMode('list'); }}
             className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
               appointmentsViewMode === 'list'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-900'
+                ? 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-sm'
+                : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -1054,8 +1054,8 @@ export default function AdminDashboardScreen({
             onClick={() => { hapticFeedback.selection(); setAppointmentsViewMode('timeline'); }}
             className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
               appointmentsViewMode === 'timeline'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-900'
+                ? 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-sm'
+                : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -1065,13 +1065,13 @@ export default function AdminDashboardScreen({
 
         {/* Filter Tabs (Faqat Ro'yxat ko'rinishida) */}
         {appointmentsViewMode === 'list' && (
-          <div className="grid grid-cols-4 gap-1.5 bg-gray-200/60 p-1 rounded-xl mt-3 animate-in fade-in">
+          <div className="grid grid-cols-4 gap-1.5 bg-gray-200/60 dark:bg-slate-800/80 p-1 rounded-xl mt-3 animate-in fade-in">
             <button
               onClick={() => setFilterTab('all')}
               className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
                 filterTab === 'all'
-                  ? 'bg-brand-blue text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-sm'
+                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               {t.tab_all}
@@ -1080,8 +1080,8 @@ export default function AdminDashboardScreen({
               onClick={() => setFilterTab('pending')}
               className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
                 filterTab === 'pending'
-                  ? 'bg-brand-blue text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-sm'
+                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               {t.tab_pending}
@@ -1090,8 +1090,8 @@ export default function AdminDashboardScreen({
               onClick={() => setFilterTab('accepted')}
               className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
                 filterTab === 'accepted'
-                  ? 'bg-brand-blue text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-sm'
+                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               {t.tab_accepted}
@@ -1100,8 +1100,8 @@ export default function AdminDashboardScreen({
               onClick={() => setFilterTab('completed')}
               className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
                 filterTab === 'completed'
-                  ? 'bg-brand-blue text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-sm'
+                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               {t.tab_completed}
@@ -1117,12 +1117,12 @@ export default function AdminDashboardScreen({
         )}
 
         {/* Auto Reminder Info Pill */}
-        <div className="mt-2.5 p-2.5 bg-blue-50/80 rounded-2xl border border-blue-100 flex items-center justify-between text-[11px] text-brand-blue font-semibold">
+        <div className="mt-2.5 p-2.5 bg-blue-50/80 dark:bg-slate-900/80 rounded-2xl border border-blue-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-brand-blue dark:text-slate-200 font-semibold">
           <div className="flex items-center space-x-1.5">
-            <BellRing className="w-3.5 h-3.5 text-brand-orange flex-shrink-0" />
+            <BellRing className="w-3.5 h-3.5 text-brand-orange dark:text-amber-400 flex-shrink-0" />
             <span>{t.auto_reminder_badge || "Avto-eslatma: 1 soat oldin (SMS + Telegram)"}</span>
           </div>
-          <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+          <span className="text-[9px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/20">
             Avto ON
           </span>
         </div>
@@ -1131,12 +1131,12 @@ export default function AdminDashboardScreen({
       {/* Appointments Content (Timeline vs List) */}
       {appointmentsViewMode === 'timeline' ? (
         <div className="px-4 mt-2 space-y-2.5 animate-in fade-in">
-          <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-100/80 flex items-center justify-between text-xs font-bold text-brand-blue mb-1">
+          <div className="p-3 bg-blue-50/70 dark:bg-slate-900/90 rounded-2xl border border-blue-100/80 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-brand-blue dark:text-white mb-1 shadow-2xs">
             <span className="flex items-center space-x-1.5">
-              <Calendar className="w-4 h-4 text-brand-orange" />
+              <Calendar className="w-4 h-4 text-brand-orange dark:text-amber-400" />
               <span>{lang === 'ru' ? 'Ежедневный почасовой график' : lang === 'en' ? 'Daily hourly schedule' : 'Kunlik soatma-soat grafik'}</span>
             </span>
-            <span className="text-[11px] font-medium text-gray-500">
+            <span className="text-[11px] font-medium text-gray-500 dark:text-slate-400">
               {barberProfile.workHours?.start || "09:00"} - {barberProfile.workHours?.end || "22:00"}
             </span>
           </div>
@@ -1146,14 +1146,14 @@ export default function AdminDashboardScreen({
               return (
                 <div
                   key={`timeline-${sIdx}`}
-                  className="flex items-stretch space-x-3 p-3 bg-amber-50/60 rounded-2xl border border-dashed border-amber-200"
+                  className="flex items-stretch space-x-3 p-3 bg-amber-50/60 dark:bg-[#1C160C] rounded-2xl border border-dashed border-amber-300/80 dark:border-amber-500/40"
                 >
-                  <div className="w-14 flex flex-col items-center justify-center border-r border-amber-200/60 pr-2">
-                    <span className="text-xs font-black text-amber-900">{slot.time}</span>
-                    <span className="text-[9px] font-bold text-amber-600">{lang === 'ru' ? '45 мин' : lang === 'en' ? '45 min' : '45 daq'}</span>
+                  <div className="w-14 flex flex-col items-center justify-center border-r border-amber-200/60 dark:border-amber-500/30 pr-2">
+                    <span className="text-xs font-black text-amber-900 dark:text-amber-400">{slot.time}</span>
+                    <span className="text-[9px] font-bold text-amber-600 dark:text-amber-300">{lang === 'ru' ? '45 мин' : lang === 'en' ? '45 min' : '45 daq'}</span>
                   </div>
-                  <div className="flex-1 flex items-center space-x-2 text-xs font-bold text-amber-800">
-                    <Coffee className="w-4 h-4 text-amber-600" />
+                  <div className="flex-1 flex items-center space-x-2 text-xs font-bold text-amber-800 dark:text-amber-300">
+                    <Coffee className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                     <span>{lang === 'ru' ? '🍽️ Обед / Время перерыва' : lang === 'en' ? '🍽️ Lunch / Break time' : '🍽️ Tushlik / Tanaffus vaqti'}</span>
                   </div>
                 </div>
@@ -1169,32 +1169,32 @@ export default function AdminDashboardScreen({
               return (
                 <div
                   key={`timeline-${sIdx}`}
-                  className="flex items-stretch space-x-3 p-3 bg-white rounded-2xl border border-blue-100 shadow-xs relative overflow-hidden"
+                  className="flex items-stretch space-x-3 p-3 bg-white dark:bg-slate-900 rounded-2xl border border-blue-100 dark:border-slate-800 shadow-xs relative overflow-hidden"
                 >
-                  <div className="w-14 flex flex-col items-center justify-center border-r border-gray-100 pr-2">
-                    <span className="text-xs font-black text-brand-blue">{slot.time}</span>
-                    <span className="text-[9px] font-bold text-gray-400">{lang === 'ru' ? 'Занято' : lang === 'en' ? 'Booked' : 'Band'}</span>
+                  <div className="w-14 flex flex-col items-center justify-center border-r border-gray-100 dark:border-slate-800 pr-2">
+                    <span className="text-xs font-black text-brand-blue dark:text-amber-400">{slot.time}</span>
+                    <span className="text-[9px] font-bold text-gray-400 dark:text-slate-400">{lang === 'ru' ? 'Занято' : lang === 'en' ? 'Booked' : 'Band'}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-extrabold text-gray-900 truncate">
+                      <h4 className="text-xs font-extrabold text-gray-900 dark:text-white truncate">
                         {clientName}
                       </h4>
                       <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
                         apt.status === 'completed'
-                          ? 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20'
                           : apt.status === 'accepted'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-amber-100 text-amber-800'
+                          ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-500/20'
+                          : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-500/20'
                       }`}>
                         {apt.status === 'completed' ? (t.status_completed || 'Tugatildi') : apt.status === 'accepted' ? (t.status_accepted || 'Qabul qilingan') : (t.status_pending || 'Kutilmoqda')}
                       </span>
                     </div>
-                    <div className="text-[11px] text-gray-600 truncate mt-0.5 font-medium">
+                    <div className="text-[11px] text-gray-600 dark:text-slate-300 truncate mt-0.5 font-medium">
                       {getTranslatedServiceName(serviceName, lang)}
                     </div>
-                    <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-100">
-                      <span className="text-xs font-black text-brand-blue">
+                    <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-100 dark:border-slate-800">
+                      <span className="text-xs font-black text-brand-blue dark:text-white">
                         {(apt.price || 0).toLocaleString()} UZS
                       </span>
                       <div className="flex items-center space-x-1.5">
@@ -1203,7 +1203,7 @@ export default function AdminDashboardScreen({
                             type="button"
                             disabled={callingClientId === apt.id || apt.queue_status === 'ready_call'}
                             onClick={() => handleCallClient(apt.id)}
-                            className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-600 text-white flex items-center space-x-1 active:scale-95"
+                            className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-600 dark:bg-blue-500 text-white flex items-center space-x-1 active:scale-95 shadow-xs"
                           >
                             <Radio className={`w-2.5 h-2.5 ${callingClientId === apt.id ? 'animate-spin' : ''}`} />
                             <span>{apt.queue_status === 'ready_call' ? (lang === 'ru' ? "Позвали ✂️" : lang === 'en' ? "Called ✂️" : "Chaqirildi ✂️") : (lang === 'ru' ? "Позвать 📢" : lang === 'en' ? "Call 📢" : "Chaqirish 📢")}</span>
@@ -1212,7 +1212,7 @@ export default function AdminDashboardScreen({
                         {apt.status !== 'completed' && (
                           <button
                             onClick={() => handleUpdateStatus(apt.id, 'completed')}
-                            className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-600 text-white active:scale-95"
+                            className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-600 dark:bg-emerald-500 text-white active:scale-95 shadow-xs"
                           >
                             {lang === 'ru' ? 'Пришёл ✓' : lang === 'en' ? 'Arrived ✓' : 'Keldi ✓'}
                           </button>
@@ -1228,22 +1228,22 @@ export default function AdminDashboardScreen({
             return (
               <div
                 key={`timeline-${sIdx}`}
-                className="flex items-center justify-between p-3 bg-white/70 rounded-2xl border border-dashed border-gray-200 hover:border-brand-blue/40 transition-all"
+                className="flex items-center justify-between p-3 bg-white/70 dark:bg-slate-900/60 rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 hover:border-brand-blue/40 dark:hover:border-slate-700 transition-all"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-14 text-center border-r border-gray-200 pr-2">
-                    <span className="text-xs font-black text-gray-500">{slot.time}</span>
+                  <div className="w-14 text-center border-r border-gray-200 dark:border-slate-800 pr-2">
+                    <span className="text-xs font-black text-gray-500 dark:text-slate-300">{slot.time}</span>
                   </div>
-                  <div className="flex items-center space-x-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                  <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-800/40">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span>{lang === 'ru' ? 'Свободно' : lang === 'en' ? 'Open' : "Bo'sh vaqt"}</span>
                   </div>
                 </div>
                 <button
                   onClick={() => handleOpenWalkInModal(slot.time)}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-brand-blue rounded-xl text-[11px] font-extrabold flex items-center space-x-1 transition-all active:scale-95 border border-blue-100"
+                  className="px-2.5 py-1 bg-blue-50 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-slate-700 text-brand-blue dark:text-slate-200 rounded-xl text-[11px] font-extrabold flex items-center space-x-1 transition-all active:scale-95 border border-blue-100 dark:border-slate-700 shadow-2xs"
                 >
-                  <Plus className="w-3 h-3 text-brand-orange" />
+                  <Plus className="w-3 h-3 text-brand-orange dark:text-amber-400" />
                   <span>{lang === 'ru' ? 'Записать' : lang === 'en' ? 'Book' : "Mijoz yozish"}</span>
                 </button>
               </div>
@@ -1281,7 +1281,7 @@ export default function AdminDashboardScreen({
           return (
             <div
               key={apt.id}
-              className="bg-white rounded-2xl p-4 shadow-sm border border-blue-50 relative overflow-hidden"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-blue-50 dark:border-slate-800 relative overflow-hidden"
             >
               <div
                 className={`absolute left-0 top-0 bottom-0 w-1.5 ${
@@ -1298,62 +1298,62 @@ export default function AdminDashboardScreen({
               <div className="flex items-start justify-between pl-1">
                 <div>
                   <div className="flex items-center space-x-1.5">
-                    <h3 className="font-extrabold text-sm text-gray-900">
+                    <h3 className="font-extrabold text-sm text-gray-900 dark:text-white">
                       {clientName}
                     </h3>
                     {(apt.is_multi_person || apt.multi_person_details) && (
-                      <span className="text-[10px] font-black bg-blue-100 text-brand-blue border border-blue-200 px-2 py-0.5 rounded-full flex items-center space-x-1">
-                        <Users className="w-3 h-3 text-brand-orange" />
+                      <span className="text-[10px] font-black bg-blue-100 dark:bg-blue-950/60 text-brand-blue dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                        <Users className="w-3 h-3 text-brand-orange dark:text-amber-400" />
                         <span>2 kishi</span>
                       </span>
                     )}
                   </div>
                   <a
                     href={`tel:${phone}`}
-                    className="text-xs text-brand-blue font-semibold hover:underline mt-0.5 inline-block"
+                    className="text-xs text-brand-blue dark:text-amber-400 font-semibold hover:underline mt-0.5 inline-block"
                   >
                     {phone}
                   </a>
                 </div>
 
                 <div className="text-right">
-                  <div className="inline-flex items-center space-x-1 text-xs font-black text-brand-orange bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
+                  <div className="inline-flex items-center space-x-1 text-xs font-black text-brand-orange dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-lg border border-amber-200 dark:border-amber-800/60">
                     <Clock className="w-3 h-3" />
                     <span>{time}</span>
                   </div>
-                  <span className="text-[10px] text-gray-400 block mt-1">
+                  <span className="text-[10px] text-gray-400 dark:text-slate-400 block mt-1">
                     {formatAppointmentDate(apt.date || apt.date_str, lang)}
                   </span>
                 </div>
               </div>
 
-              <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between text-xs pl-1">
+              <div className="mt-3 pt-2 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs pl-1">
                 <div>
-                  <span className="text-gray-600 font-medium truncate max-w-[200px] block">
+                  <span className="text-gray-600 dark:text-slate-300 font-medium truncate max-w-[200px] block">
                     {getTranslatedServiceName(serviceName, lang)}
                   </span>
                   {(apt.is_multi_person && apt.multi_person_details) && (
-                    <span className="text-[10px] text-brand-orange font-bold block">
+                    <span className="text-[10px] text-brand-orange dark:text-amber-400 font-bold block">
                       + {apt.multi_person_details.companion_title}: {apt.multi_person_details.companion_service} ({apt.multi_person_details.second_slot})
                     </span>
                   )}
                 </div>
-                <span className="font-extrabold text-brand-blue">
+                <span className="font-extrabold text-brand-blue dark:text-white">
                   {apt.price?.toLocaleString()} UZS
                 </span>
               </div>
 
               {/* Status Actions */}
-              <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between pl-1">
+              <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between pl-1">
                 <span
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                     apt.status === 'completed'
-                      ? 'bg-emerald-50 text-emerald-700'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20'
                       : apt.status === 'accepted'
-                      ? 'bg-blue-50 text-blue-700'
+                      ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-500/20'
                       : apt.status === 'cancelled'
-                      ? 'bg-red-50 text-red-600'
-                      : 'bg-amber-50 text-amber-700'
+                      ? 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-300 border border-red-500/20'
+                      : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-500/20'
                   }`}
                 >
                   {apt.status === 'completed'
@@ -1374,12 +1374,12 @@ export default function AdminDashboardScreen({
                       onClick={() => handleSendReminder(apt.id)}
                       className={`px-2 py-1 rounded-xl text-[11px] font-bold transition-all flex items-center space-x-1 ${
                         apt.reminder_sent
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                          : 'bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/60'
                       }`}
                       title={lang === 'ru' ? 'Отправить SMS и Telegram напоминание' : lang === 'en' ? 'Send SMS and Telegram reminder' : "Mijozga SMS va Telegram eslatma jo'natish"}
                     >
-                      <BellRing className={`w-3 h-3 ${reminderLoadingId === apt.id ? 'animate-spin' : 'text-amber-600'}`} />
+                      <BellRing className={`w-3 h-3 ${reminderLoadingId === apt.id ? 'animate-spin' : 'text-amber-600 dark:text-amber-400'}`} />
                       <span>
                         {reminderLoadingId === apt.id
                           ? '...'
@@ -1394,14 +1394,14 @@ export default function AdminDashboardScreen({
                     <>
                       <button
                         onClick={() => handleUpdateStatus(apt.id, 'accepted')}
-                        className="px-3 py-1 bg-brand-blue text-white rounded-xl text-xs font-bold hover:bg-brand-blue-dark transition-all flex items-center space-x-1"
+                        className="px-3 py-1 bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 rounded-xl text-xs font-bold hover:bg-brand-blue-dark dark:hover:bg-amber-400 transition-all flex items-center space-x-1"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>{t.btn_accept}</span>
                       </button>
                       <button
                         onClick={() => handleUpdateStatus(apt.id, 'cancelled')}
-                        className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-red-50 hover:text-red-600 transition-all"
+                        className="px-2.5 py-1 bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-300 transition-all"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -3019,24 +3019,24 @@ export default function AdminDashboardScreen({
       {/* MODAL 1: 🚶‍♂️ Jonli Mijoz (Walk-in / Offline Client) */}
       {showWalkInModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-100 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-800 mb-3">
               <div className="flex items-center space-x-2">
-                <div className="w-9 h-9 rounded-xl bg-orange-100 text-brand-orange flex items-center justify-center font-black">
+                <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-amber-950/50 text-brand-orange dark:text-amber-400 flex items-center justify-center font-black">
                   <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-gray-900">
+                  <h3 className="text-sm font-black text-gray-900 dark:text-white">
                     {lang === 'ru' ? 'Запись клиента с улицы 🚶‍♂️' : lang === 'en' ? 'Walk-in Client Entry 🚶‍♂️' : 'Jonli mijoz kiritish 🚶‍♂️'}
                   </h3>
-                  <p className="text-[10px] text-gray-500">
+                  <p className="text-[10px] text-gray-500 dark:text-slate-400">
                     {lang === 'ru' ? 'Клиент без предварительной записи' : lang === 'en' ? 'Client without prior booking' : "Ko'chadan kirgan yoki telefon qilgan mijoz"}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowWalkInModal(false)}
-                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -3044,7 +3044,7 @@ export default function AdminDashboardScreen({
 
             <form onSubmit={handleSubmitWalkIn} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                <label className="block text-[11px] font-black text-gray-700 dark:text-slate-300 uppercase mb-1">
                   {lang === 'ru' ? 'Имя клиента' : lang === 'en' ? 'Client Name' : 'Mijoz ismi'}
                 </label>
                 <input
@@ -3052,13 +3052,13 @@ export default function AdminDashboardScreen({
                   placeholder={lang === 'ru' ? 'Например: Рустам' : lang === 'en' ? 'E.g. Rustam' : 'Masalan: Rustam'}
                   value={walkInName}
                   onChange={(e) => setWalkInName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:border-brand-blue"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-xs font-semibold focus:outline-none focus:border-brand-blue"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                <label className="block text-[11px] font-black text-gray-700 dark:text-slate-300 uppercase mb-1">
                   Telefon raqami (ixtiyoriy)
                 </label>
                 <input
@@ -3066,12 +3066,12 @@ export default function AdminDashboardScreen({
                   placeholder="+998 90 123 45 67"
                   value={walkInPhone}
                   onChange={(e) => setWalkInPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:border-brand-blue"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-xs font-semibold focus:outline-none focus:border-brand-blue"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                <label className="block text-[11px] font-black text-gray-700 dark:text-slate-300 uppercase mb-1">
                   Xizmat turi
                 </label>
                 <select
@@ -3081,7 +3081,7 @@ export default function AdminDashboardScreen({
                     const s = servicesList.find(item => item.id === e.target.value);
                     if (s) setWalkInPrice(s.price);
                   }}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:border-brand-blue bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-semibold focus:outline-none focus:border-brand-blue bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
                 >
                   {servicesList.map(s => (
                     <option key={s.id} value={s.id}>
@@ -3093,7 +3093,7 @@ export default function AdminDashboardScreen({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                  <label className="block text-[11px] font-black text-gray-700 dark:text-slate-300 uppercase mb-1">
                     Narxi (UZS)
                   </label>
                   <input
@@ -3101,19 +3101,19 @@ export default function AdminDashboardScreen({
                     step="1000"
                     value={walkInPrice}
                     onChange={(e) => setWalkInPrice(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:outline-none focus:border-brand-blue"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-xs font-bold focus:outline-none focus:border-brand-blue"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                  <label className="block text-[11px] font-black text-gray-700 dark:text-slate-300 uppercase mb-1">
                     Vaqt
                   </label>
                   <input
                     type="text"
                     value={walkInTime}
                     onChange={(e) => setWalkInTime(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:outline-none focus:border-brand-blue"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-xs font-bold focus:outline-none focus:border-brand-blue"
                     placeholder="14:30"
                     required
                   />
@@ -3121,7 +3121,7 @@ export default function AdminDashboardScreen({
               </div>
 
               <div>
-                <label className="block text-[11px] font-black text-gray-700 uppercase mb-1">
+                <label className="block text-[11px] font-black text-gray-700 dark:text-slate-300 uppercase mb-1">
                   To'lov usuli
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -3130,8 +3130,8 @@ export default function AdminDashboardScreen({
                     onClick={() => setWalkInPaymentType('cash')}
                     className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 border transition-all ${
                       walkInPaymentType === 'cash'
-                        ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-xs'
-                        : 'bg-white border-gray-200 text-gray-600'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-800 dark:text-emerald-300 shadow-xs'
+                        : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300'
                     }`}
                   >
                     <span>💵 Naqd pul</span>
@@ -3141,8 +3141,8 @@ export default function AdminDashboardScreen({
                     onClick={() => setWalkInPaymentType('card')}
                     className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 border transition-all ${
                       walkInPaymentType === 'card'
-                        ? 'bg-blue-50 border-blue-500 text-brand-blue shadow-xs'
-                        : 'bg-white border-gray-200 text-gray-600'
+                        ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-brand-blue dark:text-blue-300 shadow-xs'
+                        : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300'
                     }`}
                   >
                     <span>💳 Karta / Click</span>
@@ -3154,13 +3154,13 @@ export default function AdminDashboardScreen({
                 <button
                   type="button"
                   onClick={() => setShowWalkInModal(false)}
-                  className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
+                  className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                 >
                   {t.btn_cancel || (lang === 'ru' ? 'Отмена' : lang === 'en' ? 'Cancel' : 'Bekor qilish')}
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 text-xs font-black rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white shadow-md active:scale-95 transition-all"
+                  className="flex-1 py-2.5 text-xs font-black rounded-xl bg-brand-blue hover:bg-brand-blue-dark dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-slate-950 shadow-md active:scale-95 transition-all"
                 >
                   {lang === 'ru' ? 'Внести в кассу ✓' : lang === 'en' ? 'Add to Cash ✓' : "Kassaga qo'shish ✓"}
                 </button>
