@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, MapPin, Navigation, ExternalLink, Compass } from 'lucide-react';
 import { getTranslatedAddress } from '../data/serviceTranslations';
+import { openExternalUrl } from '../utils/openExternalUrl';
 
 export default function MapNavigationModal({
   isOpen = true,
@@ -24,78 +25,25 @@ export default function MapNavigationModal({
 
   const translatedAddr = getTranslatedAddress(actualAddress, lang) || (lang === 'ru' ? 'г. Ташкент' : lang === 'en' ? 'Tashkent city' : 'Toshkent shahri');
 
-  // Ilovalarni to'g'ridan-to'g'ri telefondagi mahalliy ilova orqali ochish (Chrome emas, o'zining ilovasi!)
+  // Ilovalarni to'g'ridan-to'g'ri xavfsiz Telegram openLink va Universal Links orqali ochish
+  // Hech qachon window.location.href yoki intent:// ishlatilmaydi (Chromium WebView net::ERR_UNKNOWN_URL_SCHEME xatosi chiqmasligi uchun)
   const openApp = (appType) => {
-    const isAndroid = typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent);
-    const isIOS = typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent);
-
-    let deepUrl = '';
-    let fallbackWebUrl = '';
+    let targetUrl = '';
 
     if (appType === 'yandex_taxi') {
-      fallbackWebUrl = `https://taxi.yandex.uz/?point=${pointLat},${pointLng}`;
-      if (isAndroid) {
-        deepUrl = `intent://route?end-lat=${pointLat}&end-lon=${pointLng}#Intent;scheme=yandexgo;package=ru.yandex.taxi;S.browser_fallback_url=${encodeURIComponent(fallbackWebUrl)};end`;
-      } else if (isIOS) {
-        deepUrl = `yandexgo://route?end-lat=${pointLat}&end-lon=${pointLng}`;
-      } else {
-        deepUrl = fallbackWebUrl;
-      }
+      targetUrl = `https://taxi.yandex.uz/?point=${pointLat},${pointLng}`;
     } else if (appType === 'uklon') {
-      fallbackWebUrl = `https://uklon.com.ua/`;
-      if (isAndroid) {
-        deepUrl = `intent://route?destination_lat=${pointLat}&destination_lng=${pointLng}#Intent;scheme=uklon;package=ua.com.uklon;S.browser_fallback_url=${encodeURIComponent(fallbackWebUrl)};end`;
-      } else if (isIOS) {
-        deepUrl = `uklon://route?destination_lat=${pointLat}&destination_lng=${pointLng}`;
-      } else {
-        deepUrl = fallbackWebUrl;
-      }
+      targetUrl = `https://uklon.com.ua/`;
     } else if (appType === 'google_maps') {
-      fallbackWebUrl = `https://www.google.com/maps/dir/?api=1&destination=${pointLat},${pointLng}`;
-      if (isAndroid) {
-        deepUrl = `intent://maps.google.com/maps?daddr=${pointLat},${pointLng}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
-      } else if (isIOS) {
-        deepUrl = `comgooglemaps://?daddr=${pointLat},${pointLng}&directionsmode=driving`;
-      } else {
-        deepUrl = fallbackWebUrl;
-      }
+      targetUrl = `https://www.google.com/maps/dir/?api=1&destination=${pointLat},${pointLng}`;
     } else if (appType === 'yandex_maps') {
-      fallbackWebUrl = `https://yandex.uz/maps/?pt=${pointLng},${pointLat}&z=16&l=map`;
-      if (isAndroid) {
-        deepUrl = `intent://maps.yandex.ru/?rtext=~${pointLat},${pointLng}&rtt=auto#Intent;scheme=yandexmaps;package=ru.yandex.yandexmaps;S.browser_fallback_url=${encodeURIComponent(fallbackWebUrl)};end`;
-      } else if (isIOS) {
-        deepUrl = `yandexmaps://maps.yandex.ru/?rtext=~${pointLat},${pointLng}&rtt=auto`;
-      } else {
-        deepUrl = fallbackWebUrl;
-      }
-    } else if (appType === 'system_geo') {
-      // Android tizimining universal geo intenti
-      deepUrl = `geo:${pointLat},${pointLng}?q=${pointLat},${pointLng}(${encodeURIComponent(actualName)})`;
-      fallbackWebUrl = `https://www.google.com/maps/search/?api=1&query=${pointLat},${pointLng}`;
+      targetUrl = `https://yandex.uz/maps/?pt=${pointLng},${pointLat}&z=16&l=map`;
+    } else {
+      // Boshqa xarita yoki umumiy qidiruv fallback
+      targetUrl = `https://www.google.com/maps/search/?api=1&query=${pointLat},${pointLng}`;
     }
 
-    try {
-      if (isAndroid && deepUrl.startsWith('intent:')) {
-        window.location.href = deepUrl;
-      } else if (deepUrl.startsWith('yandexgo:') || deepUrl.startsWith('yandexmaps:') || deepUrl.startsWith('comgooglemaps:') || deepUrl.startsWith('uklon:') || deepUrl.startsWith('geo:')) {
-        window.location.href = deepUrl;
-        setTimeout(() => {
-          if (window.Telegram?.WebApp?.openLink) {
-            window.Telegram.WebApp.openLink(fallbackWebUrl);
-          } else {
-            window.open(fallbackWebUrl, '_blank');
-          }
-        }, 1200);
-      } else {
-        if (window.Telegram?.WebApp?.openLink) {
-          window.Telegram.WebApp.openLink(fallbackWebUrl || deepUrl);
-        } else {
-          window.open(fallbackWebUrl || deepUrl, '_blank');
-        }
-      }
-    } catch (err) {
-      window.location.href = fallbackWebUrl || deepUrl;
-    }
+    openExternalUrl(targetUrl);
   };
 
   const isMapOnly = mode === 'map';
@@ -178,18 +126,18 @@ export default function MapNavigationModal({
             {/* Google Maps Card */}
             <button
               onClick={() => openApp('google_maps')}
-              className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-blue-50/70 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-between transition-all group active:scale-[0.98]"
+              className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between transition-all group active:scale-[0.98]"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 shadow-xs flex items-center justify-center border border-slate-200/50 dark:border-slate-700 text-lg">
+                <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-xs flex items-center justify-center border border-slate-200/60 dark:border-slate-700 text-lg">
                   📍
                 </div>
                 <div className="text-left">
                   <span className="font-extrabold text-xs text-slate-900 dark:text-white block">
                     Google {lang === 'ru' ? 'Карты' : lang === 'en' ? 'Maps' : 'Xaritalar'}
                   </span>
-                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold block">
-                    {lang === 'ru' ? 'Открыть в Google Maps' : lang === 'en' ? 'Open in Google Maps' : 'Google Maps ilovasida ochish'}
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block">
+                    {lang === 'ru' ? 'Google Maps навигатор' : lang === 'en' ? 'Google Maps navigation' : 'Google Maps ilovasida ochish'}
                   </span>
                 </div>
               </div>
@@ -201,18 +149,18 @@ export default function MapNavigationModal({
             {/* Yandex Maps Card */}
             <button
               onClick={() => openApp('yandex_maps')}
-              className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-red-50/70 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-between transition-all group active:scale-[0.98]"
+              className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between transition-all group active:scale-[0.98]"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 shadow-xs flex items-center justify-center border border-slate-200/50 dark:border-slate-700 text-lg">
+                <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-xs flex items-center justify-center border border-slate-200/60 dark:border-slate-700 text-lg">
                   🗺️
                 </div>
                 <div className="text-left">
                   <span className="font-extrabold text-xs text-slate-900 dark:text-white block">
                     Yandex {lang === 'ru' ? 'Карты' : lang === 'en' ? 'Maps' : 'Xaritalar'}
                   </span>
-                  <span className="text-[10px] text-red-600 dark:text-red-400 font-semibold block">
-                    {lang === 'ru' ? 'Открыть в Yandex Maps' : lang === 'en' ? 'Open in Yandex Maps' : 'Yandex Maps ilovasida ochish'}
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block">
+                    {lang === 'ru' ? 'Yandex Maps навигатор' : lang === 'en' ? 'Yandex Maps navigation' : 'Yandex Maps ilovasida ochish'}
                   </span>
                 </div>
               </div>
@@ -224,7 +172,7 @@ export default function MapNavigationModal({
             {/* Android System Geo fallback */}
             <button
               onClick={() => openApp('system_geo')}
-              className="w-full py-2 px-3 rounded-xl bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 text-[10px] font-bold flex items-center justify-center space-x-1.5 transition-colors border border-dashed border-slate-200 dark:border-slate-700 mt-1"
+              className="w-full py-2 px-3 rounded-xl bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 text-[10px] font-bold flex items-center justify-center space-x-1.5 transition-colors border border-dashed border-slate-200 dark:border-slate-800 mt-1"
             >
               <Compass className="w-3.5 h-3.5 text-brand-orange" />
               <span>{lang === 'ru' ? 'Выбрать другое приложение (Android)' : lang === 'en' ? 'Open in other apps (Android)' : 'Boshqa xarita ilovasida ochish (Android)'}</span>
@@ -238,7 +186,7 @@ export default function MapNavigationModal({
             {/* Yandex Go Card */}
             <button
               onClick={() => openApp('yandex_taxi')}
-              className="w-full p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 hover:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 flex items-center justify-between transition-all group active:scale-[0.98]"
+              className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between transition-all group active:scale-[0.98]"
             >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-[#FFCC00] text-black font-black text-sm flex items-center justify-center shadow-xs italic">
@@ -248,12 +196,12 @@ export default function MapNavigationModal({
                   <span className="font-extrabold text-xs text-slate-900 dark:text-white block">
                     Yandex Go
                   </span>
-                  <span className="text-[10px] text-amber-700 dark:text-amber-300 font-semibold block">
-                    {lang === 'ru' ? 'Открыть в приложении Yandex Go' : lang === 'en' ? 'Open in Yandex Go App' : 'Yandex Go ilovasida ochish'}
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block">
+                    {lang === 'ru' ? 'Заказ такси Yandex Go' : lang === 'en' ? 'Order Yandex Go Taxi' : 'Yandex Go ilovasida ochish'}
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] font-black text-slate-900 bg-amber-400 hover:bg-amber-500 px-3 py-1.5 rounded-xl shadow-xs">
+              <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-xl border border-amber-200/50 dark:border-amber-800/40 shadow-xs">
                 {lang === 'ru' ? 'Вызвать' : lang === 'en' ? 'Order' : 'Chaqirish'}
               </span>
             </button>
@@ -261,7 +209,7 @@ export default function MapNavigationModal({
             {/* Uklon Card */}
             <button
               onClick={() => openApp('uklon')}
-              className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-between transition-all group active:scale-[0.98]"
+              className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between transition-all group active:scale-[0.98]"
             >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-black text-[#FFDF00] flex items-center justify-center shadow-xs font-black text-xs">
@@ -272,11 +220,11 @@ export default function MapNavigationModal({
                     Uklon Taxi
                   </span>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block">
-                    {lang === 'ru' ? 'Открыть в приложении Uklon' : lang === 'en' ? 'Open in Uklon App' : 'Uklon ilovasida ochish'}
+                    {lang === 'ru' ? 'Заказ такси Uklon' : lang === 'en' ? 'Order Uklon Taxi' : 'Uklon ilovasida ochish'}
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] font-black text-white bg-slate-900 dark:bg-slate-700 px-3 py-1.5 rounded-xl shadow-xs">
+              <span className="text-[10px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
                 {lang === 'ru' ? 'Вызвать' : lang === 'en' ? 'Order' : 'Chaqirish'}
               </span>
             </button>
@@ -286,7 +234,7 @@ export default function MapNavigationModal({
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="w-full mt-3.5 py-2.5 rounded-2xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-black text-xs hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+          className="w-full mt-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-black text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
         >
           {lang === 'ru' ? 'Закрыть' : lang === 'en' ? 'Close' : 'Yopish'}
         </button>

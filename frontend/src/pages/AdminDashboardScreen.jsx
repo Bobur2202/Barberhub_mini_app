@@ -63,6 +63,7 @@ import {
 } from '../data/serviceTranslations';
 import { mockBarbers } from '../data/mockBarbers';
 import { hapticFeedback } from '../utils/haptics';
+import { openExternalUrl } from '../utils/openExternalUrl';
 
 // 00 dan 23 gacha hamma 24 ta soat
 const HOURS_24 = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
@@ -843,67 +844,20 @@ export default function AdminDashboardScreen({
     }
   };
 
-  // 8. To'lov ilovalarini to'g'ridan-to'g'ri native ilovada ochish (Click, Payme, Uzum Bank)
+  // 8. To'lov ilovalarini xavfsiz Telegram openLink va Universal havolalar orqali ochish (Click, Payme, Uzum Bank)
+  // Hech qachon window.location.href yoki intent:// ishlatilmaydi (net::ERR_UNKNOWN_URL_SCHEME xatosi chiqmasligi uchun)
   const handleOpenPaymentApp = (type) => {
-    const ua = navigator.userAgent || '';
-    const isAndroid = /android/i.test(ua);
-    const isIOS = /iphone|ipad|ipod/i.test(ua);
-
-    let deepUrl = '';
-    let fallbackWebUrl = '';
+    let targetUrl = '';
 
     if (type === 'click') {
-      fallbackWebUrl = platformSettings.click_url || 'https://my.click.uz/';
-      if (isAndroid) {
-        deepUrl = `intent://my.click.uz/#Intent;scheme=clickuz;package=uz.click;S.browser_fallback_url=${encodeURIComponent(fallbackWebUrl)};end`;
-      } else if (isIOS) {
-        deepUrl = `clickuz://`;
-      } else {
-        deepUrl = fallbackWebUrl;
-      }
+      targetUrl = platformSettings.click_url || 'https://my.click.uz/';
     } else if (type === 'payme') {
-      fallbackWebUrl = platformSettings.payme_url || 'https://payme.uz/';
-      if (isAndroid) {
-        deepUrl = `intent://paycom.uz/#Intent;scheme=payme;package=uz.dida.payme;S.browser_fallback_url=${encodeURIComponent(fallbackWebUrl)};end`;
-      } else if (isIOS) {
-        deepUrl = `payme://`;
-      } else {
-        deepUrl = fallbackWebUrl;
-      }
+      targetUrl = platformSettings.payme_url || 'https://payme.uz/';
     } else if (type === 'uzum') {
-      fallbackWebUrl = 'https://uzumbank.uz/';
-      if (isAndroid) {
-        deepUrl = `intent://uzumbank.uz/#Intent;scheme=uzumbank;package=uz.apelsin;S.browser_fallback_url=${encodeURIComponent(fallbackWebUrl)};end`;
-      } else if (isIOS) {
-        deepUrl = `uzumbank://`;
-      } else {
-        deepUrl = fallbackWebUrl;
-      }
+      targetUrl = 'https://uzumbank.uz/';
     }
 
-    try {
-      if (isAndroid && deepUrl.startsWith('intent:')) {
-        window.location.href = deepUrl;
-      } else if (deepUrl.startsWith('clickuz:') || deepUrl.startsWith('payme:') || deepUrl.startsWith('uzumbank:')) {
-        window.location.href = deepUrl;
-        setTimeout(() => {
-          if (window.Telegram?.WebApp?.openLink) {
-            window.Telegram.WebApp.openLink(fallbackWebUrl);
-          } else {
-            window.open(fallbackWebUrl, '_blank');
-          }
-        }, 1200);
-      } else {
-        if (window.Telegram?.WebApp?.openLink) {
-          window.Telegram.WebApp.openLink(fallbackWebUrl);
-        } else {
-          window.open(fallbackWebUrl, '_blank');
-        }
-      }
-    } catch (err) {
-      window.location.href = fallbackWebUrl;
-    }
-
+    openExternalUrl(targetUrl);
     setShowPaymentModal(false);
   };
 
@@ -2266,31 +2220,31 @@ export default function AdminDashboardScreen({
 
       {/* MODAL: Ish vaqtini belgilash */}
       {showWorkHoursModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl">
-            <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-slate-800 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-slate-800 pb-2">
               <div className="flex items-center space-x-1.5">
                 <Clock className="w-5 h-5 text-brand-orange" />
-                <h3 className="text-base font-extrabold text-brand-blue">
+                <h3 className="text-base font-extrabold text-brand-blue dark:text-white">
                   {t.work_hours_title || "Ish vaqti sozlamalari"}
                 </h3>
               </div>
               <button
                 onClick={() => setShowWorkHoursModal(false)}
-                className="text-gray-400 hover:text-gray-600 font-bold"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 font-bold"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mb-4 leading-relaxed">
               Mijozlar navbat tanlayotganda faqat shu soatlar oralig'ida bo'sh vaqtlarni ko'rishadi:
             </p>
 
             <form onSubmit={handleSaveWorkHours} className="space-y-3.5">
               {/* Bugungi holat */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
                   {t.working_status_label || "Bugungi ish holati:"}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -2300,7 +2254,7 @@ export default function AdminDashboardScreen({
                     className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all ${
                       tempIsWorkingToday
                         ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     <span>🟢</span>
@@ -2312,7 +2266,7 @@ export default function AdminDashboardScreen({
                     className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all ${
                       !tempIsWorkingToday
                         ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-300'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     <span>🔴</span>
@@ -2323,10 +2277,10 @@ export default function AdminDashboardScreen({
 
               {/* Haftalik dam olish kunlari */}
               <div className="pt-1">
-                <label className="block text-xs font-semibold text-gray-700 mb-0.5">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-0.5">
                   {t.weekly_days_off || "Haftalik dam olish kunlari:"}
                 </label>
-                <p className="text-[10px] text-gray-400 mb-2">
+                <p className="text-[10px] text-gray-400 dark:text-slate-400 mb-2">
                   {t.days_off_desc || "Belgilangan kunlarda mijozlar navbat ololmaydi"}
                 </p>
                 <div className="grid grid-cols-7 gap-1">
@@ -2348,7 +2302,7 @@ export default function AdminDashboardScreen({
                         className={`py-2 rounded-xl text-xs font-bold transition-all text-center ${
                           isOff
                             ? 'bg-red-500 text-white shadow-xs'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
                         }`}
                       >
                         {day.label}
@@ -2474,18 +2428,18 @@ export default function AdminDashboardScreen({
 
       {/* MODAL: Profil rasmini o'zgartirish (Avatar) */}
       {showAvatarModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-100 dark:border-slate-800 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-slate-800 pb-2">
               <div className="flex items-center space-x-1.5">
-                <Camera className="w-5 h-5 text-brand-blue" />
-                <h3 className="text-base font-extrabold text-brand-blue">
+                <Camera className="w-5 h-5 text-brand-blue dark:text-blue-400" />
+                <h3 className="text-base font-extrabold text-brand-blue dark:text-white">
                   {t.profile_photo_title || "Profil rasmi"}
                 </h3>
               </div>
               <button
                 onClick={() => setShowAvatarModal(false)}
-                className="text-gray-400 hover:text-gray-600 font-bold"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 font-bold"
               >
                 ✕
               </button>
@@ -2568,18 +2522,18 @@ export default function AdminDashboardScreen({
 
       {/* MODAL: Sartaroshxona rasmini qo'shish */}
       {showSalonPhotoModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-100 dark:border-slate-800 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-slate-800 pb-2">
               <div className="flex items-center space-x-1.5">
-                <ImageIcon className="w-5 h-5 text-brand-blue" />
-                <h3 className="text-base font-extrabold text-brand-blue">
+                <ImageIcon className="w-5 h-5 text-brand-blue dark:text-blue-400" />
+                <h3 className="text-base font-extrabold text-brand-blue dark:text-white">
                   {t.upload_photo_modal_title || "Sartaroshxona rasmini qo'shish"}
                 </h3>
               </div>
               <button
                 onClick={() => setShowSalonPhotoModal(false)}
-                className="text-gray-400 hover:text-gray-600 font-bold"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 font-bold"
               >
                 ✕
               </button>
@@ -2671,15 +2625,15 @@ export default function AdminDashboardScreen({
 
       {/* MODAL 1: Xizmat qo'shish / tahrirlash */}
       {showServiceModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-base font-extrabold text-brand-blue mb-3">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-100 dark:border-slate-800 text-slate-900 dark:text-white">
+            <h3 className="text-base font-extrabold text-brand-blue dark:text-white mb-3">
               {editingServiceId ? t.modal_edit_service_title : t.modal_add_service_title}
             </h3>
 
             <form onSubmit={handleSaveService} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                   {t.modal_service_name} *
                 </label>
                 <input
@@ -2688,12 +2642,12 @@ export default function AdminDashboardScreen({
                   value={formServiceName}
                   onChange={(e) => setFormServiceName(e.target.value)}
                   placeholder={t.modal_service_name_placeholder}
-                  className="w-full bg-gray-50 rounded-xl p-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                  className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl p-2.5 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                   {t.modal_service_price} *
                 </label>
                 <input
@@ -2702,12 +2656,12 @@ export default function AdminDashboardScreen({
                   value={formServicePrice}
                   onChange={(e) => setFormServicePrice(e.target.value)}
                   placeholder="50000"
-                  className="w-full bg-gray-50 rounded-xl p-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue font-bold text-brand-blue"
+                  className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl p-2.5 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue font-bold text-brand-blue dark:text-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                   {t.service_duration_label || "Davomiyligi (daq)"} *
                 </label>
                 <div className="relative">
@@ -2720,9 +2674,9 @@ export default function AdminDashboardScreen({
                     value={formServiceDuration ? String(formServiceDuration).replace(/\D/g, '') : ''}
                     onChange={(e) => setFormServiceDuration(e.target.value)}
                     placeholder="Masalan: 40"
-                    className="w-full bg-gray-50 rounded-xl p-2.5 pr-14 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue font-bold text-brand-blue"
+                    className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl p-2.5 pr-14 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue font-bold text-brand-blue dark:text-amber-400"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 pointer-events-none">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 dark:text-slate-400 pointer-events-none">
                     {lang === 'ru' ? 'мин' : lang === 'en' ? 'min' : 'daq'}
                   </span>
                 </div>
@@ -2736,7 +2690,7 @@ export default function AdminDashboardScreen({
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all ${
                         String(formServiceDuration).replace(/\D/g, '') === String(mins)
                           ? 'bg-brand-blue text-white border-brand-blue'
-                          : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-200 dark:hover:bg-slate-700'
                       }`}
                     >
                       {mins} {lang === 'ru' ? 'мин' : lang === 'en' ? 'min' : 'daq'}
@@ -2745,7 +2699,7 @@ export default function AdminDashboardScreen({
                 </div>
               </div>
 
-              <div className="p-3 bg-amber-50/70 rounded-2xl border border-amber-200/70">
+              <div className="p-3 bg-amber-50/70 dark:bg-slate-800/80 rounded-2xl border border-amber-200/70 dark:border-amber-500/30">
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -2753,15 +2707,15 @@ export default function AdminDashboardScreen({
                     onChange={(e) => setFormIsPromo(e.target.checked)}
                     className="w-4 h-4 rounded text-brand-orange focus:ring-brand-orange"
                   />
-                  <span className="text-xs font-bold text-amber-900">
+                  <span className="text-xs font-bold text-amber-900 dark:text-amber-400">
                     {t.is_promo_label}
                   </span>
                 </label>
 
                 {formIsPromo && (
-                  <div className="mt-2.5 space-y-2 pt-2 border-t border-amber-200/50">
+                  <div className="mt-2.5 space-y-2 pt-2 border-t border-amber-200/50 dark:border-amber-500/30">
                     <div>
-                      <label className="block text-[11px] font-semibold text-gray-600 mb-0.5">
+                      <label className="block text-[11px] font-semibold text-gray-600 dark:text-slate-300 mb-0.5">
                         {t.promo_old_price_label}
                       </label>
                       <input
@@ -2769,12 +2723,12 @@ export default function AdminDashboardScreen({
                         value={formOldPrice}
                         onChange={(e) => setFormOldPrice(e.target.value)}
                         placeholder="60000"
-                        className="w-full bg-white rounded-xl p-2 text-xs text-gray-800 border border-gray-200 focus:outline-none"
+                        className="w-full bg-white dark:bg-slate-900 rounded-xl p-2 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-semibold text-gray-600 mb-0.5">
+                      <label className="block text-[11px] font-semibold text-gray-600 dark:text-slate-300 mb-0.5">
                         {t.promo_badge_label}
                       </label>
                       <input
@@ -2782,7 +2736,7 @@ export default function AdminDashboardScreen({
                         value={formPromoBadge}
                         onChange={(e) => setFormPromoBadge(e.target.value)}
                         placeholder={t.promo_badge_placeholder}
-                        className="w-full bg-white rounded-xl p-2 text-xs text-gray-800 border border-gray-200 focus:outline-none"
+                        className="w-full bg-white dark:bg-slate-900 rounded-xl p-2 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -2793,7 +2747,7 @@ export default function AdminDashboardScreen({
                 <button
                   type="button"
                   onClick={() => setShowServiceModal(false)}
-                  className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                 >
                   {t.btn_cancel}
                 </button>
@@ -2811,34 +2765,34 @@ export default function AdminDashboardScreen({
 
       {/* MODAL 2: Bank kartasini ulash (Uzcard / Humo / Visa / Mastercard) */}
       {showCardModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl">
-            <h3 className="text-base font-extrabold text-brand-blue mb-1">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-slate-800 text-slate-900 dark:text-white">
+            <h3 className="text-base font-extrabold text-brand-blue dark:text-white mb-1">
               {t.card_modal_title || "Bank kartasini ulash"}
             </h3>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mb-2">
               {t.auto_debit_desc || "Oylik obunani avtomatik to'lash uchun kartangizni ulang."}
             </p>
 
             {/* Qo'llab-quvvatlanadigan kartalar */}
             <div className="flex items-center space-x-1.5 mb-3.5 flex-wrap gap-y-1">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">
                 Uzcard (8600)
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-orange-100 text-orange-800 border border-orange-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-orange-100 dark:bg-amber-950/40 text-orange-800 dark:text-amber-300 border border-orange-200 dark:border-amber-800/40">
                 Humo (9860)
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 border border-indigo-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40">
                 Visa (4...)
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 border border-rose-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40">
                 Mastercard (5...)
               </span>
             </div>
 
             <form onSubmit={handleSaveCard} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                   {t.card_number_label} (16 ta raqam) *
                 </label>
                 <input
@@ -2848,12 +2802,12 @@ export default function AdminDashboardScreen({
                   value={inputCardNumber}
                   onChange={(e) => setInputCardNumber(e.target.value.replace(/\D/g, ''))}
                   placeholder="8600... / 9860... / 4... / 5..."
-                  className="w-full bg-gray-50 rounded-xl p-2.5 text-xs font-mono tracking-wider text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                  className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl p-2.5 text-xs font-mono tracking-wider text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                   {t.card_expiry_label} (OO/YY) *
                 </label>
                 <input
@@ -2863,11 +2817,11 @@ export default function AdminDashboardScreen({
                   value={inputCardExpiry}
                   onChange={(e) => setInputCardExpiry(e.target.value)}
                   placeholder="12/28"
-                  className="w-full bg-gray-50 rounded-xl p-2.5 text-xs font-mono text-gray-900 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                  className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl p-2.5 text-xs font-mono text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue"
                 />
               </div>
 
-              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 text-[11px] flex items-center space-x-1.5 border border-emerald-100">
+              <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-[11px] flex items-center space-x-1.5 border border-emerald-100 dark:border-emerald-800/40">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                 <span>
                   {lang === 'ru' ? 'Ваша карта надежно зашифрована' : lang === 'en' ? 'Your card is securely encrypted' : 'Kartangiz xavfsiz shifrlangan holda saqlanadi'}
@@ -2878,7 +2832,7 @@ export default function AdminDashboardScreen({
                 <button
                   type="button"
                   onClick={() => setShowCardModal(false)}
-                  className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                 >
                   {t.btn_cancel}
                 </button>
@@ -2940,9 +2894,9 @@ export default function AdminDashboardScreen({
 
               {/* To'g'ridan-to'g'ri karta o'tkazmasi (P2P) */}
               {platformSettings.payment_card && (
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-900/90 border border-amber-200 dark:border-amber-500/30">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] font-bold text-amber-900 dark:text-amber-400">
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
                       {lang === 'ru' ? 'Перевод на карту платформы:' : lang === 'en' ? 'Transfer to platform card:' : "Platforma kartasiga o'tkazish:"}
                     </span>
                     <button
@@ -2950,15 +2904,15 @@ export default function AdminDashboardScreen({
                         navigator.clipboard?.writeText(platformSettings.payment_card.replace(/\s+/g, ''));
                         alert(`Karta raqami nusxalandi: ${platformSettings.payment_card}`);
                       }}
-                      className="text-[10px] bg-amber-200 hover:bg-amber-300 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 text-amber-900 dark:text-amber-300 font-extrabold px-2.5 py-1 rounded-full transition-all border border-transparent dark:border-amber-500/30"
+                      className="text-[10px] bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-extrabold px-2.5 py-1 rounded-full transition-all border border-slate-300/60 dark:border-slate-700"
                     >
                       {lang === 'ru' ? 'Копировать 📋' : lang === 'en' ? 'Copy 📋' : 'Nusxalash 📋'}
                     </button>
                   </div>
-                  <div className="font-mono text-xs font-bold text-gray-900 dark:text-white tracking-wider">
+                  <div className="font-mono text-xs font-bold text-slate-900 dark:text-white tracking-wider">
                     {platformSettings.payment_card}
                   </div>
-                  <p className="text-[10px] text-gray-500 dark:text-slate-400 mt-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                     Istalgan ilovadan (Click, Payme, Uzum, Bank ilovasi) o'tkazishingiz mumkin.
                   </p>
                   {platformSettings.support_telegram && (
@@ -2966,7 +2920,7 @@ export default function AdminDashboardScreen({
                       href={`https://t.me/${platformSettings.support_telegram.replace('@', '')}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2.5 block text-center py-2 px-3 bg-amber-400 hover:bg-amber-500 dark:bg-amber-500 dark:hover:bg-amber-400 text-amber-950 dark:text-slate-950 font-black text-[11px] rounded-xl transition-all shadow-xs"
+                      className="mt-2.5 block text-center py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] rounded-xl transition-all shadow-xs"
                     >
                       Chekni adminga yuborish ({platformSettings.support_telegram}) &rarr;
                     </a>
@@ -2976,35 +2930,35 @@ export default function AdminDashboardScreen({
 
               <button
                 onClick={() => handleOpenPaymentApp('click')}
-                className="w-full p-3 rounded-2xl bg-blue-50 hover:bg-blue-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-blue-200 dark:border-blue-500/30 text-blue-950 dark:text-white flex items-center justify-between text-xs font-bold transition-all shadow-2xs active:scale-98"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between text-xs font-bold transition-all shadow-2xs active:scale-98"
               >
                 <div className="flex items-center space-x-2.5">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black shadow-xs">C</span>
                   <span className="font-extrabold">{t.pay_with_click}</span>
                 </div>
-                <span className="text-[11px] text-blue-700 dark:text-blue-400 font-black">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
+                <span className="text-[11px] text-blue-600 dark:text-blue-400 font-black">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
               </button>
 
               <button
                 onClick={() => handleOpenPaymentApp('payme')}
-                className="w-full p-3 rounded-2xl bg-teal-50 hover:bg-teal-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-teal-200 dark:border-teal-500/30 text-teal-950 dark:text-white flex items-center justify-between text-xs font-bold transition-all shadow-2xs active:scale-98"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between text-xs font-bold transition-all shadow-2xs active:scale-98"
               >
                 <div className="flex items-center space-x-2.5">
-                  <span className="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center text-[11px] font-black shadow-xs">P</span>
+                  <span className="w-6 h-6 rounded-full bg-[#00CCCC] text-slate-950 flex items-center justify-center text-[11px] font-black shadow-xs">P</span>
                   <span className="font-extrabold">{t.pay_with_payme}</span>
                 </div>
-                <span className="text-[11px] text-teal-700 dark:text-teal-400 font-black">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
+                <span className="text-[11px] text-teal-600 dark:text-teal-400 font-black">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
               </button>
 
               <button
                 onClick={() => handleOpenPaymentApp('uzum')}
-                className="w-full p-3 rounded-2xl bg-purple-50 hover:bg-purple-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-purple-200 dark:border-purple-500/30 text-purple-950 dark:text-white flex items-center justify-between text-xs font-bold transition-all shadow-2xs active:scale-98"
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between text-xs font-bold transition-all shadow-2xs active:scale-98"
               >
                 <div className="flex items-center space-x-2.5">
-                  <span className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-[11px] font-black shadow-xs">U</span>
+                  <span className="w-6 h-6 rounded-full bg-[#7000FF] text-white flex items-center justify-center text-[11px] font-black shadow-xs">U</span>
                   <span className="font-extrabold">{t.pay_with_uzum}</span>
                 </div>
-                <span className="text-[11px] text-purple-700 dark:text-purple-400 font-black">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
+                <span className="text-[11px] text-purple-600 dark:text-purple-400 font-black">{(platformSettings.subscription_price || 50000).toLocaleString()} UZS</span>
               </button>
             </div>
           </div>
@@ -3014,20 +2968,20 @@ export default function AdminDashboardScreen({
       {/* MODAL: Hisobdan chiqish (Log Out) */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center mx-auto mb-3">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-slate-800 text-slate-900 dark:text-white">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-brand-blue dark:text-blue-400 flex items-center justify-center mx-auto mb-3">
               <LogOut className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-extrabold text-brand-blue text-center mb-1">
+            <h3 className="text-base font-extrabold text-brand-blue dark:text-white text-center mb-1">
               {t.logout_modal_title || "Hisobdan chiqish"}
             </h3>
-            <p className="text-xs text-gray-500 text-center mb-5 leading-relaxed">
+            <p className="text-xs text-gray-500 dark:text-slate-400 text-center mb-5 leading-relaxed">
               {t.logout_modal_desc || "Hisobdan chiqsangiz ham barcha xizmatlaringiz, mijozlar va reytingingiz saqlanadi."}
             </p>
             <div className="flex space-x-2">
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
+                className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
               >
                 {t.btn_cancel}
               </button>
@@ -3048,20 +3002,20 @@ export default function AdminDashboardScreen({
       {/* MODAL: Akkauntni butunlay o'chirish (Delete Account) */}
       {showDeleteAccountModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl border-2 border-red-200">
-            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl border-2 border-red-200 dark:border-red-900/50 text-slate-900 dark:text-white">
+            <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto mb-3">
               <AlertCircle className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-extrabold text-red-600 text-center mb-1">
+            <h3 className="text-base font-extrabold text-red-600 dark:text-red-400 text-center mb-1">
               {t.delete_modal_title || "Akkauntni butunlay o'chirish"}
             </h3>
-            <div className="p-3 bg-red-50/70 rounded-2xl border border-red-100 my-3 text-[11px] text-red-700 leading-relaxed">
+            <div className="p-3 bg-red-50/70 dark:bg-red-950/30 rounded-2xl border border-red-100 dark:border-red-900/40 my-3 text-[11px] text-red-700 dark:text-red-300 leading-relaxed">
               {t.delete_modal_warning || "DIQQAT! Akkauntingizni o'chirsangiz, siz umumiy usta katalogidan o'chirilasiz. Barcha mijozlar, izohlar va reytingingiz qayta tiklanmaydi!"}
             </div>
             <div className="flex space-x-2 mt-4">
               <button
                 onClick={() => setShowDeleteAccountModal(false)}
-                className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
+                className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
               >
                 {t.btn_cancel}
               </button>
@@ -3250,79 +3204,79 @@ export default function AdminDashboardScreen({
 
         return (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
-            <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[92vh] overflow-y-auto">
-              <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-                <div className="flex items-center space-x-1.5 text-xs font-black text-gray-800">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[92vh] overflow-y-auto border border-gray-100 dark:border-slate-800 text-slate-900 dark:text-white">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-slate-800">
+                <div className="flex items-center space-x-1.5 text-xs font-black text-gray-800 dark:text-white">
                   <Receipt className="w-4 h-4 text-emerald-600" />
                   <span>{lang === 'ru' ? 'ИТОГОВЫЙ КАССОВЫЙ ЧЕК' : lang === 'en' ? 'END OF DAY RECEIPT' : 'KUN YAKUNI KASSA CHEKI'}</span>
                 </div>
                 <button
                   onClick={() => setShowDailyReceiptModal(false)}
-                  className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Thermal POS Receipt Design */}
-              <div className="mt-3 p-4 bg-gray-50/90 rounded-2xl border-2 border-dashed border-gray-300 font-mono text-[11px] space-y-2.5">
-                <div className="text-center pb-2 border-b border-dashed border-gray-300">
-                  <div className="font-extrabold text-sm tracking-wider text-gray-900">
+              <div className="mt-3 p-4 bg-gray-50/90 dark:bg-slate-800/90 rounded-2xl border-2 border-dashed border-gray-300 dark:border-slate-700 font-mono text-[11px] space-y-2.5">
+                <div className="text-center pb-2 border-b border-dashed border-gray-300 dark:border-slate-700">
+                  <div className="font-extrabold text-sm tracking-wider text-gray-900 dark:text-white">
                     BARBERHUB POS
                   </div>
-                  <div className="text-[10px] text-gray-500 font-sans mt-0.5">
+                  <div className="text-[10px] text-gray-500 dark:text-slate-400 font-sans mt-0.5">
                     {barberProfile.name || "Sardor Karimov"}
                   </div>
-                  <div className="text-[9px] text-gray-400 mt-0.5">
+                  <div className="text-[9px] text-gray-400 dark:text-slate-500 mt-0.5">
                     {dateStr} | {timeStr}
                   </div>
                 </div>
 
                 {/* Operations Summary */}
-                <div className="space-y-1 py-1 border-b border-dashed border-gray-300">
+                <div className="space-y-1 py-1 border-b border-dashed border-gray-300 dark:border-slate-700">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">{lang === 'ru' ? 'Всего клиентов:' : lang === 'en' ? 'Total clients:' : 'Jami mijozlar:'}</span>
-                    <span className="font-bold text-gray-800">{appointments.length} {t.clients_count_unit || 'ta'}</span>
+                    <span className="text-gray-500 dark:text-slate-400">{lang === 'ru' ? 'Всего клиентов:' : lang === 'en' ? 'Total clients:' : 'Jami mijozlar:'}</span>
+                    <span className="font-bold text-gray-800 dark:text-slate-200">{appointments.length} {t.clients_count_unit || 'ta'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">{lang === 'ru' ? 'Обслужено:' : lang === 'en' ? 'Served:' : "Xizmat ko'rsatilgan:"}</span>
-                    <span className="font-bold text-emerald-700">{completedApts.length} {t.clients_count_unit || 'ta'}</span>
+                    <span className="text-gray-500 dark:text-slate-400">{lang === 'ru' ? 'Обслужено:' : lang === 'en' ? 'Served:' : "Xizmat ko'rsatilgan:"}</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{completedApts.length} {t.clients_count_unit || 'ta'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">{lang === 'ru' ? 'Ожидают:' : lang === 'en' ? 'Pending:' : 'Kutilmoqda:'}</span>
-                    <span className="font-bold text-amber-700">{pendingApts.length} {t.clients_count_unit || 'ta'}</span>
+                    <span className="text-gray-500 dark:text-slate-400">{lang === 'ru' ? 'Ожидают:' : lang === 'en' ? 'Pending:' : 'Kutilmoqda:'}</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">{pendingApts.length} {t.clients_count_unit || 'ta'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">{lang === 'ru' ? 'Отменено:' : lang === 'en' ? 'Cancelled:' : 'Bekor qilingan:'}</span>
-                    <span className="font-bold text-red-600">{cancelledApts.length} {t.clients_count_unit || 'ta'}</span>
+                    <span className="text-gray-500 dark:text-slate-400">{lang === 'ru' ? 'Отменено:' : lang === 'en' ? 'Cancelled:' : 'Bekor qilingan:'}</span>
+                    <span className="font-bold text-red-500 dark:text-red-400">{cancelledApts.length} {t.clients_count_unit || 'ta'}</span>
                   </div>
                 </div>
 
                 {/* Financial Breakdown */}
-                <div className="space-y-1.5 py-1 border-b border-dashed border-gray-300">
+                <div className="space-y-1.5 py-1 border-b border-dashed border-gray-300 dark:border-slate-700">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">{lang === 'ru' ? 'Выручка наличными:' : lang === 'en' ? 'Cash revenue:' : 'Naqd pul tushumi:'}</span>
-                    <span className="font-bold text-gray-900">{cashTotal.toLocaleString()} UZS</span>
+                    <span className="text-gray-500 dark:text-slate-400">{lang === 'ru' ? 'Выручка наличными:' : lang === 'en' ? 'Cash revenue:' : 'Naqd pul tushumi:'}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{cashTotal.toLocaleString()} UZS</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">{lang === 'ru' ? 'Выручка по карте:' : lang === 'en' ? 'Card revenue:' : 'Karta / Click tushumi:'}</span>
-                    <span className="font-bold text-gray-900">{cardTotal.toLocaleString()} UZS</span>
+                    <span className="text-gray-500 dark:text-slate-400">{lang === 'ru' ? 'Выручка по карте:' : lang === 'en' ? 'Card revenue:' : 'Karta / Click tushumi:'}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{cardTotal.toLocaleString()} UZS</span>
                   </div>
                 </div>
 
                 {/* Grand Total */}
                 <div className="pt-1 flex justify-between items-baseline text-xs font-black">
-                  <span className="text-gray-900">{lang === 'ru' ? 'ИТОГО КАССА:' : lang === 'en' ? 'TOTAL REVENUE:' : 'JAMI KASSA:'}</span>
-                  <span className="text-emerald-700 text-sm">{netTotal.toLocaleString()} UZS</span>
+                  <span className="text-gray-900 dark:text-white">{lang === 'ru' ? 'ИТОГО КАССА:' : lang === 'en' ? 'TOTAL REVENUE:' : 'JAMI KASSA:'}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 text-sm">{netTotal.toLocaleString()} UZS</span>
                 </div>
 
-                <div className="text-center pt-2 text-[9px] text-gray-400">
+                <div className="text-center pt-2 text-[9px] text-gray-400 dark:text-slate-500">
                   {lang === 'ru' ? '*** ДЕНЬ УСПЕШНО ЗАВЕРШЁН ***' : lang === 'en' ? '*** DAY SUCCESSFULLY CLOSED ***' : '*** KUN MUVAFFAQIYATLI YAKUNLANDI ***'}
                 </div>
               </div>
 
               {receiptSentToTg && (
-                <div className="mt-3 p-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-center text-xs font-bold flex items-center justify-center space-x-1.5 animate-in fade-in">
+                <div className="mt-3 p-2.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 rounded-xl text-center text-xs font-bold flex items-center justify-center space-x-1.5 animate-in fade-in">
                   <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   <span>{lang === 'ru' ? 'Кассовый чек отправлен в Telegram! ✓' : lang === 'en' ? 'Receipt sent to your Telegram! ✓' : 'Kassa cheki Telegramingizga yuborildi! ✓'}</span>
                 </div>
@@ -3336,9 +3290,9 @@ export default function AdminDashboardScreen({
                       hapticFeedback.selection();
                       window.print();
                     }}
-                    className="py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all"
+                    className="py-2.5 px-3 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all"
                   >
-                    <Printer className="w-3.5 h-3.5 text-gray-600" />
+                    <Printer className="w-3.5 h-3.5 text-gray-600 dark:text-slate-400" />
                     <span>{lang === 'ru' ? 'Печать' : lang === 'en' ? 'Print' : 'Chop etish'}</span>
                   </button>
                   <button
@@ -3354,7 +3308,7 @@ export default function AdminDashboardScreen({
                 </div>
                 <button
                   onClick={() => setShowDailyReceiptModal(false)}
-                  className="w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl text-xs font-bold"
+                  className="w-full py-2 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 rounded-xl text-xs font-bold"
                 >
                   {lang === 'ru' ? 'Закрыть' : lang === 'en' ? 'Close' : 'Yopish'}
                 </button>
@@ -3367,29 +3321,29 @@ export default function AdminDashboardScreen({
       {/* MODAL 3: 📢 1-Bosishda Mijozni Chaqirish Pop-up Alert */}
       {calledClientAlert && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl text-center">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl text-center border border-gray-100 dark:border-slate-800 text-slate-900 dark:text-white">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center mx-auto mb-3 shadow-lg animate-bounce">
               <Radio className="w-7 h-7" />
             </div>
-            <h3 className="text-base font-black text-brand-blue mb-1">
+            <h3 className="text-base font-black text-brand-blue dark:text-white mb-1">
               {lang === 'ru' ? 'Клиент успешно вызван! 📢' : lang === 'en' ? 'Client Alert Sent! 📢' : 'Mijozga Tezkor Xabar Yuborildi! 📢'}
             </h3>
-            <p className="text-xs text-gray-500 mb-4 font-medium">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mb-4 font-medium">
               {lang === 'ru' ? 'Клиенту отправлено голосовое и текстовое уведомление в Telegram о том, что его очередь подошла.' : lang === 'en' ? 'Client received a notification in Telegram that their turn has arrived.' : 'Telegram bot orqali mijozga navbati yetgani haqida ovozli va matnli bildirishnoma yetkazildi.'}
             </p>
 
-            <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-100 text-left text-xs space-y-1 mb-4">
+            <div className="p-3 bg-blue-50/70 dark:bg-slate-800/80 rounded-2xl border border-blue-100 dark:border-slate-700 text-left text-xs space-y-1 mb-4">
               <div className="flex justify-between">
-                <span className="text-gray-500">{lang === 'ru' ? 'Клиент:' : lang === 'en' ? 'Client:' : 'Mijoz:'}</span>
-                <span className="font-extrabold text-gray-900">{calledClientAlert.name}</span>
+                <span className="text-gray-500 dark:text-slate-400">{lang === 'ru' ? 'Клиент:' : lang === 'en' ? 'Client:' : 'Mijoz:'}</span>
+                <span className="font-extrabold text-gray-900 dark:text-white">{calledClientAlert.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">{lang === 'ru' ? 'Время:' : lang === 'en' ? 'Time:' : 'Vaqt:'}</span>
+                <span className="text-gray-500 dark:text-slate-400">{lang === 'ru' ? 'Время:' : lang === 'en' ? 'Time:' : 'Vaqt:'}</span>
                 <span className="font-bold text-brand-orange">{calledClientAlert.time}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">{t.service_label || (lang === 'ru' ? 'Услуга:' : lang === 'en' ? 'Service:' : 'Xizmat:')}</span>
-                <span className="font-medium text-gray-700">{getTranslatedServiceName(calledClientAlert.service, lang)}</span>
+                <span className="text-gray-500 dark:text-slate-400">{t.service_label || (lang === 'ru' ? 'Услуга:' : lang === 'en' ? 'Service:' : 'Xizmat:')}</span>
+                <span className="font-medium text-gray-700 dark:text-slate-300">{getTranslatedServiceName(calledClientAlert.service, lang)}</span>
               </div>
             </div>
 
