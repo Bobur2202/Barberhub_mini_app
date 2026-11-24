@@ -131,16 +131,16 @@ export default function ConfirmScreen({
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-32 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1120] pb-32 max-w-md mx-auto text-slate-900 dark:text-white">
       {/* Top Header */}
-      <div className="sticky top-0 bg-[#F8FAFC]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
+      <div className="sticky top-0 bg-[#F8FAFC]/95 dark:bg-[#0B1120]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
         <button
           onClick={onBack}
-          className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-blue hover:bg-gray-100 transition-colors"
+          className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-brand-blue dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-base font-bold text-brand-blue">
+        <h1 className="text-base font-bold text-brand-blue dark:text-white">
           {t.confirmation_title}
         </h1>
         <div className="w-9"></div>
@@ -148,53 +148,53 @@ export default function ConfirmScreen({
 
       <div className="px-4 mt-2 space-y-4">
         {/* Booking Summary Card */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-50">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3.5">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-blue-50 dark:border-slate-800">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 mb-3.5">
             {t.summary_card}
           </h3>
 
-          <div className="space-y-3 divide-y divide-gray-100 text-sm">
+          <div className="space-y-3 divide-y divide-gray-100 dark:divide-slate-800 text-sm">
             <div className="flex justify-between items-center pt-2 first:pt-0">
-              <span className="text-gray-500 text-xs">{t.service_label}:</span>
-              <span className="font-bold text-gray-800 text-right">
+              <span className="text-gray-500 dark:text-slate-400 text-xs">{t.service_label}:</span>
+              <span className="font-bold text-gray-800 dark:text-slate-100 text-right">
                 {getTranslatedServiceName(service.name, lang)}
               </span>
             </div>
 
             {/* If Multi-person, show 2nd person row */}
             {isMulti && (
-              <div className="flex justify-between items-center pt-2 bg-blue-50/60 p-2.5 rounded-xl border border-blue-100">
+              <div className="flex justify-between items-center pt-2 bg-blue-50/60 dark:bg-blue-950/40 p-2.5 rounded-xl border border-blue-100 dark:border-blue-900/40">
                 <div>
-                  <span className="text-xs font-black text-brand-blue block">
+                  <span className="text-xs font-black text-brand-blue dark:text-amber-400 block">
                     {t.second_client_label || "👨‍👦 2-Mijoz:"} {dateTime.companionTitle}
                   </span>
-                  <span className="text-[11px] text-gray-500 block">
+                  <span className="text-[11px] text-gray-500 dark:text-slate-400 block">
                     {getTranslatedServiceName(dateTime.companionService, lang)} ({dateTime.secondSlot})
                   </span>
                 </div>
-                <span className="font-extrabold text-xs text-brand-blue">
+                <span className="font-extrabold text-xs text-brand-blue dark:text-white">
                   {dateTime.secondPrice?.toLocaleString()} UZS
                 </span>
               </div>
             )}
 
             <div className="flex justify-between items-center pt-2">
-              <span className="text-gray-500 text-xs">{t.barber_label}:</span>
-              <span className="font-bold text-brand-blue text-right">{barber.name}</span>
+              <span className="text-gray-500 dark:text-slate-400 text-xs">{t.barber_label}:</span>
+              <span className="font-bold text-brand-blue dark:text-amber-400 text-right">{barber.name}</span>
             </div>
 
             <div className="flex justify-between items-center pt-2">
-              <span className="text-gray-500 text-xs">{t.datetime_label}:</span>
-              <span className="font-bold text-gray-800 text-right">
+              <span className="text-gray-500 dark:text-slate-400 text-xs">{t.datetime_label}:</span>
+              <span className="font-bold text-gray-800 dark:text-slate-100 text-right">
                 {dateTime.day.full}, {dateTime.time} {isMulti ? `${lang === 'ru' ? 'и' : lang === 'en' ? 'and' : 'va'} ${dateTime.secondSlot}` : ''}
               </span>
             </div>
 
             <div className="flex justify-between items-center pt-3">
-              <span className="text-gray-700 font-bold text-sm">
+              <span className="text-gray-700 dark:text-slate-300 font-bold text-sm">
                 {isMulti ? (t.total_multi_label || "Jami (2 kishi uchun):") : t.total_label}:
               </span>
-              <span className="text-lg font-black text-brand-blue">
+              <span className="text-lg font-black text-brand-blue dark:text-amber-400">
                 {totalPrice.toLocaleString()} UZS
               </span>
             </div>
@@ -202,19 +202,19 @@ export default function ConfirmScreen({
         </div>
 
         {/* Input Details */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-50 space-y-4">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-blue-50 dark:border-slate-800 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">
               {t.client_details_title || "Mijoz ma'lumotlari"}
             </h3>
-            <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/60">
               {t.required_fields_badge || "Majburiy maydonlar *"}
             </span>
           </div>
 
           {/* Ism kiritish */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
               <span>{t.your_name} <span className="text-red-500">*</span></span>
               {nameTouched && !isNameValid && (
                 <span className="text-[10px] text-red-500 font-bold">{t.name_required_error || "Ismni kiriting"}</span>
@@ -231,12 +231,12 @@ export default function ConfirmScreen({
                   setClientName(e.target.value);
                 }}
                 placeholder={t.your_name_placeholder || "Ismingizni kiriting"}
-                className={`w-full bg-gray-50/50 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-800 border transition-all focus:outline-none focus:bg-white ${
+                className={`w-full bg-gray-50/50 dark:bg-slate-800/80 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-800 dark:text-white border transition-all focus:outline-none focus:bg-white dark:focus:bg-slate-800 ${
                   nameTouched && !isNameValid
                     ? 'border-red-400 bg-red-50/30'
                     : isNameValid
                     ? 'border-emerald-400 focus:border-emerald-500'
-                    : 'border-gray-200 focus:border-brand-blue'
+                    : 'border-gray-200 dark:border-slate-700 focus:border-brand-blue dark:focus:border-amber-500'
                 }`}
               />
             </div>
@@ -244,10 +244,10 @@ export default function ConfirmScreen({
 
           {/* Telefon raqam kiritish */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
               <span>{t.phone_label} <span className="text-red-500">*</span></span>
               {isPhoneValid ? (
-                <span className="text-[10px] text-emerald-600 font-bold flex items-center space-x-0.5">
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center space-x-0.5">
                   <Check className="w-3 h-3 inline" />
                   <span>{lang === 'ru' ? 'Номер корректен' : lang === 'en' ? 'Valid number' : "To'g'ri raqam"}</span>
                 </span>
@@ -259,7 +259,7 @@ export default function ConfirmScreen({
             </label>
             <div className="relative">
               <Phone className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${
-                isPhoneValid ? 'text-emerald-500' : 'text-gray-400'
+                isPhoneValid ? 'text-emerald-500 dark:text-emerald-400' : 'text-gray-400'
               }`} />
               <input
                 type="tel"
@@ -271,16 +271,16 @@ export default function ConfirmScreen({
                 maxLength={17}
                 className={`w-full rounded-xl pl-10 pr-4 py-3 text-sm font-semibold tracking-wide transition-all focus:outline-none ${
                   phoneTouched && !isPhoneValid
-                    ? 'border-2 border-red-400 bg-red-50/30 text-gray-900 focus:border-red-500'
+                    ? 'border-2 border-red-400 bg-red-50/30 text-gray-900 dark:text-white focus:border-red-500'
                     : isPhoneValid
-                    ? 'border-2 border-emerald-500 bg-emerald-50/20 text-gray-900'
-                    : 'border-2 border-brand-blue/50 bg-gray-50/50 text-gray-800 focus:border-brand-blue focus:bg-white'
+                    ? 'border-2 border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/30 text-gray-900 dark:text-white'
+                    : 'border-2 border-brand-blue/50 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/80 text-gray-800 dark:text-white focus:border-brand-blue dark:focus:border-amber-500 focus:bg-white dark:focus:bg-slate-800'
                 }`}
               />
             </div>
-            <p className="text-[11px] text-gray-400 mt-1.5 leading-tight">
+            <p className="text-[11px] text-gray-400 dark:text-slate-400 mt-1.5 leading-tight">
               {isPhoneValid ? (
-                <span className="text-emerald-600 font-medium">
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                   {lang === 'ru' ? 'Мастер сможет связаться по этому номеру.' : lang === 'en' ? 'The barber can reach you on this number.' : "Usta ushbu raqamga bog'lanishi mumkin."}
                 </span>
               ) : (
@@ -299,12 +299,12 @@ export default function ConfirmScreen({
         </div>
 
         {/* Telegram Notice Banner */}
-        <div className="p-3.5 bg-blue-50/80 rounded-2xl border border-blue-100 flex items-start space-x-3">
-          <div className="p-2 bg-brand-blue text-white rounded-xl">
+        <div className="p-3.5 bg-blue-50/80 dark:bg-slate-800/80 rounded-2xl border border-blue-100 dark:border-slate-700 flex items-start space-x-3">
+          <div className="p-2 bg-brand-blue dark:bg-slate-700 text-white dark:text-amber-400 rounded-xl">
             <BellRing className="w-4 h-4" />
           </div>
-          <div className="flex-1 text-[11px] text-gray-600 leading-relaxed">
-            <span className="font-bold text-brand-blue block text-xs">
+          <div className="flex-1 text-[11px] text-gray-600 dark:text-slate-300 leading-relaxed">
+            <span className="font-bold text-brand-blue dark:text-white block text-xs">
               Telegram tezkor xabarnoma (FastAPI API)
             </span>
             Siz band qilgan zahotingiz ma'lumotlar serverga tushadi va ustaning Telegramiga tasdiqlash xabari boradi.
@@ -313,9 +313,9 @@ export default function ConfirmScreen({
       </div>
 
       {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 p-4 shadow-lg z-40">
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-blue-100 dark:border-slate-800 p-4 shadow-lg z-40">
         {!canSubmit && (
-          <div className="mb-2 text-center text-[11px] font-bold text-amber-600 flex items-center justify-center space-x-1">
+          <div className="mb-2 text-center text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center justify-center space-x-1">
             <AlertCircle className="w-3.5 h-3.5" />
             <span>
               {!isNameValid
@@ -333,7 +333,7 @@ export default function ConfirmScreen({
           className={`w-full py-4 rounded-xl font-extrabold text-sm flex items-center justify-center space-x-2 transition-all ${
             canSubmit
               ? 'text-brand-blue bg-brand-orange hover:bg-brand-orange-hover shadow-lg shadow-amber-500/25 active:scale-[0.98] cursor-pointer'
-              : 'text-gray-400 bg-gray-200 cursor-not-allowed opacity-80'
+              : 'text-gray-400 dark:text-slate-600 bg-gray-200 dark:bg-slate-800 cursor-not-allowed opacity-80'
           }`}
         >
           {isSubmitting ? (
@@ -353,16 +353,16 @@ export default function ConfirmScreen({
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100 dark:border-slate-800">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-950/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-9 h-9" />
             </div>
 
-            <h3 className="text-lg font-extrabold text-gray-900">
+            <h3 className="text-lg font-extrabold text-gray-900 dark:text-white">
               {t.booking_success_title}
             </h3>
 
-            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-2 leading-relaxed">
               {t.booking_success_desc}
             </p>
 
@@ -382,7 +382,7 @@ export default function ConfirmScreen({
                   setShowSuccessModal(false);
                   onBookingSuccess(confirmedData || payload, 'catalog');
                 }}
-                className="w-full py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition-all"
+                className="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 font-bold text-xs transition-all"
               >
                 {t.back_to_catalog}
               </button>

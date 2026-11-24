@@ -36,6 +36,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [showShareToast, setShowShareToast] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
+  const [mapModalMode, setMapModalMode] = useState('all');
 
   // Sadoqat shtamplari (Loyalty Stamps) hisobi
   const clientCompletedVisits = useMemo(() => {
@@ -245,16 +246,26 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
 
         {/* Address & Navigation Link */}
         {barber.address && (
-          <div
-            onClick={() => setShowMapModal(true)}
-            className="mt-2 inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200/70 text-brand-blue cursor-pointer transition-all active:scale-95 group shadow-2xs"
-            title="Xaritada ochish yoki taksi chaqirish"
-          >
-            <MapPin className="w-3.5 h-3.5 text-brand-orange flex-shrink-0" />
-            <span className="text-[11px] font-bold truncate max-w-[200px]">{getTranslatedAddress(barber.address, lang)}</span>
-            <span className="text-[10px] font-extrabold text-brand-orange underline">
-              {t.map_btn || "Xarita"} &rarr;
-            </span>
+          <div className="mt-2.5 flex items-center justify-center space-x-2 flex-wrap gap-y-1.5">
+            <button
+              type="button"
+              onClick={() => { setMapModalMode('map'); setShowMapModal(true); }}
+              className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-blue-50/80 hover:bg-blue-100/80 dark:bg-slate-800 dark:hover:bg-slate-700 border border-blue-200/70 dark:border-slate-700 text-brand-blue dark:text-slate-200 cursor-pointer transition-all active:scale-95 shadow-2xs text-[11px] font-bold"
+            >
+              <MapPin className="w-3.5 h-3.5 text-brand-orange flex-shrink-0" />
+              <span className="truncate max-w-[170px]">{getTranslatedAddress(barber.address, lang)}</span>
+              <span className="text-brand-orange text-[10px] font-black underline">
+                {t.map_btn || "Xarita"} &rarr;
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setMapModalMode('taxi'); setShowMapModal(true); }}
+              className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-amber-400/20 hover:bg-amber-400/30 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 border border-amber-300/70 dark:border-amber-500/40 text-amber-950 dark:text-amber-300 font-extrabold text-[11px] transition-all active:scale-95 shadow-2xs"
+            >
+              <span>🚕 {t.taxi_btn || "Taxi"}</span>
+            </button>
           </div>
         )}
 
@@ -661,6 +672,7 @@ export default function BarberProfileScreen({ barber, t, lang = 'uz', onBack, on
         lat={barber.lat}
         lng={barber.lng}
         lang={lang}
+        mode={mapModalMode}
       />
     </div>
   );

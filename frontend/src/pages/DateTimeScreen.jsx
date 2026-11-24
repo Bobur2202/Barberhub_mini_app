@@ -168,16 +168,16 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
   const isContinueDisabled = !selectedTime || (isMultiPerson && (!secondSlot || !!multiPersonError));
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-32 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1120] pb-32 max-w-md mx-auto text-slate-900 dark:text-white">
       {/* Top Header */}
-      <div className="sticky top-0 bg-[#F8FAFC]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
+      <div className="sticky top-0 bg-[#F8FAFC]/95 dark:bg-[#0B1120]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
         <button
           onClick={onBack}
-          className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-blue hover:bg-gray-100 transition-colors"
+          className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-brand-blue dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-base font-bold text-brand-blue">
+        <h1 className="text-base font-bold text-brand-blue dark:text-white">
           {t.select_date_time}
         </h1>
         <div className="w-9"></div>
@@ -185,36 +185,36 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
 
       {/* Selected Service Mini Banner */}
       <div className="px-4 mt-2">
-        <div className="bg-white rounded-2xl p-3 shadow-sm border border-blue-50 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 shadow-sm border border-blue-50 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <span className="text-[11px] text-gray-400 block">{t.service_label}:</span>
-            <span className="text-xs font-bold text-brand-blue">
+            <span className="text-[11px] text-gray-400 dark:text-slate-400 block">{t.service_label}:</span>
+            <span className="text-xs font-bold text-brand-blue dark:text-white">
               {getTranslatedServiceName(service.name, lang)}
             </span>
           </div>
           <div className="text-right">
-            <span className="text-[11px] text-gray-400 block">{barber.name}</span>
-            <span className="text-xs font-extrabold text-brand-orange">
+            <span className="text-[11px] text-gray-400 dark:text-slate-400 block">{barber.name}</span>
+            <span className="text-xs font-extrabold text-brand-orange dark:text-amber-400">
               {service.price.toLocaleString()} UZS
             </span>
           </div>
         </div>
 
         {/* Barber Working Hours Badge */}
-        <div className="mt-2 flex items-center justify-between text-[11px] text-gray-600 bg-white/80 rounded-xl px-3 py-2 border border-blue-100/70 shadow-2xs">
+        <div className="mt-2 flex items-center justify-between text-[11px] text-gray-600 dark:text-slate-300 bg-white/80 dark:bg-slate-900/80 rounded-xl px-3 py-2 border border-blue-100/70 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center space-x-1.5">
-            <Clock className="w-3.5 h-3.5 text-brand-blue" />
+            <Clock className="w-3.5 h-3.5 text-brand-blue dark:text-amber-400" />
             <span>
-              {t.work_hours_badge || "Ish vaqti"}: <strong className="text-brand-blue">{barber?.workHours?.start || "09:00"} — {barber?.workHours?.end || "22:00"}</strong>
+              {t.work_hours_badge || "Ish vaqti"}: <strong className="text-brand-blue dark:text-white">{barber?.workHours?.start || "09:00"} — {barber?.workHours?.end || "22:00"}</strong>
             </span>
           </div>
           {barber?.is_working_today === false || barber?.isWorkingToday === false ? (
-            <span className="text-red-700 font-bold bg-red-100 px-2 py-0.5 rounded-full text-[10px] flex items-center space-x-1">
+            <span className="text-red-700 dark:text-red-300 font-bold bg-red-100 dark:bg-red-950/40 px-2 py-0.5 rounded-full text-[10px] flex items-center space-x-1">
               <span>🔴</span>
               <span>{t.day_off_badge || "Dam olish kuni"}</span>
             </span>
           ) : (
-            <span className="text-emerald-700 font-bold bg-emerald-100/80 px-2 py-0.5 rounded-full text-[10px] flex items-center space-x-1">
+            <span className="text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-100/80 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full text-[10px] flex items-center space-x-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>{t.open_status || "Ochiq"}</span>
             </span>
@@ -222,17 +222,17 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
         </div>
 
         {/* 👨‍👦 Multi-person booking toggle card */}
-        <div className="mt-2.5 bg-white rounded-2xl p-3.5 shadow-sm border border-blue-100 transition-all">
+        <div className="mt-2.5 bg-white dark:bg-slate-900 rounded-2xl p-3.5 shadow-sm border border-blue-100 dark:border-slate-800 transition-all">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-brand-blue dark:text-blue-300 flex items-center justify-center font-bold">
                 <Users className="w-4 h-4 text-brand-orange" />
               </div>
               <div>
-                <span className="text-xs font-black text-brand-blue block">
+                <span className="text-xs font-black text-brand-blue dark:text-white block">
                   {t.add_companion_btn || "+ Yana bir kishini qo'shish"}
                 </span>
-                <span className="text-[10px] text-gray-500 font-medium block">
+                <span className="text-[10px] text-gray-500 dark:text-slate-400 font-medium block">
                   {t.add_companion_hint || "O'g'lingiz yoki do'stingiz bilan ketma-ket 2 ta navbat olish"}
                 </span>
               </div>
@@ -258,8 +258,8 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
 
           {/* If Multi-person is active */}
           {isMultiPerson && (
-            <div className="mt-3 pt-3 border-t border-gray-100 space-y-2.5 animate-in fade-in">
-              <span className="text-[11px] font-bold text-gray-700 block">
+            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 space-y-2.5 animate-in fade-in">
+              <span className="text-[11px] font-bold text-gray-700 dark:text-slate-300 block">
                 {lang === 'ru' ? 'Для кого запись?' : lang === 'en' ? 'Who is this booking for?' : "Kim uchun navbat olinmoqda?"}
               </span>
 
@@ -269,12 +269,12 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                   onClick={() => setCompanionType('child')}
                   className={`py-2 px-2.5 rounded-xl text-left border transition-all ${
                     companionType === 'child'
-                      ? 'border-brand-blue bg-blue-50/70 text-brand-blue ring-1 ring-brand-blue'
-                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                      ? 'border-brand-blue dark:border-amber-500 bg-blue-50/70 dark:bg-amber-500/10 text-brand-blue dark:text-amber-400 ring-1 ring-brand-blue dark:ring-amber-500'
+                      : 'border-gray-200 dark:border-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <span className="text-xs font-extrabold block">{t.companion_son || "👶 O'g'lim (Bola)"}</span>
-                  <span className="text-[10px] text-gray-500 block">{t.companion_son_service || "Bolalar sochi (40 000 UZS)"}</span>
+                  <span className="text-[10px] text-gray-500 dark:text-slate-400 block">{t.companion_son_service || "Bolalar sochi (40 000 UZS)"}</span>
                 </button>
 
                 <button
@@ -282,29 +282,29 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                   onClick={() => setCompanionType('friend')}
                   className={`py-2 px-2.5 rounded-xl text-left border transition-all ${
                     companionType === 'friend'
-                      ? 'border-brand-blue bg-blue-50/70 text-brand-blue ring-1 ring-brand-blue'
-                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                      ? 'border-brand-blue dark:border-amber-500 bg-blue-50/70 dark:bg-amber-500/10 text-brand-blue dark:text-amber-400 ring-1 ring-brand-blue dark:ring-amber-500'
+                      : 'border-gray-200 dark:border-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <span className="text-xs font-extrabold block">{t.companion_friend || "🙋‍♂️ Do'stim / Akam"}</span>
-                  <span className="text-[10px] text-gray-500 block">{getTranslatedServiceName(service.name, lang)}</span>
+                  <span className="text-[10px] text-gray-500 dark:text-slate-400 block">{getTranslatedServiceName(service.name, lang)}</span>
                 </button>
               </div>
 
               {selectedTime && secondSlot && (
-                <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center justify-between">
+                <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs font-bold flex items-center justify-between">
                   <div>
                     <span className="block">{lang === 'ru' ? '1-я запись (Вы):' : lang === 'en' ? '1st slot (You):' : '1-navbat (Siz):'} {selectedTime}</span>
                     <span className="block">{lang === 'ru' ? '2-я запись' : lang === 'en' ? '2nd slot' : '2-navbat'} ({companionTitle}): {secondSlot}</span>
                   </div>
-                  <span className="text-sm font-black text-brand-blue">
+                  <span className="text-sm font-black text-brand-blue dark:text-white">
                     {(service.price + companionPrice).toLocaleString()} UZS
                   </span>
                 </div>
               )}
 
               {multiPersonError && (
-                <div className="p-2.5 bg-red-50 rounded-xl border border-red-200 text-red-700 text-xs font-semibold flex items-center space-x-1.5">
+                <div className="p-2.5 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center space-x-1.5">
                   <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
                   <span>{multiPersonError}</span>
                 </div>
@@ -316,8 +316,8 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
 
       {/* Date Selection Bar */}
       <div className="px-4 mt-5">
-        <div className="flex items-center space-x-1.5 text-xs font-bold text-gray-700 mb-2.5">
-          <Calendar className="w-4 h-4 text-brand-blue" />
+        <div className="flex items-center space-x-1.5 text-xs font-bold text-gray-700 dark:text-slate-300 mb-2.5">
+          <Calendar className="w-4 h-4 text-brand-blue dark:text-amber-400" />
           <span>{t.choose_day}</span>
         </div>
 
@@ -334,14 +334,14 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                 }}
                 className={`flex-shrink-0 w-16 py-2.5 rounded-2xl text-center transition-all flex flex-col items-center justify-center relative ${
                   isSelected
-                    ? 'bg-brand-blue text-white shadow-md shadow-blue-900/20 scale-105'
+                    ? 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-md shadow-blue-900/20 dark:shadow-amber-500/20 scale-105'
                     : day.isDayOff
-                    ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100/50'
-                    : 'bg-white text-gray-700 border border-blue-50 hover:bg-gray-50'
+                    ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 hover:bg-red-100/50'
+                    : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 border border-blue-50 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800'
                 }`}
               >
                 <span className={`text-[10px] font-medium ${
-                  isSelected ? 'text-blue-100' : day.isDayOff ? 'text-red-500 font-bold' : 'text-gray-400'
+                  isSelected ? 'text-blue-100 dark:text-slate-950 font-semibold' : day.isDayOff ? 'text-red-500 dark:text-red-400 font-bold' : 'text-gray-400 dark:text-slate-400'
                 }`}>
                   {day.dayName}
                 </span>
@@ -350,7 +350,7 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                 </span>
                 {day.isDayOff && (
                   <span className={`text-[8px] font-extrabold px-1 rounded-sm mt-0.5 ${
-                    isSelected ? 'bg-red-400 text-white' : 'bg-red-100 text-red-700'
+                    isSelected ? 'bg-red-400 text-white' : 'bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-300'
                   }`}>
                     {t.day_off_badge ? "Dam" : "Off"}
                   </span>
@@ -363,32 +363,32 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
 
       {/* Time Slots Grid or Day Off Notice */}
       <div className="px-4 mt-6">
-        <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-2.5">
+        <div className="flex items-center justify-between text-xs font-bold text-gray-700 dark:text-slate-300 mb-2.5">
           <div className="flex items-center space-x-1.5">
-            <Clock className="w-4 h-4 text-brand-blue" />
+            <Clock className="w-4 h-4 text-brand-blue dark:text-amber-400" />
             <span>{t.choose_time}</span>
           </div>
-          <span className="text-[11px] text-gray-400 font-normal">
+          <span className="text-[11px] text-gray-400 dark:text-slate-400 font-normal">
             {selectedDay.full}
           </span>
         </div>
 
         {selectedDay.isDayOff ? (
-          <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-red-100 my-2">
-            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 text-center shadow-sm border border-red-100 dark:border-red-950/50 my-2">
+            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto mb-3">
               <Clock className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-bold text-gray-800 mb-1">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-1">
               {t.barber_not_working_today || "Usta ushbu kunda dam oladi"}
             </h3>
-            <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">
+            <p className="text-xs text-gray-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
               {t.select_another_day_notice || "Usta ushbu kunda mijozlarni qabul qilmaydi. Iltimos, boshqa ish kunini tanlang."}
             </p>
           </div>
         ) : (
           <div>
             {/* 🌅 Smart Time Period Filter Chips */}
-            <div className="grid grid-cols-4 gap-1.5 bg-gray-200/60 p-1 rounded-2xl mb-3 text-center">
+            <div className="grid grid-cols-4 gap-1.5 bg-gray-200/60 dark:bg-slate-800/80 p-1 rounded-2xl mb-3 text-center">
               {[
                 { key: 'all', label: t.period_all || 'Barchasi', count: timeSlots.filter(s => s.status === 'available').length },
                 { key: 'morning', label: t.period_morning || '🌅 Ertalab', count: morningSlots.filter(s => s.status === 'available').length },
@@ -404,12 +404,12 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                   }}
                   className={`py-1.5 px-1 rounded-xl text-[10px] font-bold transition-all ${
                     timePeriodFilter === period.key
-                      ? 'bg-brand-blue text-white shadow-xs'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-xs'
+                      : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
                   <span className="block truncate">{period.label}</span>
-                  <span className={`text-[8px] font-extrabold block ${timePeriodFilter === period.key ? 'text-amber-300' : 'text-gray-400'}`}>
+                  <span className={`text-[8px] font-extrabold block ${timePeriodFilter === period.key ? 'text-amber-300 dark:text-slate-900' : 'text-gray-400 dark:text-slate-400'}`}>
                     {period.count} {lang === 'ru' ? 'свободно' : lang === 'en' ? 'open' : "bo'sh"}
                   </span>
                 </button>
@@ -439,34 +439,34 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
                     }}
                     className={`py-3 rounded-xl text-center text-xs font-bold transition-all relative ${
                       isBreak
-                        ? 'bg-amber-50 text-amber-800/80 border border-amber-200 cursor-not-allowed opacity-80'
+                        ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-800/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 cursor-not-allowed opacity-80'
                         : isBooked
-                        ? 'bg-gray-200/60 text-gray-400 line-through cursor-not-allowed border border-transparent'
+                        ? 'bg-gray-200/60 dark:bg-slate-800/60 text-gray-400 dark:text-slate-500 line-through cursor-not-allowed border border-transparent'
                         : isFirstSelected
-                        ? 'bg-brand-blue text-white shadow-md shadow-blue-900/25 ring-2 ring-brand-blue/30 scale-[1.02]'
+                        ? 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-md shadow-blue-900/25 dark:shadow-amber-500/25 ring-2 ring-brand-blue/30 dark:ring-amber-400/40 scale-[1.02]'
                         : isSecondSelected
-                        ? 'bg-brand-orange text-brand-blue font-black shadow-md ring-2 ring-brand-orange/40 scale-[1.02]'
-                        : 'bg-white text-gray-800 border border-blue-50 shadow-sm hover:border-brand-blue/40'
+                        ? 'bg-brand-orange dark:bg-amber-400 text-brand-blue dark:text-slate-950 font-black shadow-md ring-2 ring-brand-orange/40 scale-[1.02]'
+                        : 'bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 border border-blue-50 dark:border-slate-800 shadow-sm hover:border-brand-blue/40 dark:hover:border-amber-500/40'
                     }`}
                   >
                     <span>{slot.time}</span>
                     {isPrime && !isSelected && (
-                      <span className="block text-[8px] font-extrabold text-amber-600 mt-0.5">
+                      <span className="block text-[8px] font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">
                         {t.prime_time_badge || "🔥 Ommabop"}
                       </span>
                     )}
                     {isBreak && (
-                      <span className="block text-[8px] font-extrabold text-amber-700 mt-0.5">
+                      <span className="block text-[8px] font-extrabold text-amber-700 dark:text-amber-400 mt-0.5">
                         ☕ Tushlik
                       </span>
                     )}
                     {isMultiPerson && isFirstSelected && (
-                      <span className="block text-[8px] font-extrabold text-amber-300 mt-0.5">
+                      <span className="block text-[8px] font-extrabold text-amber-300 dark:text-slate-950 mt-0.5">
                         1-Siz
                       </span>
                     )}
                     {isMultiPerson && isSecondSelected && (
-                      <span className="block text-[8px] font-black text-brand-blue mt-0.5">
+                      <span className="block text-[8px] font-black text-brand-blue dark:text-slate-950 mt-0.5">
                         2-{companionType === 'child' ? 'Bola' : "Do'st"}
                       </span>
                     )}
@@ -478,13 +478,13 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
         )}
 
         {/* Legend */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-5 text-[11px] text-gray-500">
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-5 text-[11px] text-gray-500 dark:text-slate-400">
           <div className="flex items-center space-x-1">
-            <div className="w-2.5 h-2.5 rounded-full bg-white border border-gray-300"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700"></div>
             <span>{t.slot_available}</span>
           </div>
           <div className="flex items-center space-x-1">
-            <div className="w-2.5 h-2.5 rounded-full bg-brand-blue"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-brand-blue dark:bg-amber-500"></div>
             <span>{t.slot_selected}</span>
           </div>
           <div className="flex items-center space-x-1">
@@ -492,14 +492,14 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
             <span>{t.break_badge_profile || "☕ Tushlik"}</span>
           </div>
           <div className="flex items-center space-x-1">
-            <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-slate-700"></div>
             <span>{t.slot_booked}</span>
           </div>
         </div>
       </div>
 
       {/* Sticky Bottom Continue Button */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-blue-100 p-4 shadow-lg z-40">
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-blue-100 dark:border-slate-800 p-4 shadow-lg z-40">
         <button
           disabled={isContinueDisabled}
           onClick={() => {
@@ -519,7 +519,7 @@ export default function DateTimeScreen({ barber, service, t, lang = 'uz', onBack
           className={`w-full py-3.5 rounded-xl font-bold text-center text-sm transition-all ${
             !isContinueDisabled
               ? 'bg-brand-orange hover:bg-brand-orange-hover text-brand-blue shadow-md shadow-amber-500/20 active:scale-[0.98]'
-              : 'bg-amber-200/60 text-amber-800/40 cursor-not-allowed'
+              : 'bg-amber-200/60 dark:bg-slate-800 text-amber-800/40 dark:text-slate-600 cursor-not-allowed'
           }`}
         >
           {isMultiPerson

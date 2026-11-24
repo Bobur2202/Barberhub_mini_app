@@ -27,6 +27,7 @@ import {
   formatWalkTime,
   getTranslatedDistrict
 } from '../data/serviceTranslations';
+import MapNavigationModal from '../components/MapNavigationModal';
 
 export default function CatalogScreen({
   t,
@@ -43,6 +44,7 @@ export default function CatalogScreen({
   const [searchQuery, setSearchQuery] = useState('');
   const [barbersList, setBarbersList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [navModal, setNavModal] = useState({ isOpen: false, barber: null, mode: 'all' });
 
   // Favorites state
   const [favorites, setFavorites] = useState(() => {
@@ -329,16 +331,16 @@ export default function CatalogScreen({
 
         {/* ⚡ 1-BOSISHDA QAYTA YOZILISH (Quick Re-book) */}
         {lastAppointment && onQuickRebook && (
-          <div className="mt-2.5 bg-gradient-to-r from-amber-500/10 via-amber-50 to-orange-50/50 rounded-2xl p-2.5 border border-amber-300/70 shadow-2xs flex items-center justify-between transition-all">
+          <div className="mt-2.5 bg-gradient-to-r from-amber-500/10 via-amber-50 to-orange-50/50 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 rounded-2xl p-2.5 border border-amber-300/70 dark:border-amber-500/30 shadow-2xs flex items-center justify-between transition-all">
             <div className="flex items-center space-x-2.5 truncate pr-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-600 flex items-center justify-center shrink-0">
-                <Zap className="w-4 h-4 text-amber-600 fill-amber-500" />
+              <div className="w-8 h-8 rounded-xl bg-amber-400/20 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Zap className="w-4 h-4 text-amber-600 dark:text-amber-400 fill-amber-500" />
               </div>
               <div className="truncate">
-                <span className="text-[10px] font-black uppercase text-amber-900 tracking-wide block">
+                <span className="text-[10px] font-black uppercase text-amber-900 dark:text-amber-400 tracking-wide block">
                   {t.quick_rebook_title || "1-Bosishda Qayta Yozilish ⚡"}
                 </span>
-                <span className="text-xs font-extrabold text-brand-blue block truncate">
+                <span className="text-xs font-extrabold text-brand-blue dark:text-white block truncate">
                   {lastAppointment.barber_name} — {getTranslatedServiceName(lastAppointment.service_name || lastAppointment.serviceName, lang)}
                 </span>
               </div>
@@ -346,7 +348,7 @@ export default function CatalogScreen({
 
             <button
               onClick={() => onQuickRebook(lastAppointment)}
-              className="py-1.5 px-3 rounded-xl bg-brand-orange hover:bg-amber-400 active:scale-95 text-brand-blue font-extrabold text-xs shadow-xs transition-all shrink-0"
+              className="py-1.5 px-3 rounded-xl bg-brand-orange hover:bg-amber-400 dark:bg-amber-500 dark:hover:bg-amber-400 active:scale-95 text-brand-blue dark:text-slate-950 font-black text-xs shadow-xs transition-all shrink-0"
             >
               {t.quick_rebook_btn || "Yozilish"}
             </button>
@@ -453,8 +455,8 @@ export default function CatalogScreen({
               }}
               className={`rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-[0.99] relative ${
                 barber.is_vip
-                  ? 'bg-gradient-to-r from-amber-50/50 via-white to-amber-50/30 border-2 border-amber-300 shadow-amber-100/50'
-                  : 'bg-white border border-blue-50/60'
+                  ? 'bg-gradient-to-r from-amber-50/50 via-white to-amber-50/30 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 border-2 border-amber-300 dark:border-amber-500/40 shadow-amber-100/50 dark:shadow-none'
+                  : 'bg-white dark:bg-slate-900 border border-blue-50/60 dark:border-slate-800'
               }`}
             >
               {/* Top row: Avatar & Info */}
@@ -466,7 +468,7 @@ export default function CatalogScreen({
                     className={`w-14 h-14 rounded-full object-cover shadow-inner ${
                       barber.is_vip
                         ? 'border-2 border-amber-400 ring-2 ring-amber-300 ring-offset-1'
-                        : 'border-2 border-brand-blue/10'
+                        : 'border-2 border-brand-blue/10 dark:border-slate-700'
                     }`}
                   />
                   {barber.is_vip && (
@@ -478,7 +480,7 @@ export default function CatalogScreen({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1.5 truncate">
-                      <h3 className="font-bold text-brand-blue text-base truncate flex items-center space-x-1">
+                      <h3 className="font-bold text-brand-blue dark:text-white text-base truncate flex items-center space-x-1">
                         <span className="truncate">{barber.name}</span>
                         {barber.is_verified && (
                           <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-600 text-white text-[9px] font-black shrink-0" title="Rasmiy tasdiqlangan usta">
@@ -542,44 +544,42 @@ export default function CatalogScreen({
                 </div>
               </div>
 
-              {/* Direct Navigation Links (Yandex Go & Google Maps) & Pricing */}
-              <div className="mt-2.5 pt-2 border-t border-gray-100/70 flex items-center justify-between">
+              {/* Direct Navigation Links (Xarita & Taxi) & Pricing */}
+              <div className="mt-2.5 pt-2 border-t border-gray-100/70 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center space-x-1.5">
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${barber.lat || 41.311081},${barber.lng || 69.240562}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       hapticFeedback.impact('light');
+                      setNavModal({ isOpen: true, barber, mode: 'map' });
                     }}
-                    className="inline-flex items-center space-x-1 text-[10px] font-bold text-brand-blue bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-xl transition-colors border border-blue-200/60"
-                    title="Google Maps"
+                    className="inline-flex items-center space-x-1 text-[10px] font-bold text-brand-blue dark:text-slate-200 bg-blue-50 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-slate-700 px-2.5 py-1 rounded-xl transition-colors border border-blue-200/60 dark:border-slate-700 active:scale-95"
+                    title={lang === 'ru' ? 'Карта' : lang === 'en' ? 'Map' : 'Xarita'}
                   >
                     <Navigation className="w-3 h-3 text-brand-orange" />
-                    <span>{t.map_btn || "Xarita"}</span>
-                  </a>
+                    <span>{t.map_btn || (lang === 'ru' ? 'Карта' : lang === 'en' ? 'Map' : 'Xarita')}</span>
+                  </button>
 
-                  <a
-                    href={`https://3.redirect.app.link/launch?end-lat=${barber.lat || 41.311081}&end-lon=${barber.lng || 69.240562}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       hapticFeedback.impact('light');
+                      setNavModal({ isOpen: true, barber, mode: 'taxi' });
                     }}
-                    className="inline-flex items-center space-x-1 text-[10px] font-extrabold text-amber-900 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-xl transition-colors border border-amber-300/70"
-                    title="Yandex Go"
+                    className="inline-flex items-center space-x-1 text-[10px] font-extrabold text-amber-950 dark:text-amber-300 bg-amber-400/20 dark:bg-amber-500/20 hover:bg-amber-400/30 dark:hover:bg-amber-500/30 px-2.5 py-1 rounded-xl transition-colors border border-amber-300/70 dark:border-amber-500/30 active:scale-95"
+                    title={t.taxi_btn || "Taxi"}
                   >
-                    <span>🚕 Yandex Go</span>
-                  </a>
+                    <span>🚕 {t.taxi_btn || "Taxi"}</span>
+                  </button>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] text-gray-400 block leading-tight">
+                  <span className="text-[10px] text-gray-400 dark:text-slate-400 block leading-tight">
                     {t.from_price}:
                   </span>
-                  <span className="font-black text-brand-blue text-xs">
+                  <span className="font-black text-brand-blue dark:text-amber-400 text-xs">
                     {(barber.starting_price || barber.startingPrice || 50000).toLocaleString()} UZS
                   </span>
                 </div>
@@ -592,7 +592,7 @@ export default function CatalogScreen({
                   hapticFeedback.impact('medium');
                   onSelectBarber(barber);
                 }}
-                className="w-full mt-2.5 py-2 rounded-xl font-bold text-xs text-brand-blue bg-brand-orange hover:bg-brand-orange-hover shadow-xs transition-all active:scale-[0.98] flex items-center justify-center space-x-1"
+                className="w-full mt-2.5 py-2 rounded-xl font-bold text-xs text-brand-blue dark:text-slate-950 bg-brand-orange hover:bg-brand-orange-hover dark:bg-amber-400 dark:hover:bg-amber-300 shadow-xs transition-all active:scale-[0.98] flex items-center justify-center space-x-1"
               >
                 <span>{t.book_now}</span>
                 <span>&rarr;</span>
@@ -701,6 +701,21 @@ export default function CatalogScreen({
             </div>
           </div>
         </div>
+      )}
+
+      {/* 🗺️ / 🚕 Map & Taxi Navigation Sheet */}
+      {navModal.isOpen && (
+        <MapNavigationModal
+          isOpen={navModal.isOpen}
+          onClose={() => setNavModal({ isOpen: false, barber: null, mode: 'all' })}
+          barber={navModal.barber}
+          address={navModal.barber?.address}
+          barberName={navModal.barber?.name}
+          lat={navModal.barber?.lat}
+          lng={navModal.barber?.lng}
+          mode={navModal.mode}
+          lang={lang}
+        />
       )}
     </div>
   );

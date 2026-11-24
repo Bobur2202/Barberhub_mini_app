@@ -207,19 +207,19 @@ export default function ClientAppointmentsScreen({
         </div>
 
         {/* Tab switchers: Faol vs Tarix */}
-        <div className="grid grid-cols-2 gap-2 bg-gray-200/60 p-1 rounded-2xl mt-3">
+        <div className="grid grid-cols-2 gap-2 bg-gray-200/60 dark:bg-slate-800/80 p-1 rounded-2xl mt-3 border border-transparent dark:border-slate-700/60">
           <button
             onClick={() => setActiveTab('active')}
             className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
               activeTab === 'active'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-brand-blue dark:bg-slate-900 text-white shadow-sm'
+                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <span>{t.active_appointments || "Faol navbatlar"}</span>
             {activeAppointments.length > 0 && (
               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                activeTab === 'active' ? 'bg-brand-orange text-brand-blue' : 'bg-gray-300 text-gray-700'
+                activeTab === 'active' ? 'bg-brand-orange text-brand-blue' : 'bg-gray-300 dark:bg-slate-700 text-gray-700 dark:text-slate-300'
               }`}>
                 {activeAppointments.length}
               </span>
@@ -230,14 +230,14 @@ export default function ClientAppointmentsScreen({
             onClick={() => setActiveTab('history')}
             className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
               activeTab === 'history'
-                ? 'bg-brand-blue text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-brand-blue dark:bg-slate-900 text-white shadow-sm'
+                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <span>{t.history_appointments || "Navbatlar tarixi"}</span>
             {historyAppointments.length > 0 && (
               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                activeTab === 'history' ? 'bg-brand-orange text-brand-blue' : 'bg-gray-300 text-gray-700'
+                activeTab === 'history' ? 'bg-brand-orange text-brand-blue' : 'bg-gray-300 dark:bg-slate-700 text-gray-700 dark:text-slate-300'
               }`}>
                 {historyAppointments.length}
               </span>
@@ -262,37 +262,37 @@ export default function ClientAppointmentsScreen({
         {activeTab === 'active' && (
           <>
             {/* 🏷️ Virtual Sadoqat Kartalari banner */}
-            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-3.5 text-white shadow-sm border border-slate-700/60 mb-3 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-4 text-white shadow-md border border-amber-500/30 mb-3 relative overflow-hidden">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center text-brand-orange">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner">
                     <Award className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-white flex items-center space-x-1">
-                      <span>{t.loyalty_card_title || "Sizning Sadoqat Shtamplaringiz"}</span>
-                      <span className="text-[9px] bg-brand-orange text-brand-blue font-black px-1.5 rounded-full">VIP</span>
+                    <h4 className="text-xs font-black text-white flex items-center space-x-1.5">
+                      <span>{t.loyalty_card_title || "Virtual Sadoqat Kartasi"}</span>
+                      <span className="text-[9px] bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2 py-0.5 rounded-full shadow-xs">VIP</span>
                     </h4>
-                    <p className="text-[10px] text-blue-100 font-medium">
-                      {t.loyalty_card_reward || "Har 5-tashrifingizda 50% chegirma yoki bepul soqol/maska!"}
+                    <p className="text-[10px] text-slate-300 font-medium mt-0.5">
+                      {t.loyalty_card_reward || "Har 5-tashrifingizda 50% chegirma yoki bepul soqol!"}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-5 gap-1.5 mt-2.5">
+              <div className="grid grid-cols-5 gap-1.5 mt-3">
                 {[1, 2, 3, 4, 5].map((slot) => (
                   <div
                     key={slot}
-                    className={`py-1.5 rounded-xl flex flex-col items-center justify-center text-[10px] font-bold ${
+                    className={`py-2 rounded-xl flex flex-col items-center justify-center text-[10px] font-black transition-all ${
                       slot <= 3
-                        ? 'bg-amber-400 text-brand-blue shadow-xs'
+                        ? 'bg-gradient-to-b from-amber-400 to-amber-500 text-slate-950 shadow-xs border border-amber-300/40'
                         : slot === 5
-                        ? 'bg-white/15 border border-dashed border-amber-300 text-amber-300'
-                        : 'bg-white/10 text-white/40'
+                        ? 'bg-amber-500/10 border-2 border-dashed border-amber-400 text-amber-300'
+                        : 'bg-slate-800/80 border border-slate-700/60 text-slate-500'
                     }`}
                   >
                     {slot <= 3 ? <Scissors className="w-3.5 h-3.5" /> : slot === 5 ? <Gift className="w-3.5 h-3.5" /> : '○'}
-                    <span className="text-[8px] mt-0.5">{slot === 5 ? '50%' : `#${slot}`}</span>
+                    <span className="text-[9px] mt-0.5 font-extrabold">{slot === 5 ? '50%' : `#${slot}`}</span>
                   </div>
                 ))}
               </div>
@@ -310,7 +310,7 @@ export default function ClientAppointmentsScreen({
                 return (
                   <div
                     key={apt.id}
-                    className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50 relative overflow-hidden"
+                    className="bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-sm border border-blue-50 dark:border-slate-800 relative overflow-hidden"
                   >
                     {/* Status Top Strip */}
                     <div className="flex items-center justify-between mb-3">
@@ -320,8 +320,8 @@ export default function ClientAppointmentsScreen({
                             apt.queue_status === 'ready_call'
                               ? 'bg-emerald-500 text-white animate-pulse shadow-sm'
                               : isPending
-                              ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                              : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                              ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30'
+                              : 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30'
                           }`}
                         >
                           <span className={`w-2 h-2 rounded-full ${
@@ -342,14 +342,14 @@ export default function ClientAppointmentsScreen({
 
                         {/* 👨‍👦 Multi-person badge */}
                         {(apt.is_multi_person || apt.multi_person_details) && (
-                          <span className="text-[10px] font-black bg-blue-50 text-brand-blue border border-blue-200 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                          <span className="text-[10px] font-black bg-blue-50 dark:bg-blue-950/40 text-brand-blue dark:text-blue-300 border border-blue-200 dark:border-blue-800/40 px-2 py-0.5 rounded-full flex items-center space-x-1">
                             <Users className="w-3 h-3 text-brand-orange" />
                             <span>2 kishi</span>
                           </span>
                         )}
                       </div>
 
-                      <div className="inline-flex items-center space-x-1 text-xs font-black text-brand-orange bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
+                      <div className="inline-flex items-center space-x-1 text-xs font-black text-brand-orange bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-lg border border-amber-200 dark:border-amber-500/30">
                         <Clock className="w-3 h-3" />
                         <span>{timeSlot}</span>
                       </div>
@@ -360,13 +360,13 @@ export default function ClientAppointmentsScreen({
                       <img
                         src={barberAvatar}
                         alt={barberName}
-                        className="w-12 h-12 rounded-2xl object-cover ring-2 ring-brand-blue/10 shadow-2xs"
+                        className="w-12 h-12 rounded-2xl object-cover ring-2 ring-brand-blue/10 dark:ring-slate-700 shadow-2xs"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-extrabold text-sm text-brand-blue truncate">
+                        <h3 className="font-extrabold text-sm text-brand-blue dark:text-white truncate">
                           {barberName}
                         </h3>
-                        <p className="text-xs text-gray-700 font-semibold truncate mt-0.5">
+                        <p className="text-xs text-gray-700 dark:text-slate-300 font-semibold truncate mt-0.5">
                           {getTranslatedServiceName(serviceName, lang)}
                         </p>
                         {apt.is_multi_person && apt.multi_person_details && (
@@ -374,14 +374,14 @@ export default function ClientAppointmentsScreen({
                             + {apt.multi_person_details.companion_title}: {apt.multi_person_details.companion_service} ({apt.multi_person_details.second_slot})
                           </p>
                         )}
-                        <p className="text-[11px] text-gray-400 mt-0.5 flex items-center space-x-1">
-                          <Calendar className="w-3 h-3 text-brand-blue" />
+                        <p className="text-[11px] text-gray-400 dark:text-slate-400 mt-0.5 flex items-center space-x-1">
+                          <Calendar className="w-3 h-3 text-brand-blue dark:text-amber-400" />
                           <span>{formatAppointmentDate(dateStr, lang)}</span>
                         </p>
                       </div>
 
                       <div className="text-right">
-                        <span className="text-xs font-black text-brand-blue">
+                        <span className="text-xs font-black text-brand-blue dark:text-amber-400">
                           {apt.price?.toLocaleString()} UZS
                         </span>
                       </div>
@@ -389,28 +389,28 @@ export default function ClientAppointmentsScreen({
 
                     {/* ⏳ JONLI NAVBAT RADARI (Live Queue Radar) */}
                     {apt.status === 'accepted' && (
-                      <div className={`mt-3 p-3 rounded-2xl border transition-all ${
+                      <div className={`mt-3 p-3.5 rounded-2xl border transition-all ${
                         apt.queue_status === 'ready_call'
                           ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md border-emerald-400'
-                          : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-brand-blue'
+                          : 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800/90 border-blue-200/80 dark:border-slate-700 text-brand-blue dark:text-white'
                       }`}>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                          <div className="flex items-center space-x-2.5">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                               apt.queue_status === 'ready_call'
                                 ? 'bg-white text-emerald-600'
-                                : 'bg-brand-blue text-white'
+                                : 'bg-brand-blue dark:bg-amber-500 text-white dark:text-slate-950 shadow-xs'
                             }`}>
                               <Radio className="w-4 h-4 animate-pulse" />
                             </div>
                             <div>
-                              <span className="text-[11px] font-black uppercase tracking-wider block">
+                              <span className="text-[11px] font-black uppercase tracking-wider block text-brand-blue dark:text-amber-400">
                                 {apt.queue_status === 'ready_call'
                                   ? (t.radar_turn_arrived || "🎉 Sizning navbatingiz yetib keldi!")
                                   : (t.live_queue_radar_title || "Jonli Navbat Radari")}
                               </span>
                               <span className={`text-xs font-bold block ${
-                                apt.queue_status === 'ready_call' ? 'text-white' : 'text-gray-700'
+                                apt.queue_status === 'ready_call' ? 'text-white' : 'text-gray-700 dark:text-slate-200'
                               }`}>
                                 {apt.queue_status === 'ready_call'
                                   ? (t.radar_ready_desc || "Usta sizni kutmoqda. Sartaroshxonaga kiring ✂️")
@@ -420,18 +420,18 @@ export default function ClientAppointmentsScreen({
                           </div>
 
                           {apt.queue_status !== 'ready_call' && (
-                            <span className="text-[10px] font-black bg-white/90 text-brand-blue px-2 py-1 rounded-xl shadow-xs border border-blue-100">
+                            <span className="text-[10px] font-black bg-white/90 dark:bg-slate-900 text-brand-blue dark:text-amber-400 px-2.5 py-1 rounded-xl shadow-xs border border-blue-100 dark:border-slate-700">
                               ~15-20 {lang === 'ru' ? 'мин' : lang === 'en' ? 'min' : 'daq'}
                             </span>
                           )}
                         </div>
 
                         {/* Quick Navigation & Calendar Sync (Google & Apple) */}
-                        <div className="mt-2.5 pt-2 border-t border-black/10 flex items-center space-x-1.5">
+                        <div className="mt-3 pt-2.5 border-t border-black/10 dark:border-white/10 flex items-center space-x-1.5">
                           <button
                             type="button"
                             onClick={() => setSelectedAptForMap(apt)}
-                            className="flex-1 py-1.5 px-2 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-1 transition-all bg-white text-gray-800 border border-blue-100 hover:bg-blue-50 shadow-2xs"
+                            className="flex-1 py-2 px-2 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-1 transition-all bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 border border-blue-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-800 shadow-2xs active:scale-95"
                           >
                             <span>{lang === 'ru' ? '🗺️ Маршрут' : lang === 'en' ? '🗺️ Route' : '🗺️ Marshrut'}</span>
                           </button>
@@ -455,7 +455,7 @@ export default function ClientAppointmentsScreen({
                               timeSlot: apt.time_slot || apt.time,
                               dateStr: apt.date_str || apt.date
                             })}
-                            className="flex-1 py-1.5 px-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-0.5 transition-all bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-2xs"
+                            className="flex-1 py-2 px-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-0.5 transition-all bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-300 border border-blue-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-800 shadow-2xs active:scale-95"
                             title="Apple Calendar / .ics"
                           >
                             <span>🍎 Apple</span>
@@ -466,17 +466,17 @@ export default function ClientAppointmentsScreen({
 
                     {/* Status hint notice if pending */}
                     {isPending && (
-                      <div className="mt-3 p-2 bg-gray-50 rounded-xl text-[11px] text-gray-500 leading-relaxed">
+                      <div className="mt-3 p-2.5 bg-gray-50 dark:bg-slate-800/60 rounded-xl text-[11px] text-gray-500 dark:text-slate-400 leading-relaxed border border-transparent dark:border-slate-700/60">
                         {t.radar_pending_notice || "Usta navbatingizni tasdiqlashi kutilmoqda. Tasdiqlanganda Telegram orqali xabar olasiz."}
                       </div>
                     )}
 
                     {/* Action buttons */}
-                    <div className="flex items-center space-x-2 mt-3 pt-2 border-t border-gray-100">
+                    <div className="flex items-center space-x-2 mt-3 pt-2.5 border-t border-gray-100 dark:border-slate-800">
                       {apt.barber_phone && (
                         <a
                           href={`tel:${apt.barber_phone}`}
-                          className="py-2 px-2.5 text-xs font-bold text-brand-blue bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors flex items-center justify-center space-x-1"
+                          className="py-2 px-2.5 text-xs font-bold text-brand-blue dark:text-slate-200 bg-blue-50 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center justify-center space-x-1 border border-transparent dark:border-slate-700 active:scale-95"
                         >
                           <Phone className="w-3 h-3" />
                           <span>{t.call_barber_btn || "Qo'ng'iroq"}</span>
@@ -484,14 +484,14 @@ export default function ClientAppointmentsScreen({
                       )}
                       <button
                         onClick={() => handleOpenRescheduleModal(apt)}
-                        className="flex-1 py-2 text-xs font-bold text-brand-blue bg-amber-50 hover:bg-amber-100 border border-amber-200/70 rounded-xl transition-colors flex items-center justify-center space-x-1"
+                        className="flex-1 py-2 text-xs font-bold text-brand-blue dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200/70 dark:border-amber-500/30 rounded-xl transition-colors flex items-center justify-center space-x-1 active:scale-95"
                       >
                         <RefreshCw className="w-3 h-3 text-brand-orange" />
                         <span>{t.btn_reschedule || "Ko'chirish"}</span>
                       </button>
                       <button
                         onClick={() => handleCancelAppointment(apt.id)}
-                        className="py-2 px-2.5 text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors border border-red-100"
+                        className="py-2 px-2.5 text-xs font-bold text-red-500 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors border border-red-100 dark:border-red-900/30 active:scale-95"
                       >
                         {t.cancel_booking_btn || "Bekor qilish"}
                       </button>
@@ -534,21 +534,21 @@ export default function ClientAppointmentsScreen({
                 return (
                   <div
                     key={apt.id}
-                    className="bg-white rounded-3xl p-4 shadow-sm border border-blue-50 space-y-3"
+                    className="bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-sm border border-blue-50 dark:border-slate-800 space-y-3"
                   >
                     <div className="flex items-center justify-between">
                       <span
                         className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1.5 ${
                           isCompleted
-                            ? 'bg-blue-100 text-blue-900 border border-blue-300'
-                            : 'bg-rose-100 text-rose-900 border border-rose-300'
+                            ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-900 dark:text-blue-300 border border-blue-300 dark:border-blue-800/40'
+                            : 'bg-rose-100 dark:bg-rose-950/40 text-rose-900 dark:text-rose-300 border border-rose-300 dark:border-rose-800/40'
                         }`}
                       >
-                        {isCompleted ? <CheckCircle className="w-3.5 h-3.5 text-blue-600" /> : <XCircle className="w-3.5 h-3.5 text-rose-600" />}
+                        {isCompleted ? <CheckCircle className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" /> : <XCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />}
                         <span>{isCompleted ? (t.status_completed || (lang === 'ru' ? 'Завершено' : lang === 'en' ? 'Completed' : 'Yakunlandi')) : (t.status_cancelled || (lang === 'ru' ? 'Отменено' : lang === 'en' ? 'Cancelled' : 'Bekor qilindi'))}</span>
                       </span>
 
-                      <span className="text-xs font-bold text-gray-500">
+                      <span className="text-xs font-bold text-gray-500 dark:text-slate-400">
                         {formatAppointmentDate(apt.date_str || apt.date, lang)}
                       </span>
                     </div>
@@ -557,16 +557,16 @@ export default function ClientAppointmentsScreen({
                       <img
                         src={barberAvatar}
                         alt={barberName}
-                        className="w-12 h-12 rounded-2xl object-cover ring-1 ring-gray-100"
+                        className="w-12 h-12 rounded-2xl object-cover ring-1 ring-gray-100 dark:ring-slate-700"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-extrabold text-sm text-gray-900 truncate">
+                        <h3 className="font-extrabold text-sm text-gray-900 dark:text-white truncate">
                           {barberName}
                         </h3>
-                        <p className="text-xs text-gray-600 truncate">
+                        <p className="text-xs text-gray-600 dark:text-slate-300 truncate">
                           {getTranslatedServiceName(serviceName, lang)}
                         </p>
-                        <span className="text-xs font-black text-brand-blue mt-0.5 block">
+                        <span className="text-xs font-black text-brand-blue dark:text-amber-400 mt-0.5 block">
                           {apt.price?.toLocaleString()} UZS
                         </span>
                       </div>
@@ -574,27 +574,27 @@ export default function ClientAppointmentsScreen({
 
                     {/* Izoh qoldirish qismi (Agar xizmat yakunlangan bo'lsa) */}
                     {isCompleted && (
-                      <div className="pt-2 border-t border-gray-100">
+                      <div className="pt-2 border-t border-gray-100 dark:border-slate-800">
                         {apt.reviewed ? (
-                          <div className="p-2.5 bg-emerald-50 rounded-xl text-xs flex items-center justify-between">
+                          <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl text-xs flex items-center justify-between border border-emerald-100 dark:border-emerald-800/40">
                             <div className="flex items-center space-x-1.5">
                               <div className="flex items-center text-amber-500">
                                 {[...Array(apt.client_rating || 5)].map((_, i) => (
                                   <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                 ))}
                               </div>
-                              <span className="text-[11px] font-bold text-emerald-800">
+                              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
                                 {t.review_submitted_badge || "Izoh qoldirilgan"}
                               </span>
                             </div>
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[10px] text-gray-400 dark:text-slate-400">
                               {apt.client_rating}/5
                             </span>
                           </div>
                         ) : (
                           <button
                             onClick={() => handleOpenReviewModal(apt)}
-                            className="w-full py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 rounded-xl text-xs font-extrabold flex items-center justify-center space-x-1.5 transition-colors shadow-2xs"
+                            className="w-full py-2.5 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200 dark:border-amber-500/30 text-amber-900 dark:text-amber-300 rounded-xl text-xs font-extrabold flex items-center justify-center space-x-1.5 transition-colors shadow-2xs active:scale-95"
                           >
                             <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                             <span>{t.leave_review_btn || "⭐ Izoh va baho qoldirish"}</span>
@@ -623,23 +623,23 @@ export default function ClientAppointmentsScreen({
       {/* MODAL: Ustaga Baho va Izoh Qoldirish */}
       {selectedAptForReview && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl">
-            <div className="flex items-center justify-between mb-2 border-b border-gray-100 pb-2">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-transparent dark:border-slate-800 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between mb-2 border-b border-gray-100 dark:border-slate-800 pb-2">
               <div className="flex items-center space-x-1.5">
                 <Star className="w-5 h-5 text-amber-500 fill-amber-400" />
-                <h3 className="text-base font-extrabold text-brand-blue">
+                <h3 className="text-base font-extrabold text-brand-blue dark:text-white">
                   {t.review_modal_title || "Ustaga baho va izoh qoldiring"}
                 </h3>
               </div>
               <button
                 onClick={() => setSelectedAptForReview(null)}
-                className="text-gray-400 hover:text-gray-600 font-bold"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 font-bold"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mb-3 leading-relaxed">
               {t.review_modal_desc || "Sizning xolis bahoingiz ustaning reytingini oshirishga va boshqa mijozlarga yordam beradi"}
             </p>
 
@@ -734,17 +734,17 @@ export default function ClientAppointmentsScreen({
       {/* MODAL: Navbat vaqtini ko'chirish (Reschedule) */}
       {selectedAptForReschedule && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl">
-            <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-transparent dark:border-slate-800 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-slate-800 pb-2">
               <div className="flex items-center space-x-2">
                 <RefreshCw className="w-5 h-5 text-brand-orange" />
-                <h3 className="text-base font-extrabold text-brand-blue">
+                <h3 className="text-base font-extrabold text-brand-blue dark:text-white">
                   {t.reschedule_modal_title || "Vaqtni ko'chirish"}
                 </h3>
               </div>
               <button
                 onClick={() => setSelectedAptForReschedule(null)}
-                className="text-gray-400 hover:text-gray-600 font-bold"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 font-bold"
               >
                 ✕
               </button>
@@ -848,6 +848,8 @@ export default function ClientAppointmentsScreen({
             lat: selectedAptForMap.lat || 41.311081,
             lng: selectedAptForMap.lng || 69.240562,
           }}
+          lang={lang}
+          mode="all"
           onClose={() => setSelectedAptForMap(null)}
         />
       )}
