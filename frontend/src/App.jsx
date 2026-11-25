@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Scissors, Calendar, Lock, Crown, Sparkles } from 'lucide-react';
 import { translations } from './i18n/translations';
 import { mockBarbers } from './data/mockBarbers';
-import { getBarberByTelegramId, deleteBarberAccount, checkSuperAdminAccess, getPlatformSettings, updateUserLanguageBackend } from './services/api';
+import { getBarberByTelegramId, deleteBarberAccount, checkSuperAdminAccess, getPlatformSettings, updateUserLanguageBackend, getUserLanguageBackend } from './services/api';
 import HeaderBar from './components/HeaderBar';
 import SplashScreen from './pages/SplashScreen';
 import RoleSelectionScreen from './pages/RoleSelectionScreen';
@@ -276,6 +276,25 @@ export default function App() {
     getPlatformSettings().then((settings) => {
       if (settings) setPlatformSettings(settings);
     });
+
+    // Foydalanuvchining botda tanlagan tilini backenddan olib sinxronlash
+    const syncUserLanguage = async () => {
+      try {
+        const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || MASTER_SUPER_ADMIN_ID;
+        const params = new URLSearchParams(window.location.search);
+        // Agar URL da maxsus ?lang ko'rsatilmagan bo'lsa, foydalanuvchining botda tanlagan tilini olamiz
+        if (!params.get('lang') && tgId) {
+          const remoteLang = await getUserLanguageBackend(tgId);
+          if (remoteLang && ['uz', 'ru', 'en'].includes(remoteLang)) {
+            setLang(remoteLang);
+            localStorage.setItem('barberhub_lang', remoteLang);
+          }
+        }
+      } catch (e) {
+        console.warn('Tilni backenddan sinxronlashda xatolik:', e);
+      }
+    };
+    syncUserLanguage();
 
     // URL dagi ?lang= parametrini xotiraga olgach, toza URL holatiga keltirish
     try {

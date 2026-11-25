@@ -827,3 +827,22 @@ export async function updateUserLanguageBackend(telegramId, lang) {
   }
   return null;
 }
+
+/**
+ * 20. 🌐 Foydalanuvchining botda tanlagan tilini backenddan olish
+ */
+export async function getUserLanguageBackend(telegramId) {
+  if (!telegramId) return null;
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/language/${telegramId}`, {
+      signal: AbortSignal.timeout(3500),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data?.lang || null;
+    }
+  } catch (error) {
+    console.warn('[API] Tilni backenddan olishda ogohlantirish:', error.message);
+  }
+  return null;
+}

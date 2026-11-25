@@ -1450,11 +1450,25 @@ class UserLanguageUpdate(BaseModel):
     lang: str
 
 @app.post("/api/user/language")
-def update_user_language_api(data: UserLanguageUpdate):
+async def update_user_language_api(data: UserLanguageUpdate):
     """Foydalanuvchi ilovada tilni o'zgartirganda backend va bot bilan sinxronlash"""
     try:
-        from bot import save_user_language
-        save_user_language(int(data.telegram_id), data.lang)
+        from bot import save_user_language, bot, WEBAPP_URL
+        user_id = int(data.telegram_id)
+        save_user_language(user_id, data.lang)
+        if bot:
+            try:
+                from aiogram.types import MenuButtonWebApp, WebAppInfo
+                btn_title = "✂️ BarberHub" if data.lang == "uz" else "✂️ Открыть BarberHub" if data.lang == "ru" else "✂️ Open BarberHub"
+                await bot.set_chat_menu_button(
+                    chat_id=user_id,
+                    menu_button=MenuButtonWebApp(
+                        text=btn_title,
+                        web_app=WebAppInfo(url=f"{WEBAPP_URL}?lang={data.lang}")
+                    )
+                )
+            except Exception:
+                pass
         return {"success": True, "lang": data.lang}
     except Exception as e:
         return {"success": False, "error": str(e)}

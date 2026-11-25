@@ -6,7 +6,7 @@ from aiogram import Bot, Dispatcher, types, F
 
 load_dotenv()
 from aiogram.filters import CommandStart, Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, MenuButtonWebApp
 from aiogram.enums import ParseMode
 
 logging.basicConfig(level=logging.INFO)
@@ -301,6 +301,20 @@ async def callback_set_language(callback: types.CallbackQuery):
     lang = callback.data.split("_")[1]
     user_id = callback.from_user.id
     save_user_language(user_id, lang)
+
+    # Telegram Chat Menu tugmasini ham tanlangan til bo'yicha yangilaymiz
+    if bot:
+        try:
+            btn_title = "✂️ BarberHub" if lang == "uz" else "✂️ Открыть BarberHub" if lang == "ru" else "✂️ Open BarberHub"
+            await bot.set_chat_menu_button(
+                chat_id=user_id,
+                menu_button=MenuButtonWebApp(
+                    text=btn_title,
+                    web_app=WebAppInfo(url=f"{WEBAPP_URL}?lang={lang}")
+                )
+            )
+        except Exception as e:
+            logger.warning(f"Menu tugmasini yangilashda xatolik: {e}")
 
     welcome_text, keyboard = get_welcome_content(lang, callback.from_user.first_name, user_id)
     try:
