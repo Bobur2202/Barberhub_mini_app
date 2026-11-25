@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { UZBEKISTAN_REGIONS } from '../data/regionsData';
 import { registerBarberBackend } from '../services/api';
+import { openExternalUrl } from '../utils/openExternalUrl';
 
 export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lang = 'uz' }) {
   const [barberName, setBarberName] = useState('');
@@ -55,7 +56,7 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lan
       }
       // Telefonning Google / Yandex Maps xarita dasturini ochish
       const mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-      window.open(mapUrl, '_blank');
+      openExternalUrl(mapUrl);
     };
 
     if (navigator.geolocation) {
@@ -157,31 +158,31 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lan
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-12 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-12 max-w-md mx-auto text-slate-900 dark:text-white">
       {/* Top Header */}
-      <div className="sticky top-0 bg-[#F8FAFC]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
+      <div className="sticky top-0 bg-[#F8FAFC]/95 dark:bg-slate-950/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2 flex items-center justify-between">
         <button
           onClick={onBack}
-          className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-blue hover:bg-gray-100 transition-colors"
+          className="w-9 h-9 rounded-full bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center text-brand-blue dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors border border-transparent dark:border-slate-800 cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-base font-bold text-brand-blue">
+        <h1 className="text-base font-bold text-brand-blue dark:text-white">
           Ustani ro'yxatdan o'tkazish
         </h1>
         <div className="w-9"></div>
       </div>
 
       <div className="px-4 mt-2">
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm border border-blue-50 dark:border-slate-800">
           <div className="text-center mb-5">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-brand-orange flex items-center justify-center mx-auto mb-2">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-brand-orange flex items-center justify-center mx-auto mb-2 border border-transparent dark:border-amber-500/30">
               <Scissors className="w-6 h-6" />
             </div>
-            <h2 className="text-base font-extrabold text-brand-blue">
+            <h2 className="text-base font-extrabold text-brand-blue dark:text-white">
               Umumiy katalogga qo'shiling
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
               Ro'yxatdan o'tganingizdan so'ng barcha mijozlar sizni ko'radi
             </p>
           </div>
@@ -189,51 +190,51 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lan
           <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* 1. Usta Ismi */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                 Ism va familiyangiz *
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <User className="w-4 h-4 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   required
                   value={barberName}
                   onChange={(e) => setBarberName(e.target.value)}
                   placeholder="Masalan: Bobur Mirzayev"
-                  className="w-full bg-gray-50 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                  className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue dark:focus:border-amber-400"
                 />
               </div>
             </div>
 
             {/* 2. Barbershop / Salon nomi */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                 Salon yoki Barbershop nomi
               </label>
               <div className="relative">
-                <Store className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Store className="w-4 h-4 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={shopName}
                   onChange={(e) => setShopName(e.target.value)}
                   placeholder="Masalan: Kings Barbershop (yoki yakka o'zingiz)"
-                  className="w-full bg-gray-50 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                  className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue dark:focus:border-amber-400"
                 />
               </div>
             </div>
 
             {/* 3. Viloyat / Shahar tanlash */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                 Viloyat / Shahar *
               </label>
               <select
                 value={regionId}
                 onChange={handleRegionChange}
-                className="w-full bg-gray-50 rounded-xl px-3 py-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue font-semibold text-brand-blue"
+                className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl px-3 py-2.5 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue dark:focus:border-amber-400 font-semibold"
               >
                 {UZBEKISTAN_REGIONS.map((r) => (
-                  <option key={r.id} value={r.id}>
+                  <option key={r.id} value={r.id} className="dark:bg-slate-900 dark:text-white">
                     {r.name}
                   </option>
                 ))}
@@ -242,16 +243,16 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lan
 
             {/* 4. Tuman / Shahar tanlash (Tanlangan viloyatga qarab chiqadi) */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                 Tuman yoki Shahar *
               </label>
               <select
                 value={districtId}
                 onChange={(e) => setDistrictId(e.target.value)}
-                className="w-full bg-gray-50 rounded-xl px-3 py-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl px-3 py-2.5 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue dark:focus:border-amber-400"
               >
                 {currentRegion.districts.map((d) => (
-                  <option key={d.id} value={d.id}>
+                  <option key={d.id} value={d.id} className="dark:bg-slate-900 dark:text-white">
                     {d.name}
                   </option>
                 ))}
@@ -261,7 +262,7 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lan
             {/* 5. Aniq manzil va "Xaritadan tanlash" tugmasi */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-gray-700">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300">
                   Aniq mo'ljal / manzil *
                 </label>
                 {/* Xaritadan tanlash tugmasi */}
@@ -269,7 +270,7 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lan
                   type="button"
                   onClick={handleOpenMap}
                   disabled={isLocating}
-                  className="text-[11px] font-bold text-brand-blue bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg flex items-center space-x-1 transition-all border border-blue-200"
+                  className="text-[11px] font-bold text-brand-blue dark:text-slate-200 bg-blue-50 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-slate-750 px-2 py-1 rounded-lg flex items-center space-x-1 transition-all border border-blue-200 dark:border-slate-700 cursor-pointer"
                 >
                   {isLocating ? (
                     <Loader2 className="w-3 h-3 animate-spin text-brand-orange" />
@@ -277,24 +278,24 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lan
                     <Navigation className="w-3 h-3 text-brand-orange" />
                   )}
                   <span>{lang === 'ru' ? 'Открыть на карте' : lang === 'en' ? 'Open on map' : 'Xaritadan ochish'}</span>
-                  <ExternalLink className="w-2.5 h-2.5 text-gray-400" />
+                  <ExternalLink className="w-2.5 h-2.5 text-gray-400 dark:text-slate-400" />
                 </button>
               </div>
 
               <div className="relative">
-                <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <MapPin className="w-4 h-4 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   required
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder={lang === 'ru' ? 'Например: 14-й квартал, дом 23, 200м до метро' : lang === 'en' ? 'E.g. Block 14, Building 23, 200m to metro' : 'Masalan: 14-mavze, 23-uy, Metrogacha 200m'}
-                  className="w-full bg-gray-50 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue"
+                  className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue dark:focus:border-amber-400"
                 />
               </div>
 
               {coords && (
-                <span className="text-[10px] text-emerald-600 font-semibold block mt-1">
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold block mt-1">
                   {lang === 'ru' ? '✓ GPS координаты определены по карте' : lang === 'en' ? '✓ GPS coordinates picked from map' : '✓ GPS koordinatalari xaritadan belgilandi'}
                 </span>
               )}
@@ -302,18 +303,18 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lan
 
             {/* 6. Telefon raqam */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                 {lang === 'ru' ? 'Ваш номер телефона *' : lang === 'en' ? 'Your phone number *' : 'Telefon raqamingiz *'}
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Phone className="w-4 h-4 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="tel"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+998 90 123 45 67"
-                  className="w-full bg-gray-50 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800 border border-gray-200 focus:outline-none focus:border-brand-blue font-medium"
+                  className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-blue dark:focus:border-amber-400 font-medium"
                 />
               </div>
             </div>
@@ -322,7 +323,7 @@ export default function BarberRegisterScreen({ onRegisterSuccess, onBack, t, lan
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-4 py-3.5 rounded-xl font-extrabold text-brand-blue bg-brand-orange hover:bg-brand-orange-hover shadow-md shadow-amber-500/20 active:scale-[0.98] transition-all text-center text-xs flex items-center justify-center space-x-1.5"
+              className="w-full mt-4 py-3.5 rounded-xl font-extrabold text-brand-blue dark:text-slate-950 bg-brand-orange hover:bg-brand-orange-hover dark:bg-amber-400 dark:hover:bg-amber-300 shadow-md shadow-amber-500/20 active:scale-[0.98] transition-all text-center text-xs flex items-center justify-center space-x-1.5 cursor-pointer"
             >
               {isSubmitting ? (
                 <span>{lang === 'ru' ? 'Добавление в каталог...' : lang === 'en' ? 'Adding to directory...' : "Katalogga qo'shilmoqda..."}</span>

@@ -213,17 +213,17 @@ export default function CatalogScreen({
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-24 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-24 max-w-md mx-auto text-slate-900 dark:text-white">
       {/* Top Location Bar */}
       <div className="pt-4 px-4 pb-2">
         {/* 📢 Super Admin Umumiy E'lon / Aksiya Banneri */}
         {platformSettings?.announcement_active && platformSettings?.announcement_text && (
           <div className={`mb-3 p-3 rounded-2xl shadow-xs border flex items-start space-x-2.5 transition-all ${
             platformSettings.announcement_type === 'warning'
-              ? 'bg-amber-50 border-amber-300 text-amber-950'
+              ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-500/40 text-amber-950 dark:text-amber-200'
               : platformSettings.announcement_type === 'info'
-              ? 'bg-blue-50 border-blue-200 text-blue-950'
-              : 'bg-gradient-to-r from-amber-400/20 via-orange-400/15 to-yellow-400/20 border-amber-300 text-gray-900'
+              ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-500/40 text-blue-950 dark:text-blue-200'
+              : 'bg-gradient-to-r from-amber-400/20 via-orange-400/15 to-yellow-400/20 border-amber-300 dark:border-amber-500/30 text-gray-900 dark:text-amber-100'
           }`}>
             <span className="text-base flex-shrink-0 mt-0.5">
               {platformSettings.announcement_type === 'warning' ? '⚠️' : platformSettings.announcement_type === 'info' ? 'ℹ️' : '🎁'}
@@ -237,9 +237,9 @@ export default function CatalogScreen({
         )}
 
         {/* Client Top Tab Navigation */}
-        <div className="grid grid-cols-2 gap-2 bg-gray-200/60 p-1 rounded-2xl mb-3">
+        <div className="grid grid-cols-2 gap-2 bg-gray-200/60 dark:bg-slate-900 p-1 rounded-2xl mb-3 border border-transparent dark:border-slate-800">
           <button
-            className="py-2 rounded-xl text-xs font-bold bg-brand-blue text-white shadow-sm flex items-center justify-center space-x-1.5"
+            className="py-2 rounded-xl text-xs font-bold bg-brand-blue dark:bg-slate-800 text-white shadow-sm flex items-center justify-center space-x-1.5 border border-transparent dark:border-slate-700"
           >
             <Scissors className="w-3.5 h-3.5" />
             <span>{t.catalog_tab || "Ustalar"}</span>
@@ -247,7 +247,7 @@ export default function CatalogScreen({
 
           <button
             onClick={onGoToAppointments}
-            className="py-2 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 transition-all flex items-center justify-center space-x-1.5"
+            className="py-2 rounded-xl text-xs font-bold text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-all flex items-center justify-center space-x-1.5"
           >
             <Calendar className="w-3.5 h-3.5" />
             <span>{t.my_appointments_tab || "Navbatlarim"}</span>
@@ -292,7 +292,7 @@ export default function CatalogScreen({
           </div>
         )}
 
-        <span className="text-[11px] text-gray-400 font-medium block">
+        <span className="text-[11px] text-gray-400 dark:text-slate-400 font-medium block">
           {t.location_label}
         </span>
 
@@ -302,11 +302,11 @@ export default function CatalogScreen({
             onClick={() => setIsLocationModalOpen(true)}
             className="flex items-center space-x-1.5 group max-w-[240px] truncate"
           >
-            <MapPin className="w-4 h-4 text-brand-blue flex-shrink-0" />
-            <span className="text-sm font-bold text-brand-blue truncate">
+            <MapPin className="w-4 h-4 text-brand-blue dark:text-amber-400 flex-shrink-0" />
+            <span className="text-sm font-bold text-brand-blue dark:text-white truncate">
               {getTranslatedDistrict(locationName, lang)}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-brand-blue group-hover:translate-y-0.5 transition-transform flex-shrink-0" />
+            <ChevronDown className="w-3.5 h-3.5 text-brand-blue dark:text-slate-400 group-hover:translate-y-0.5 transition-transform flex-shrink-0" />
           </button>
 
           {/* Quick GPS button */}
@@ -315,8 +315,8 @@ export default function CatalogScreen({
             disabled={isLocating}
             className={`flex items-center space-x-1 text-[11px] font-bold px-2.5 py-1 rounded-full transition-all border ${
               isLocating
-                ? 'bg-amber-100 text-amber-700 border-amber-300'
-                : 'bg-white text-brand-blue border-blue-200 hover:bg-blue-50'
+                ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-500/40'
+                : 'bg-white dark:bg-slate-900 text-brand-blue dark:text-slate-200 border-blue-200 dark:border-slate-800 hover:bg-blue-50 dark:hover:bg-slate-800'
             }`}
             title={t.detect_my_location}
           >
@@ -388,13 +388,13 @@ export default function CatalogScreen({
 
         {/* Search Bar */}
         <div className="relative mt-3">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-gray-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t.search_placeholder}
-            className="w-full bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 shadow-sm border border-blue-50 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+            className="w-full bg-white dark:bg-slate-900 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 shadow-sm border border-blue-50 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue dark:focus:ring-amber-400 transition-all"
           />
         </div>
 
@@ -418,8 +418,8 @@ export default function CatalogScreen({
               }}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-sm ${
                 selectedFilter === chip.id
-                  ? 'bg-brand-blue text-white shadow-blue-900/20 scale-[1.02]'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-blue-50'
+                  ? 'bg-brand-blue dark:bg-amber-400 text-white dark:text-slate-950 shadow-blue-900/20 scale-[1.02]'
+                  : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 border border-blue-50 dark:border-slate-800'
               }`}
             >
               {chip.label}
@@ -430,10 +430,10 @@ export default function CatalogScreen({
 
       {/* Barbers Feed Header */}
       <div className="px-4 mt-3 flex items-center justify-between">
-        <h2 className="text-base font-bold text-gray-800">
+        <h2 className="text-base font-bold text-gray-800 dark:text-white">
           {selectedFilter === 'favorites' ? (t.tab_favorites || "Sevimlilar") : t.nearby_barbers}
         </h2>
-        <span className="text-xs text-gray-500 font-medium">
+        <span className="text-xs text-gray-500 dark:text-slate-400 font-medium">
           {displayedBarbers.length} {t.barbers_count}
         </span>
       </div>
@@ -521,24 +521,24 @@ export default function CatalogScreen({
                     </div>
 
                     {/* Dynamic GPS Distance & Walking Time Badge */}
-                    <div className="flex items-center text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <div className="flex items-center text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse" />
                       <span>{barber.displayDistance}</span>
-                      <span className="text-emerald-600 font-medium ml-1">({barber.walkTimeText})</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-medium ml-1">({barber.walkTimeText})</span>
                     </div>
 
                     {/* Working Status Badge */}
                     {barber.is_working_today === false || barber.isWorkingToday === false ? (
-                      <span className="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-950/40 border border-transparent dark:border-red-900/30 px-2 py-0.5 rounded-full">
                         🔴 {t.day_off_badge || "Dam olish"}
                       </span>
                     ) : (
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/40 border border-transparent dark:border-emerald-900/30 px-2 py-0.5 rounded-full">
                         🟢 {t.open_status || "Ochiq"}
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] text-gray-400 block mt-1 truncate">
+                  <span className="text-[11px] text-gray-400 dark:text-slate-400 block mt-1 truncate">
                     {getTranslatedAddress(barber.address, lang) || getTranslatedRole(barber.role, lang) || t.barber_role}
                   </span>
                 </div>
@@ -602,16 +602,16 @@ export default function CatalogScreen({
         )}
 
         {!isLoading && displayedBarbers.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-blue-50 mt-4 p-5">
+          <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-blue-50 dark:border-slate-800 mt-4 p-5">
             {selectedFilter === 'favorites' ? (
               <>
-                <Heart className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                <p className="text-gray-500 text-xs font-medium max-w-xs mx-auto leading-relaxed">
+                <Heart className="w-10 h-10 text-gray-300 dark:text-slate-600 mx-auto mb-2" />
+                <p className="text-gray-500 dark:text-slate-400 text-xs font-medium max-w-xs mx-auto leading-relaxed">
                   {t.no_favorites || "Hozircha sevimli ustalar yo'q. Usta kartasidagi ❤️ tugmasini bosib saqlab qo'yishingiz mumkin."}
                 </p>
               </>
             ) : (
-              <p className="text-gray-500 text-sm font-medium">
+              <p className="text-gray-500 dark:text-slate-400 text-sm font-medium">
                 {t.no_barbers_found || "Hech qanday usta topilmadi."}
               </p>
             )}
@@ -622,17 +622,17 @@ export default function CatalogScreen({
       {/* Location Modal: Viloyat va Tuman tanlash */}
       {isLocationModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between border-b pb-3 border-gray-100">
+          <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl p-5 max-w-sm w-full shadow-2xl max-h-[85vh] flex flex-col border border-transparent dark:border-slate-800 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between border-b pb-3 border-gray-100 dark:border-slate-800">
               <div className="flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-brand-blue" />
-                <h3 className="font-extrabold text-base text-brand-blue">
+                <MapPin className="w-5 h-5 text-brand-blue dark:text-amber-400" />
+                <h3 className="font-extrabold text-base text-brand-blue dark:text-white">
                   Hududni tanlang
                 </h3>
               </div>
               <button
                 onClick={() => setIsLocationModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-bold p-1"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 text-sm font-bold p-1 cursor-pointer"
               >
                 ✕
               </button>
@@ -641,20 +641,20 @@ export default function CatalogScreen({
             {/* GPS Auto Detect Action Button */}
             <button
               onClick={handleDetectGPS}
-              className="mt-3.5 p-3 bg-blue-50 rounded-2xl border border-blue-200 flex items-center justify-between text-brand-blue hover:bg-blue-100 transition-all text-xs font-bold"
+              className="mt-3.5 p-3 bg-blue-50 dark:bg-slate-800/80 rounded-2xl border border-blue-200 dark:border-slate-700 flex items-center justify-between text-brand-blue dark:text-slate-200 hover:bg-blue-100 dark:hover:bg-slate-750 transition-all text-xs font-bold cursor-pointer"
             >
               <div className="flex items-center space-x-2">
                 <Crosshair className="w-4 h-4 text-brand-orange animate-spin-slow" />
                 <span>{t.detect_my_location}</span>
               </div>
-              <span className="text-[10px] bg-white px-2 py-0.5 rounded-full text-brand-blue shadow-sm">
+              <span className="text-[10px] bg-white dark:bg-slate-900 px-2 py-0.5 rounded-full text-brand-blue dark:text-amber-400 shadow-sm border border-transparent dark:border-slate-700">
                 Aniq
               </span>
             </button>
 
             {/* 1. Viloyat Tanlash */}
             <div className="mt-3">
-              <label className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+              <label className="block text-[11px] font-bold text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wider">
                 Viloyat / Shahar:
               </label>
               <select
@@ -666,10 +666,10 @@ export default function CatalogScreen({
                     setSelectedDistrictId(reg.districts[0].id);
                   }
                 }}
-                className="w-full bg-gray-50 rounded-xl px-3 py-2 text-xs font-bold text-brand-blue border border-gray-200 focus:outline-none"
+                className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-brand-blue dark:text-white border border-gray-200 dark:border-slate-700 focus:outline-none"
               >
                 {UZBEKISTAN_REGIONS.map((r) => (
-                  <option key={r.id} value={r.id}>
+                  <option key={r.id} value={r.id} className="dark:bg-slate-900 dark:text-white">
                     {r.name}
                   </option>
                 ))}
@@ -678,7 +678,7 @@ export default function CatalogScreen({
 
             {/* 2. Tumanlar Ro'yxati */}
             <div className="mt-3 overflow-y-auto space-y-1.5 flex-1 pr-1 max-h-56">
-              <span className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+              <span className="block text-[11px] font-bold text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wider">
                 {currentRegion.name} tumanlari:
               </span>
               {currentRegion.districts.map((district) => {
@@ -687,10 +687,10 @@ export default function CatalogScreen({
                   <button
                     key={district.id}
                     onClick={() => handleSelectDistrict(district)}
-                    className={`w-full p-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between ${
+                    className={`w-full p-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
                       isSelected
-                        ? 'bg-brand-blue text-white shadow-sm'
-                        : 'bg-gray-50/70 text-gray-800 hover:bg-gray-100'
+                        ? 'bg-brand-blue dark:bg-amber-400 text-white dark:text-slate-950 shadow-sm'
+                        : 'bg-gray-50/70 dark:bg-slate-800/60 text-gray-800 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800'
                     }`}
                   >
                     <span>{district.name}</span>

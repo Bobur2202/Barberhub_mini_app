@@ -27,6 +27,7 @@ import { downloadIcsFile } from '../utils/calendarHelper';
 import { submitBarberReview, cancelClientAppointment, rescheduleAppointment } from '../services/api';
 import { mockBarbers } from '../data/mockBarbers';
 import MapNavigationModal from '../components/MapNavigationModal';
+import { openExternalUrl } from '../utils/openExternalUrl';
 
 export default function ClientAppointmentsScreen({
   appointments = [],
@@ -176,7 +177,7 @@ export default function ClientAppointmentsScreen({
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-28 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-28 max-w-md mx-auto text-slate-900 dark:text-white">
       {/* Reschedule Toast */}
       {rescheduleToast && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-blue text-white py-2.5 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in max-w-xs text-center border border-white/20">
@@ -186,22 +187,22 @@ export default function ClientAppointmentsScreen({
       )}
 
       {/* Top Header */}
-      <div className="sticky top-0 bg-[#F8FAFC]/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2">
+      <div className="sticky top-0 bg-[#F8FAFC]/95 dark:bg-slate-950/95 backdrop-blur-sm z-30 pt-4 px-4 pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {onBackToCatalog && (
               <button
                 onClick={onBackToCatalog}
-                className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-blue hover:bg-gray-100 transition-colors"
+                className="w-9 h-9 rounded-full bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center text-brand-blue dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors border border-transparent dark:border-slate-800 cursor-pointer"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
-            <h1 className="text-lg font-black text-brand-blue">
+            <h1 className="text-lg font-black text-brand-blue dark:text-white">
               {t.my_appointments_tab || "Mening navbatlarim"}
             </h1>
           </div>
-          <span className="text-xs font-bold bg-white text-brand-blue px-3 py-1 rounded-full shadow-2xs border border-blue-50">
+          <span className="text-xs font-bold bg-white dark:bg-slate-900 text-brand-blue dark:text-amber-400 px-3 py-1 rounded-full shadow-2xs border border-blue-50 dark:border-slate-800">
             {appointments.length} ta navbat
           </span>
         </div>
@@ -436,15 +437,17 @@ export default function ClientAppointmentsScreen({
                             <span>{lang === 'ru' ? '🗺️ Маршрут' : lang === 'en' ? '🗺️ Route' : '🗺️ Marshrut'}</span>
                           </button>
 
-                          <a
-                            href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`BarberHub: ${barberName}`)}&details=${encodeURIComponent(`Xizmat: ${serviceName}`)}&location=${encodeURIComponent(apt.barber_address || "Barbershop")}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex-1 py-1.5 px-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-0.5 transition-all bg-white text-blue-800 border border-blue-100 hover:bg-blue-50 shadow-2xs"
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`BarberHub: ${barberName}`)}&details=${encodeURIComponent(`Xizmat: ${serviceName}`)}&location=${encodeURIComponent(apt.barber_address || "Barbershop")}`;
+                              openExternalUrl(calUrl);
+                            }}
+                            className="flex-1 py-1.5 px-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-center space-x-0.5 transition-all bg-white dark:bg-slate-900 text-blue-800 dark:text-blue-300 border border-blue-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-800 shadow-2xs active:scale-95 cursor-pointer"
                             title="Google Calendar"
                           >
                             <span>📅 Google</span>
-                          </a>
+                          </button>
 
                           <button
                             type="button"
@@ -606,12 +609,12 @@ export default function ClientAppointmentsScreen({
                 );
               })
             ) : (
-              <div className="text-center py-12 bg-white rounded-3xl p-6 shadow-sm border border-blue-50">
-                <CheckCircle className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                <h4 className="text-sm font-bold text-gray-700">
+              <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-blue-50 dark:border-slate-800">
+                <CheckCircle className="w-12 h-12 text-gray-300 dark:text-slate-600 mx-auto mb-2" />
+                <h4 className="text-sm font-bold text-gray-700 dark:text-slate-200">
                   {t.no_history_appointments || "Navbatlar tarixi mavjud emas"}
                 </h4>
-                <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
+                <p className="text-xs text-gray-400 dark:text-slate-400 mt-1 max-w-xs mx-auto">
                   Tugallangan navbatlaringiz shu yerda saqlanadi.
                 </p>
               </div>

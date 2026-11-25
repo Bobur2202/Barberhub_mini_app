@@ -306,7 +306,7 @@ export default function SuperAdminScreen({
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-32 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-32 max-w-md mx-auto text-slate-900 dark:text-white">
       {/* Toast */}
       {toastMessage && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-blue text-white py-2.5 px-4 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold animate-in fade-in max-w-xs text-center border border-white/20">
